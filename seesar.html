@@ -39,9 +39,12 @@ h1{font-size:20px;text-align:center;margin:6px 0 4px;letter-spacing:.06em;color:
 .arena{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
 .fighter{width:46%;text-align:center}
 .avatar{width:84px;height:84px;display:inline-block;filter:drop-shadow(0 0 8px var(--c));animation:idleP 1.3s ease-in-out infinite}
-.icon{font-size:54px;line-height:84px;display:inline-block;filter:drop-shadow(0 0 10px var(--m));animation:idleE 1.5s ease-in-out infinite}
+.icon{font-size:54px;line-height:84px;display:inline-block;filter:drop-shadow(0 0 10px var(--m));animation:idleE 1.5s ease-in-out infinite;transition:transform .5s cubic-bezier(.3,1.6,.5,1),opacity .6s,filter .6s}
 @keyframes idleP{50%{transform:translateY(-7px) rotate(2deg)}}
 @keyframes idleE{50%{transform:translateY(-9px) rotate(-3deg)}}
+.icon.atk{animation:lunge .5s ease-in-out infinite}
+@keyframes lunge{0%,100%{transform:translateX(0) scale(1)}50%{transform:translateX(-14px) scale(1.25) rotate(-8deg)}}
+.icon.down{animation:none;transform:translateY(26px) rotate(96deg) scale(.85);opacity:.3;filter:grayscale(1) drop-shadow(0 0 4px #000)}
 .name{font-size:12px;font-weight:bold;margin-top:2px;letter-spacing:.08em}
 .hpouter{height:10px;margin-top:4px;background:rgba(255,255,255,.08);border:1px solid rgba(0,240,255,.5);overflow:hidden;transform:skewX(-20deg)}
 .hpbar{height:100%;background:linear-gradient(90deg,var(--g),var(--c));box-shadow:0 0 10px var(--g);transition:width .4s}
@@ -85,6 +88,24 @@ b{color:var(--y)}
 .dex div span{display:block;font-size:26px}.dex .off{opacity:.35;filter:grayscale(1)}
 .bd{padding:8px 10px;margin:6px 0;font-size:12px;border-left:3px solid #456;color:#8fb8d6}
 .bd.on{border-color:var(--y);background:rgba(255,230,0,.08);color:var(--tx)}
+/* ---- よけフェーズ ---- */
+.dtitle{text-align:center;font-weight:bold;color:var(--r);text-shadow:0 0 10px var(--r);letter-spacing:.1em;font-size:15px;margin:4px 0}
+.dfield{position:relative;height:210px;display:flex;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;
+ border:1px solid rgba(255,43,214,.6);background:rgba(255,43,214,.05);box-shadow:inset 0 0 20px rgba(255,43,214,.15)}
+.lane{flex:1;position:relative;border-right:1px dashed rgba(0,240,255,.25);transition:background .1s}
+.lane:last-child{border-right:0}
+.lane.warn{background:rgba(255,56,96,.22);box-shadow:inset 0 0 18px rgba(255,56,96,.55)}
+.lane.warn::after{content:"!";position:absolute;top:6px;left:0;right:0;text-align:center;font-weight:bold;font-size:22px;color:var(--r);text-shadow:0 0 8px var(--r);animation:blink .2s infinite}
+@keyframes blink{50%{opacity:.2}}
+.shot{position:absolute;top:-40px;left:50%;width:34px;height:34px;margin-left:-17px;border-radius:50%;
+ background:radial-gradient(circle,#fff 0,var(--r) 45%,var(--m) 100%);box-shadow:0 0 14px var(--r),0 0 26px var(--m)}
+.dp{position:absolute;bottom:6px;width:33.333%;left:0;height:64px;display:flex;justify-content:center;pointer-events:none;transition:transform .12s ease-out}
+.dp>div{width:60px;height:60px;filter:drop-shadow(0 0 8px var(--c))}
+.dp.hit>div{animation:flashHit .3s,shake .3s}
+.dp.jump>div{animation:hop .25s}
+@keyframes hop{50%{transform:translateY(-10px)}}
+.shot.heal{background:radial-gradient(circle,#fff 0,var(--g) 45%,var(--c) 100%);box-shadow:0 0 14px var(--g),0 0 26px var(--c)}
+.dinfo{display:flex;justify-content:space-between;font-family:monospace;font-size:12px;color:#8fb8d6;margin:6px 0 0}
 </style>
 </head>
 <body>
@@ -113,7 +134,7 @@ b{color:var(--y)}
    <b>架空請求・未払い詐欺</b>：「訴訟する」などと脅して支払わせる<br><br>
    <b>サポート詐欺</b>：偽のウイルス警告で電話させ、金銭や情報を狙う</div>
   <div class="sub" style="margin-top:10px">合言葉は「<b>怪しい支払い要求は、まず疑う</b>」</div>
-  <div class="sub">出題順・選択肢は毎回ランダム / 3コンボごとにHPが10回復</div>
+  <div class="sub">各バトルは「敵の攻撃をよける → クイズで反撃」の2段階<br>攻撃は10種類のパターン。進むほど激しくなり、緑の弾は取るとHP回復<br>よけ操作：左右キー / A・D / 画面タップ・スワイプ<br>出題順・選択肢は毎回ランダム / 3コンボごとにHPが10回復</div>
   <div class="review" id="statLine" style="text-align:center;font-size:12px"></div>
   <button class="btn" id="colBtn" style="text-align:center">詐欺図鑑・実績を見る</button>
   <button class="btn main" id="startBtn">BATTLE START ▶</button>
@@ -130,8 +151,19 @@ b{color:var(--y)}
    <div class="fighter" id="enemyFighter"><div class="icon" id="enemyIcon">👹</div><div class="name" id="enemyName">悪党</div>
     <div class="hpouter"><div class="hpbar enemy" id="enemyHpBar" style="width:100%"></div></div><div class="hptext" id="enemyHpText">HP 100/100</div></div>
   </div>
-  <div class="timerOuter"><div class="timerBar" id="timerBar"></div></div>
-  <div class="villain"><p id="questionText"></p></div>
+
+  <div id="dodgeBox" class="hidden">
+   <div class="dtitle" id="dTitle">敵の攻撃をよけろ！</div>
+   <div class="dfield" id="dfield">
+    <div class="lane"></div><div class="lane"></div><div class="lane"></div>
+    <div class="dp" id="dp"><div id="dpIn"></div></div>
+   </div>
+   <div class="dinfo"><span id="dLeft"></span><span id="dStat"></span></div>
+   <div class="sub" style="margin:6px 0 0">左右キー / A・D / タップ・スワイプで移動</div>
+  </div>
+
+  <div class="timerOuter" id="timerOuter"><div class="timerBar" id="timerBar"></div></div>
+  <div class="villain" id="villainBox"><p id="questionText"></p></div>
   <div id="choicesArea"></div>
   <div class="feedback hidden" id="feedbackArea"><h3 id="feedbackTitle"></h3><div id="feedbackBody"></div>
    <button class="btn main" id="nextBtn">次の悪党へ ▶</button></div>
@@ -183,6 +215,7 @@ ${Array.from({length:10},(_,i)=>{const a=i*Math.PI/5+.3;return `<circle cx="${(5
 <path d="M38.5 66.5 l2.6 6.5 l2.6 -5.5 M61.5 66.5 l-2.6 6.5 l-2.6 -5.5 M46 69 l1.6 3 l1.6 -2.6 M54 69 l-1.6 3 l-1.6 -2.6" fill="#fff" stroke="#3b2020" stroke-width="1" stroke-linejoin="round"/>
 </svg>`;
 document.querySelectorAll('.hero,.hero-s').forEach(e=>e.innerHTML=SEESAA);
+document.getElementById('dpIn').innerHTML=SEESAA;
 
 /* ---- 背景：魚が泳ぐサイバー水中 ---- */
 const cv=document.getElementById('bg'),cx=cv.getContext('2d');let W,H,t=0,fishes=[];
@@ -228,7 +261,9 @@ document.getElementById('mute').onclick=e=>{audio();bgmOn=!bgmOn;e.target.textCo
 function sfx(a){if(!actx)return;const t0=actx.currentTime;a.forEach((n,i)=>tone(n[0],t0+i*(n[3]||.08),n[1],n[2],.22))}
 const sfxHit=()=>sfx([[880,.1,'square'],[1320,.14,'square']]),sfxWrong=()=>sfx([[200,.3,'sawtooth']]),
  sfxWin=()=>sfx([[523,.18,'triangle',.1],[659,.18,'triangle',.1],[784,.18,'triangle',.1],[1046,.3,'triangle',.1]]),
- sfxLose=()=>sfx([[400,.25,'sawtooth',.14],[300,.25,'sawtooth',.14],[200,.25,'sawtooth',.14],[120,.4,'sawtooth',.14]]);
+ sfxLose=()=>sfx([[400,.25,'sawtooth',.14],[300,.25,'sawtooth',.14],[200,.25,'sawtooth',.14],[120,.4,'sawtooth',.14]]),
+ sfxDodge=()=>sfx([[1200,.06,'triangle'],[1600,.08,'triangle']]),sfxShoot=()=>sfx([[700,.12,'sawtooth',.05],[300,.14,'sawtooth',.05]]),
+ sfxKO=()=>sfx([[600,.1,'square',.07],[400,.1,'square',.07],[250,.1,'square',.07],[120,.3,'square',.07]]);
 
 /* ---- クイズデータ ---- */
 const QUIZ=[
@@ -252,7 +287,7 @@ const QUIZ=[
 const MAXHP=100,DMG=18,TL=25,$=id=>document.getElementById(id);
 let idx,score,combo,maxCombo,hp,wrong,tm,tl,answered;
 const scr=['titleScreen','introScreen','battleScreen','overScreen','resultScreen','colScreen'];
-const show=id=>{scr.forEach(s=>$(s).classList.toggle('hidden',s!==id));if(id==='introScreen')refresh()};
+const show=id=>{scr.forEach(s=>$(s).classList.toggle('hidden',s!==id));if(id==='introScreen')refresh();if(id!=='battleScreen')stopDodge()};
 $('toIntroBtn').onclick=()=>{startBgm();show('introScreen')};
 /* ---- リプレイ要素：セーブ・図鑑・実績・シャッフル・コンボ回復 ---- */
 const SK='seesaaCyberSave',ENEMIES=QUIZ.map(x=>[x.icon,x.name]);
@@ -285,9 +320,82 @@ function eHp(p){$('enemyHpBar').style.width=p+'%';$('enemyHpText').textContent=p
 function pop(el,txt,cls){const r=el.getBoundingClientRect(),w=document.querySelector('.wrap').getBoundingClientRect(),p=document.createElement('div');
  p.className='popText '+cls;p.textContent=txt;p.style.left=(r.left-w.left+r.width/2-20)+'px';p.style.top=(r.top-w.top)+'px';document.querySelector('.wrap').appendChild(p);setTimeout(()=>p.remove(),1000)}
 function comboUI(){const e=$('comboLabel');if(combo>=2){e.textContent=`${combo} COMBO!`;e.classList.add('show')}else e.classList.remove('show')}
-function showQ(){answered=false;const it=Q[idx];
+
+/* ---- よけフェーズ：敵の攻撃を左右移動でかわす（キー・タップ・スワイプ対応） ---- */
+let dLane=1,dTok=0,dTimers=[],dShots=[],dOk=0,dHitN=0,dStreak=0;
+const DEMG=5,DBONUS=15;
+function setLane(l){dLane=Math.max(0,Math.min(2,l));$('dp').style.transform=`translateX(${dLane*100}%)`;$('dp').classList.remove('jump');void $('dp').offsetWidth;$('dp').classList.add('jump')}
+function laneFromX(x){const r=$('dfield').getBoundingClientRect();return Math.floor((x-r.left)/r.width*3)}
+let dDown=false;
+$('dfield').addEventListener('pointerdown',e=>{if(!dTok)return;dDown=true;setLane(laneFromX(e.clientX));e.preventDefault()});
+$('dfield').addEventListener('pointermove',e=>{if(!dTok||!dDown)return;const l=laneFromX(e.clientX);if(l!==dLane)setLane(l)});
+addEventListener('pointerup',()=>dDown=false);addEventListener('pointercancel',()=>dDown=false);
+addEventListener('keydown',e=>{if(!dTok)return;const k=e.key;
+ if(k==='ArrowLeft'||k==='a'||k==='A'){setLane(dLane-1);e.preventDefault()}
+ else if(k==='ArrowRight'||k==='d'||k==='D'){setLane(dLane+1);e.preventDefault()}
+ else if(k==='ArrowDown'||k==='s'||k==='S'||k==='ArrowUp'||k==='w'||k==='W'){setLane(1);e.preventDefault()}});
+function stopDodge(){dTok=0;dTimers.forEach(clearTimeout);dTimers=[];dShots.forEach(s=>s.remove());dShots=[];
+ document.querySelectorAll('.lane').forEach(l=>l.classList.remove('warn'));$('enemyIcon').classList.remove('atk');$('dodgeBox').classList.add('hidden')}
+function later(f,ms,tok){dTimers.push(setTimeout(()=>{if(tok===dTok)f()},ms))}
+const rl=()=>Math.random()*3|0,others=x=>[0,1,2].filter(v=>v!==x);
+const PATS={
+ single:{n:'シングルショット',f:()=>[{ls:[rl()]},{ls:[rl()],g:650}]},
+ double:{n:'ダブルアタック',f:()=>[{ls:others(rl())}]},
+ sweepL:{n:'スイープ →',f:()=>[{ls:[0]},{ls:[1],g:320},{ls:[2],g:320}]},
+ sweepR:{n:'← スイープ',f:()=>[{ls:[2]},{ls:[1],g:320},{ls:[0],g:320}]},
+ zigzag:{n:'ジグザグ',f:()=>[{ls:[0]},{ls:[2],g:400},{ls:[0],g:400},{ls:[2],g:400}]},
+ rain:{n:'ショットレイン',f:()=>{let p=-1;return Array.from({length:5},(_,i)=>{let l;do l=rl();while(l===p);p=l;return{ls:[l],g:i?270:0,w:250}})}},
+ pincer:{n:'はさみうち',f:()=>[{ls:[0,2]},{ls:[1],g:800}]},
+ fake:{n:'フェイント',f:()=>{const a=rl(),b=(a+1+(Math.random()*2|0))%3;return[{ls:[b],fk:a}]}},
+ wall:{n:'ウォール',f:()=>{const s=rl();let s2;do s2=rl();while(s2===s);return[{ls:others(s)},{ls:others(s2),g:850}]}},
+ heal:{n:'回復チャンス',f:()=>{const h=rl(),o=(h+1+(Math.random()*2|0))%3;return[{ls:[o],h:h}]}}
+};
+const POOL=[['single','double','sweepL','sweepR'],['single','double','sweepL','sweepR','zigzag','pincer','rain','fake'],['double','sweepL','sweepR','zigzag','pincer','rain','fake','wall','single']];
+function shoot(l,fall,kind,tok){const lanes=document.querySelectorAll('.lane'),s=document.createElement('div');
+ s.className='shot'+(kind==='heal'?' heal':'');lanes[l].appendChild(s);dShots.push(s);
+ s.animate([{transform:'translateY(0)'},{transform:`translateY(${$('dfield').clientHeight+50}px)`}],{duration:fall,easing:'linear'}).onfinish=()=>s.remove();
+ later(()=>{const hitL=dLane===l;
+  if(kind==='heal'){if(hitL){s.remove();hp=Math.min(MAXHP,hp+5);hpUI();sfxHit();pop($('dfield'),'+5','heal')}return}
+  if(hitL){dStreak=0;dHitN++;dmgDodge(s)}
+  else{dOk++;dStreak++;score+=DBONUS+Math.min(dStreak,5)*3;sfxDodge();$('scoreLabel').textContent=`SCORE ${score}`}
+  $('dStat').textContent=`DODGE ${dOk} / STREAK ${dStreak}`},fall*.82,tok)}
+function dodgePhase(done){
+ stopDodge();const tok=dTok=Date.now();dOk=0;dHitN=0;dStreak=0;dLane=1;setLane(1);
+ ['villainBox','timerOuter','choicesArea','feedbackArea'].forEach(i=>$(i).classList.add('hidden'));
+ $('dodgeBox').classList.remove('hidden');$('enemyIcon').classList.add('atk');
+ const lanes=[...document.querySelectorAll('.lane')],boss=idx===Q.length-1,tier=idx<4?0:idx<9?1:2;
+ const cnt=boss?6:3+(idx>=5?1:0)+(idx>=10?1:0);
+ let seq=shuf(POOL[tier]).slice(0,cnt);if(boss)seq=shuf(POOL[2]).slice(0,6);
+ if(hp<MAXHP-5)seq.splice(1+(Math.random()*2|0),0,'heal');
+ const baseFall=Math.max(600,1100-idx*35),warnMs=Math.max(300,480-idx*12),total=seq.length;
+ $('dTitle').textContent=boss?'ボスの猛攻をよけろ！':'敵の攻撃をよけろ！';
+ $('dLeft').textContent=`ATTACK 0/${total}`;$('dStat').textContent='DODGE 0 / STREAK 0';
+ let at=800;
+ seq.forEach((k,pi)=>{const P=PATS[k],fall=k==='rain'?baseFall*.85:baseFall;
+  later(()=>{$('dTitle').textContent=P.n+'！';$('dLeft').textContent=`ATTACK ${pi+1}/${total}`},at,tok);
+  at+=350;let last=at;
+  P.f().forEach(st=>{at+=st.g||0;const w=st.fk!=null?Math.max(warnMs,700):(st.w||warnMs),t0=at;
+   later(()=>{(st.fk!=null?[st.fk]:st.ls).forEach(l=>lanes[l].classList.add('warn'))},t0,tok);
+   if(st.fk!=null)later(()=>{lanes[st.fk].classList.remove('warn');st.ls.forEach(l=>lanes[l].classList.add('warn'))},t0+w*.6,tok);
+   later(()=>{lanes.forEach(l=>l.classList.remove('warn'));sfxShoot();st.ls.forEach(l=>shoot(l,fall,'shot',tok));if(st.h!=null)shoot(st.h,fall,'heal',tok)},t0+w,tok);
+   last=t0+w});
+  at=last+fall*.9+300});
+ later(()=>{stopDodge();
+  if(dHitN===0){score+=50;$('scoreLabel').textContent=`SCORE ${score}`;toast('パーフェクトよけ！ +50　反撃開始')}
+  else toast(`被弾 ${dHitN}回　反撃開始`);done()},at,tok)}
+function dmgDodge(s){s.remove();hp=Math.max(1,hp-DEMG);hpUI();sfxWrong();
+ const dp=$('dp');dp.classList.remove('hit');void dp.offsetWidth;dp.classList.add('hit');pop($('dfield'),'-'+DEMG,'dmg')}
+
+function showQ(){const it=Q[idx];
  $('qNumLabel').textContent=`ENEMY ${idx+1}/${Q.length}`;$('scoreLabel').textContent=`SCORE ${score}`;$('progressBar').style.width=idx/Q.length*100+'%';
- $('questionText').textContent=it.q;$('enemyIcon').textContent=it.icon;$('enemyName').textContent=it.name;eHp(100);comboUI();
+ $('enemyIcon').classList.remove('down');$('enemyIcon').textContent=it.icon;$('enemyName').textContent=it.name;eHp(100);comboUI();
+ clearInterval(tm);
+ dodgePhase(()=>startQuiz())}
+
+function startQuiz(){answered=false;const it=Q[idx];
+ ['villainBox','timerOuter','choicesArea'].forEach(i=>$(i).classList.remove('hidden'));
+ $('enemyIcon').classList.remove('atk');
+ $('questionText').textContent=it.q;
  const a=$('choicesArea');a.innerHTML='';it.choices.forEach((c,i)=>{const b=document.createElement('button');b.className='btn';b.textContent='> '+c;b.onclick=()=>ans(i);a.appendChild(b)});
  $('feedbackArea').classList.add('hidden');
  clearInterval(tm);tl=TL;const bar=$('timerBar');bar.style.transition='none';bar.style.width='100%';requestAnimationFrame(()=>bar.style.transition='width 1s linear');
@@ -296,8 +404,8 @@ function ans(ci){if(answered)return;answered=true;clearInterval(tm);const it=Q[i
  document.querySelectorAll('#choicesArea .btn').forEach((b,i)=>{b.disabled=true;if(i===it.answer)b.classList.add('correct');else if(i===ci)b.classList.add('wrong')});
  const ar=$('arena');
  if(ok){combo++;maxCombo=Math.max(maxCombo,combo);const g=100+combo*10+(fast?30:0);score+=g;sfxHit();sv.dex[it.name]=1;persist();if(fast)fastN++;if(combo%3===0&&hp<MAXHP){hp=Math.min(MAXHP,hp+10);hpUI();toast(combo+'コンボ！ HP+10 回復')}
-  const e=$('enemyFighter');e.classList.add('shake','flashHit');ar.classList.add('screenshake');eHp(0);pop(e,'-HP','dmg');pop($('scoreLabel'),'+'+g,'heal');
-  setTimeout(()=>{e.classList.remove('shake','flashHit');ar.classList.remove('screenshake')},400)}
+  const e=$('enemyFighter'),ic=$('enemyIcon');e.classList.add('shake','flashHit');ar.classList.add('screenshake');eHp(0);pop(e,'-HP','dmg');pop($('scoreLabel'),'+'+g,'heal');
+  setTimeout(()=>{e.classList.remove('shake','flashHit');ar.classList.remove('screenshake');ic.classList.add('down');sfxKO();pop(e,'K.O.','heal')},400)}
  else{combo=0;wrong.push(it);hp-=DMG;sfxWrong();const p=$('playerFighter');p.classList.add('shake','flashHit');ar.classList.add('screenshake');pop(p,'-'+DMG,'dmg');hpUI();
   setTimeout(()=>{p.classList.remove('shake','flashHit');ar.classList.remove('screenshake')},400)}
  comboUI();$('scoreLabel').textContent=`SCORE ${score}`;
