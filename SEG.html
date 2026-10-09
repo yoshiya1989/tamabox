@@ -4,6 +4,8 @@
 <title>セキュリティ防衛クイズ</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.80.1/phaser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.80.1/phaser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root{--bg:#02060f;--fg:#d8f6ff;--card:rgba(2,14,32,.6);--ac:#00e5ff;--bd:rgba(0,229,255,.4);--ok:#39ff88;--ng:#ff4d6d;--panel:rgba(3,12,26,.84);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html,body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,"Hiragino Sans","Noto Sans JP",sans-serif}
@@ -42,6 +44,19 @@ button.ng{border-color:var(--ng);background:rgba(190,40,60,.55)}
 .warn{font:900 1.6rem ui-monospace,Menlo,monospace;color:var(--ng);text-align:center;letter-spacing:.3em;animation:blink .6s infinite}
 .aim{border:2px solid #ff3cc8;border-radius:10px;padding:12px;margin:10px 0;line-height:1.8;background:rgba(255,60,200,.08)}
 .info{border:2px solid var(--ac);border-radius:10px;padding:12px;margin:10px 0;line-height:1.7;background:rgba(0,229,255,.08)}
+.dsel{margin:12px 0}
+.dgrid{display:flex;gap:8px;margin:8px 0}
+.dgrid button{flex:1;margin:0;text-align:center;padding:10px 0;font-weight:700}
+.dgrid button.on{background:linear-gradient(90deg,#00b8d4,#7c4dff);border-color:#fff}
+.gift{position:relative;border:3px solid #ffcf5a;border-radius:12px;padding:20px 14px 12px;margin:22px 0;text-align:center;background:linear-gradient(135deg,rgba(255,207,90,.2),rgba(255,60,200,.1));animation:gold 1.6s infinite alternate}
+.gift .tag{position:absolute;top:-15px;left:50%;transform:translateX(-50%);background:#ffcf5a;color:#1a1200;font:900 .9rem ui-monospace,Menlo,monospace;letter-spacing:.25em;padding:3px 16px;border-radius:12px}
+.gift .cp{width:140px;height:96px;margin:6px auto 12px;border:4px double #ffcf5a;background:rgba(255,255,255,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#ffe08a;font-size:.85rem;letter-spacing:.3em}
+.gift .cp b{font:900 2.6rem ui-monospace,Menlo,monospace;letter-spacing:.05em;color:#ffcf5a}
+.gift .big{font-size:1.4rem;font-weight:900;color:#ffe08a;line-height:1.5}
+.gift .big em{font-style:normal;font-size:2.1rem;color:#fff}
+.gift p{margin:8px 0 2px;color:#fff}
+.gold{border:2px solid #ffcf5a;border-radius:8px;padding:6px 10px;text-align:center;font-weight:700;color:#ffe08a;background:rgba(255,207,90,.12);animation:gold 1.6s infinite alternate}
+@keyframes gold{to{box-shadow:0 0 22px rgba(255,207,90,.8)}}
 .blink{animation:blink 1.1s infinite}
 .meta{font-size:.9rem;opacity:1;color:#cfe8f5}
 #ph{width:100%;max-width:900px;margin:8px auto;background:rgba(2,10,25,.72);border:1px solid #1d4a63;border-radius:8px;overflow:hidden;touch-action:none}
@@ -53,7 +68,17 @@ input{width:100%;box-sizing:border-box;padding:10px;margin:6px 0;font:inherit;co
 @keyframes blink{50%{opacity:.35}}
 @keyframes pop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
 @keyframes glow{to{text-shadow:0 0 24px var(--ac),0 0 6px #e5b94e}}
+button{--s:7px;--poly:polygon(0 calc(var(--s)*2),var(--s) calc(var(--s)*2),var(--s) var(--s),calc(var(--s)*2) var(--s),calc(var(--s)*2) 0,calc(100% - var(--s)*2) 0,calc(100% - var(--s)*2) var(--s),calc(100% - var(--s)) var(--s),calc(100% - var(--s)) calc(var(--s)*2),100% calc(var(--s)*2),100% calc(100% - var(--s)*2),calc(100% - var(--s)) calc(100% - var(--s)*2),calc(100% - var(--s)) calc(100% - var(--s)),calc(100% - var(--s)*2) calc(100% - var(--s)),calc(100% - var(--s)*2) 100%,calc(var(--s)*2) 100%,calc(var(--s)*2) calc(100% - var(--s)),var(--s) calc(100% - var(--s)),var(--s) calc(100% - var(--s)*2),0 calc(100% - var(--s)*2));--bc:rgba(0,229,255,.75);--bf:rgba(6,22,46,.96);position:relative;isolation:isolate;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;clip-path:var(--poly);padding-left:20px;padding-right:20px}
+button::before,button::after{content:"";position:absolute;z-index:-1;clip-path:var(--poly)}
+button::before{inset:0;background:var(--bc)}
+button::after{inset:3px;background:var(--bf)}
+button.sm{--s:4px;padding:6px 18px}
+button.ok{--bc:var(--ok);--bf:rgba(30,130,60,.75)}
+button.ng{--bc:var(--ng);--bf:rgba(190,40,60,.75)}
+button.main,.dgrid button.on{--bc:#bff4ff;--bf:linear-gradient(90deg,#00b8d4,#7c4dff)}
+button.ch:not(:disabled):hover{--bc:#fff;--bf:rgba(10,42,84,.98)}
 </style></head>
+</head>
 <body><canvas id="bg"></canvas><div id="vg"></div><div id="app"></div><button id="sd" class="sm" style="position:fixed;right:14px;top:14px;z-index:5;margin:0">SOUND: ON</button>
 <script>
 // Cyberspace battlefield background: rain, grid, network, wireframe enemy ghosts, battle effects
@@ -276,7 +301,7 @@ function bgm(mode){BG.mode=mode;BG.bpm=mode=='battle'?150:124;BG.want=true;bgSyn
 function bgmStop(){BG.want=false;bgSync()}
 function tglMute(){mute=!mute;const t='SOUND: '+(mute?'OFF':'ON');['sn','sd'].forEach(i=>{const e=$(i);if(e)e.textContent=t});bgSync()}
 function intro(){bgmStop();
- show(`<div class="title">SECURITY<br>DEFENDERS</div><div class="sub">セキュリティ防衛隊</div><div class="aim"><b>制作の趣旨</b><br>このゲームは、沖縄県民が、ネット詐欺にあうことを減らす知識を身につけるために制作しました。</div><div class="info"><b>出題について</b><br>全${Q.length}問のストックから、毎回ランダムに30問を出題します。<br><br><b>🎁認定証のプレゼント🎁</b><br>最高ランク SS に到達すると、認定証をPDFでダウンロードできます。</div><p>5問ごとに現れる犯罪者風オバケを撃退しながら進もう。連続正解でコンボ、早く答えるほど高得点。最後にランク C / B / A / S / SS が決まる。</p><button class="main blink" id="st">START</button><button class="sm" id="sn">SOUND: ${mute?'OFF':'ON'}</button>`);
+ show(`<div class="title">SECURITY<br>DEFENDERS</div><div class="sub">セキュリティ防衛隊</div><div class="aim"><b>制作の趣旨</b><br>このゲームは、沖縄県民のネット詐欺被害を減らすため、楽しみながらセキュリティ知識を身につける様に設計しています。</div><div class="info"><b>出題について</b><br>全${Q.length}問のストックから、毎回ランダムに30問を出題します。<br><br><b>🎁認定証のプレゼント🎁</b><br>最高ランク SS に到達すると、認定証をPDFでダウンロードできます。</div><p>5問ごとに現れる犯罪者風オバケを撃退しながら進もう。連続正解でコンボ、早く答えるほど高得点。最後にランク C / B / A / S / SS が決まる。</p><button class="main blink" id="st">START</button><button class="sm" id="sn">SOUND: ${mute?'OFF':'ON'}</button>`);
  $('sn').onclick=tglMute;
  $('st').onclick=()=>{shield=100;QS=Q.map(q=>[Math.random(),q]).sort((x,y)=>x[0]-y[0]).slice(0,30).map(x=>x[1]);qi=0;correct=0;kills=0;total=0;score=0;combo=0;maxCombo=0;snd(520);bgm("calm");quiz()};
 }
@@ -306,7 +331,7 @@ function stage(lv){
 function run(lv){
  if(!window.Phaser){show('<p>Phaserの読み込みに失敗しました。通信環境を確認して、ページを再読み込みしてください。</p>');return}
  show('<div class="hud" id="hud"></div><div id="ph"></div><div class="meta">敵が下まで来る、または触れるとHPが減る。HPが0でステージ終了。</div>');
- const bx=$('ph'),H=Math.max(440,Math.min(640,innerHeight-190));bx.style.height=H+'px';const W=Math.floor(bx.clientWidth)||360,boss=lv==6,n=boss?7:5+lv*2,interval=1.7-lv*.15,speed=100+lv*50;
+ const bx=$('ph'),H=Math.max(440,Math.min(640,innerHeight-190));bx.style.height=H+'px';const W=Math.floor(bx.clientWidth)||360,boss=lv==6,n=boss?7:5+lv*2,interval=1.7-lv*.15,speed=65+lv*35;
  let hp=3,inv=0,spawned=0,killed=0,gain=0,sp=.8,fire=0,tri=0,rap=0,done=false,px=W/2,lastHud='',game;
  function create(){
   const s=this,cl=Phaser.Math.Clamp;
@@ -422,7 +447,7 @@ function drawCert(name){
  x.font='44px '+F;['「セキュリティ防衛クイズ」全30問に挑み、','最高ランク SS の成績を収めたことを認定します。','あなたのセキュリティ意識は、極めて高い水準にあります。'].forEach((t,i)=>x.fillText(t,W/2,680+i*70));
  x.fillStyle='#b8902f';x.font='900 190px sans-serif';x.fillText('SS',W/2,960);
  x.fillStyle='#1d2b4a';x.font='38px '+F;x.fillText(`スコア ${score} 点 最大コンボ ${maxCombo}`,W/2,1030);
- x.fillText(new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'})+'シーサー先輩',W/2,1090);
+ x.fillText(new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'})+'シーサー戦士',W/2,1090);
  x.font='24px sans-serif';x.fillStyle='#667';x.fillText('本証はゲーム上の認定であり、公的な資格ではありません。',W/2,1145);
  return c;
 }
