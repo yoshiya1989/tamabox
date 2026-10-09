@@ -299,7 +299,7 @@ function bgm(mode){BG.mode=mode;BG.bpm=mode=='battle'?150:124;BG.want=true;bgSyn
 function bgmStop(){BG.want=false;bgSync()}
 function tglMute(){mute=!mute;const t='SOUND: '+(mute?'OFF':'ON');['sn','sd'].forEach(i=>{const e=$(i);if(e)e.textContent=t});bgSync()}
 function intro(){bgmStop();
- show(`<div class="title">SECURITY<br>DEFENDERS</div><div class="sub">セキュリティ防衛隊</div><div class="aim"><b>制作の趣旨</b><br>このゲームは、沖縄県民のネット詐欺被害を減らすため、楽しみながらセキュリティ知識を身につける様に設計しています。</div><div class="info"><b>出題について</b><br>全${Q.length}問のストックから、毎回ランダムに30問を出題します。<br><br><b>🎁認定証のプレゼント🎁</b><br>最高ランク SS に到達すると、認定証をPDFでダウンロードできます。</div><p>5問ごとに現れる犯罪者風オバケを撃退しながら進もう。連続正解でコンボ、早く答えるほど高得点。最後にランク C / B / A / S / SS が決まる。</p><button class="main blink" id="st">START</button><button class="sm" id="sn">SOUND: ${mute?'OFF':'ON'}</button>`);
+ show(`<div class="title">SECURITY<br>DEFENDERS</div><div class="sub">セキュリティ防衛隊</div><div class="aim"><b>制作の趣旨</b><br>このゲームは、沖縄県民のネット詐欺被害を減らすため、楽しみながらセキュリティ知識を身につける様に設計しています。</div><div class="info"><b>出題について</b><br>全${Q.length}問のストックから、毎回ランダムに30問を出題します。<br><br><b>🎁認定証のプレゼント🎁</b><br>最高ランク SS に到達すると、認定証をPDFでダウンロードできます。</div><p>5問ごとに現れる犯罪者風オバケを撃退しながら進もう。連続正解でコンボ、早く答えるほど高得点。最後にランク が決まる。</p><button class="main blink" id="st">START</button><button class="sm" id="sn">SOUND: ${mute?'OFF':'ON'}</button>`);
  $('sn').onclick=tglMute;
  $('st').onclick=()=>{shield=100;QS=Q.map(q=>[Math.random(),q]).sort((x,y)=>x[0]-y[0]).slice(0,30).map(x=>x[1]);qi=0;correct=0;kills=0;total=0;score=0;combo=0;maxCombo=0;snd(520);bgm("calm");quiz()};
 }
