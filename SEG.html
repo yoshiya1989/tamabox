@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>セキュリティ防衛クイズ</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.80.1/phaser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--bg:#02060f;--fg:#d8f6ff;--card:rgba(2,14,32,.6);--ac:#00e5ff;--bd:rgba(0,229,255,.4);--ok:#39ff88;--ng:#ff4d6d;--panel:rgba(3,12,26,.84);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,"Hiragino Sans","Noto Sans JP",sans-serif}
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+#app{position:relative;z-index:1;box-sizing:border-box;min-height:100vh;margin:0;padding:16px max(16px,calc((100vw - 900px)/2));font-size:17px;line-height:1.7;color:#f2f9ff;background:linear-gradient(90deg,transparent calc(50% - 450px),rgba(2,10,24,.88) calc(50% - 450px),rgba(2,10,24,.88) calc(50% + 450px),transparent calc(50% + 450px))}
+@media(max-width:900px){#app{background:rgba(2,10,24,.88)}}
+#vg{position:fixed;inset:0;z-index:2;pointer-events:none;box-shadow:inset 0 0 180px rgba(0,0,0,.75)}
+#vg::before,#vg::after{content:'';position:absolute;width:44px;height:44px;border:3px solid var(--ac);opacity:.8}
+#vg::before{top:10px;left:10px;border-right:0;border-bottom:0}
+#vg::after{right:10px;bottom:10px;border-left:0;border-top:0}
+h2{font-size:1.3rem;line-height:1.6;margin:8px 0 14px;color:#fff;background:rgba(0,40,70,.6);border-left:3px solid var(--ac);padding:10px 12px;min-height:3.2em}
+p{line-height:1.7}
+button{display:block;width:100%;margin:10px 0;padding:14px 12px;font:inherit;font-size:1.05rem;color:#fff;background:rgba(6,22,46,.95);border:2px solid rgba(0,229,255,.6);border-radius:10px;text-align:left;cursor:pointer;transition:transform .12s,border-color .12s,box-shadow .12s;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+button:disabled{color:var(--fg);cursor:default}
+button.ch{display:flex;align-items:center;gap:10px}
+button.ch{animation:slide .35s backwards}
+button.ch:not(:disabled):hover{transform:translateX(5px);border-color:var(--ac);box-shadow:0 0 14px rgba(0,229,255,.5)}
+.sh{display:flex;align-items:center;gap:8px;font:700 .75rem ui-monospace,Menlo,monospace;margin:8px 0 2px}
+.sh i{flex:1;height:6px;background:var(--bd);border-radius:3px;overflow:hidden}
+.sh b{display:block;height:100%;background:linear-gradient(90deg,#ff4d6d,#ffb300,#39ff88);transition:width .4s}
+@keyframes slide{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
+button.ch b{flex:none;width:28px;height:28px;border-radius:50%;background:var(--ac);color:#fff;display:grid;place-items:center;font-family:ui-monospace,Menlo,monospace}
+button.main{background:linear-gradient(90deg,#00b8d4,#7c4dff);color:#fff;border:0;text-align:center;font-weight:700;letter-spacing:.15em}
+button.sm{width:auto;margin:0 auto;padding:6px 14px;font-size:.8rem;text-align:center}
+button.ok{border-color:var(--ok);background:rgba(30,130,60,.55)}
+button.ng{border-color:var(--ng);background:rgba(190,40,60,.55)}
+.hud{display:flex;justify-content:space-between;gap:6px;font:700 .95rem ui-monospace,Menlo,Consolas,monospace;letter-spacing:.04em}
+.cb{color:#ffb300}
+.tbar{height:8px;background:var(--bd);border-radius:4px;margin:8px 0 12px;overflow:hidden}
+.tbar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#e06c75,#e5c07b,#6bbf8a)}
+.qh{font:700 .85rem ui-monospace,Menlo,monospace;color:var(--ac);letter-spacing:.2em}
+.res{font:900 1.5rem ui-monospace,Menlo,monospace;letter-spacing:.1em;animation:pop .35s}
+.res.g{color:var(--ok)}.res.b{color:var(--ng)}
+.title{font-size:2.5rem;font-weight:900;line-height:1.1;letter-spacing:.06em;text-align:center;margin:14px 0 4px;background:linear-gradient(90deg,#00e5ff,#7c4dff,#ff3cc8);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;letter-spacing:.3em;font-size:.85rem;margin-bottom:8px}
+.warn{font:900 1.6rem ui-monospace,Menlo,monospace;color:var(--ng);text-align:center;letter-spacing:.3em;animation:blink .6s infinite}
+.aim{border:2px solid #ff3cc8;border-radius:10px;padding:12px;margin:10px 0;line-height:1.8;background:rgba(255,60,200,.08)}
+.info{border:2px solid var(--ac);border-radius:10px;padding:12px;margin:10px 0;line-height:1.7;background:rgba(0,229,255,.08)}
+.blink{animation:blink 1.1s infinite}
+.meta{font-size:.9rem;opacity:1;color:#cfe8f5}
+#ph{width:100%;max-width:900px;margin:8px auto;background:rgba(2,10,25,.72);border:1px solid #1d4a63;border-radius:8px;overflow:hidden;touch-action:none}
+input{width:100%;box-sizing:border-box;padding:10px;margin:6px 0;font:inherit;color:var(--fg);background:var(--card);border:2px solid var(--bd);border-radius:10px}
+.pip{display:inline-block;width:12px;height:10px;margin-left:3px;background:#e5586b;border-radius:2px}
+.rank{font:900 5.5rem ui-monospace,Menlo,monospace;text-align:center;color:var(--ac);animation:pop .6s,glow 1.6s infinite alternate}
+.shake{animation:shake .4s}
+@keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+@keyframes blink{50%{opacity:.35}}
+@keyframes pop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+@keyframes glow{to{text-shadow:0 0 24px var(--ac),0 0 6px #e5b94e}}
+</style></head>
+<body><canvas id="bg"></canvas><div id="vg"></div><div id="app"></div><button id="sd" class="sm" style="position:fixed;right:14px;top:14px;z-index:5;margin:0">SOUND: ON</button>
+<script>
+// Cyberspace battlefield background: rain, grid, network, wireframe enemy ghosts, battle effects
+(()=>{const c=document.getElementById('bg'),x=c.getContext('2d');
+const G='アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789ABCDEF<>/{}#$%';
+let W,H,rain=[],nd=[],gh=[],sp=[],ls=[],rg=[],off=0,fl=0,fc=0,gl=0,t=0,m={x:-1e3,y:-1e3};
+const rnd=(a,b)=>a+Math.random()*(b-a);
+function mkG(g){g.x=rnd(.1,.9)*W;g.y=rnd(.12,.7)*H;g.s=rnd(.5,1.5);g.ph=rnd(0,6);g.vx=rnd(-.3,.3);g.vy=rnd(-.15,.15);g.h=0;g.m=Math.random()<.35;return g}
+function rs(){W=c.width=innerWidth;H=c.height=innerHeight;x.fillStyle='#02060f';x.fillRect(0,0,W,H);
+rain=Array.from({length:Math.ceil(W/16)},()=>({y:Math.random()*H/16,v:.15+Math.random()*.5}));
+nd=Array.from({length:Math.min(80,W*H/14000|0)},()=>({x:rnd(0,W),y:rnd(0,H),vx:rnd(-.3,.3),vy:rnd(-.3,.3),p:Math.random()<.2}));
+gh=Array.from({length:7},()=>mkG({}))}
+const GP=new Path2D();GP.moveTo(14,70);GP.bezierCurveTo(14,18,106,18,106,70);GP.lineTo(106,116);
+{let a=106;for(let i=0;i<4;i++){GP.quadraticCurveTo(a-11.5,136,a-23,116);a-=23}}GP.closePath();
+function drawGhost(g){
+const s=g.s*(1+.35*g.h)*.9,a=.25+.35*g.h;
+x.save();x.translate(g.x,g.y+Math.sin(t*.02+g.ph)*8);x.scale(s,s);x.translate(-60,-70);
+const col=g.h>.1?`rgba(255,77,109,${a+.3})`:g.m?`rgba(255,60,200,${a})`:`rgba(0,229,255,${a})`;
+x.lineWidth=2/s;x.strokeStyle=col;x.fillStyle=col;x.shadowColor=col;x.shadowBlur=8;
+x.stroke(GP);
+x.beginPath();x.ellipse(43,62,9,12,0,0,7);x.fill();x.beginPath();x.ellipse(77,62,9,12,0,0,7);x.fill();
+x.beginPath();x.moveTo(26,44);x.lineTo(52,54);x.moveTo(94,44);x.lineTo(68,54);x.stroke();
+x.restore()}
+function burst(px,py,col){for(let i=0;i<24;i++){const a=rnd(0,6.28),v=rnd(1,6);sp.push({x:px,y:py,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,c:col})}}
+addEventListener('cyberfx',e=>{const k=e.detail;
+if(k=='ok'){const g=gh[Math.random()*gh.length|0];ls.push({x:g.x,y:g.y,l:1});burst(g.x,g.y,'0,229,255');burst(g.x,g.y,'255,60,200');rg.push({x:g.x,y:g.y,r:0});fc=1;mkG(g)}
+else if(k=='ng'){fl=1;gl=1;gh.forEach(g=>g.h=1)}
+else if(k=='warn'){fl=1;gl=1}});
+function an(){t++;
+x.fillStyle='rgba(2,6,15,.14)';x.fillRect(0,0,W,H);
+const hz=H*.68;off=(off+.015)%1;
+for(let i=0;i<10;i++){const z=(i+off)/10,y=hz+(H-hz)*z*z;x.strokeStyle=`rgba(255,60,200,${.1+z*.35})`;x.lineWidth=1;x.beginPath();x.moveTo(0,y);x.lineTo(W,y);x.stroke()}
+for(let k=-10;k<=10;k++){x.strokeStyle='rgba(255,60,200,.18)';x.beginPath();x.moveTo(W/2+k*24,hz);x.lineTo(W/2+k*W/7,H);x.stroke()}
+x.font='14px monospace';x.textAlign='center';
+rain.forEach((r,i)=>{r.y+=r.v;const px=i*16+8,py=r.y*16;if(py>H&&Math.random()>.975)r.y=0;
+x.fillStyle='rgba(0,229,255,.55)';x.fillText(G[Math.random()*G.length|0],px,py-16);
+x.fillStyle='#d8fff6';x.fillText(G[Math.random()*G.length|0],px,py)});
+nd.forEach(n=>{n.x+=n.vx;n.y+=n.vy;if(n.x<0||n.x>W)n.vx*=-1;if(n.y<0||n.y>H)n.vy*=-1;
+const dx=n.x-m.x,dy=n.y-m.y,d=Math.hypot(dx,dy)+.01;if(d<140){n.x+=dx/d*2;n.y+=dy/d*2}});
+for(let i=0;i<nd.length;i++)for(let j=i+1;j<nd.length;j++){const a=nd[i],b=nd[j],d=Math.hypot(a.x-b.x,a.y-b.y);
+if(d<130){x.strokeStyle=`rgba(0,229,255,${.3*(1-d/130)})`;x.lineWidth=1;x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);x.stroke()}}
+nd.forEach(n=>{x.fillStyle=n.p?'#ff3cc8':'#00e5ff';x.beginPath();x.arc(n.x,n.y,n.p?3:2,0,7);x.fill()});
+gh.forEach(g=>{g.x+=g.vx;g.y+=g.vy;if(g.x<40||g.x>W-40)g.vx*=-1;if(g.y<40||g.y>H*.75)g.vy*=-1;g.h=Math.max(0,g.h-.02);drawGhost(g)});
+x.shadowBlur=0;
+ls.forEach(l=>{x.strokeStyle=`rgba(0,255,230,${l.l})`;x.lineWidth=3;x.shadowColor='#0ff';x.shadowBlur=12;x.beginPath();x.moveTo(W/2,H);x.lineTo(l.x,l.y);x.stroke();l.l-=.07});
+x.shadowBlur=0;ls=ls.filter(l=>l.l>0);
+sp.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.l-=.03;x.fillStyle=`rgba(${p.c},${Math.max(p.l,0)})`;x.fillRect(p.x-2,p.y-2,4,4)});sp=sp.filter(p=>p.l>0);
+rg.forEach(r=>{r.r+=4;x.strokeStyle=`rgba(0,229,255,${Math.max(1-r.r/200,0)})`;x.lineWidth=2;x.beginPath();x.arc(r.x,r.y,r.r,0,7);x.stroke()});rg=rg.filter(r=>r.r<200);
+const sy=(t*3)%(H+200)-100;x.fillStyle='rgba(0,229,255,.06)';x.fillRect(0,sy,W,40);x.fillStyle='rgba(0,229,255,.28)';x.fillRect(0,sy+40,W,2);
+if(Math.random()<.004)gl=.6;
+if(gl>0){for(let i=0;i<6;i++){x.fillStyle=`rgba(255,77,109,${.25*gl})`;x.fillRect(0,rnd(0,H),W,rnd(2,14))}gl-=.04}
+if(fl>0){x.fillStyle=`rgba(255,40,80,${.22*fl})`;x.fillRect(0,0,W,H);fl-=.05}
+if(fc>0){x.fillStyle=`rgba(0,229,255,${.14*fc})`;x.fillRect(0,0,W,H);fc-=.06}
+requestAnimationFrame(an)}
+addEventListener('resize',rs);
+addEventListener('pointermove',e=>{m.x=e.clientX;m.y=e.clientY});
+addEventListener('pointerdown',e=>{rg.push({x:e.clientX,y:e.clientY,r:0});nd.forEach(n=>{const dx=n.x-e.clientX,dy=n.y-e.clientY,d=Math.hypot(dx,dy)+1;n.vx=Math.max(-1.5,Math.min(1.5,n.vx+dx/d*2));n.vy=Math.max(-1.5,Math.min(1.5,n.vy+dy/d*2))})});
+rs();requestAnimationFrame(an)})();
+</script>
+<script>
+// [問題, [正解, 誤答, 誤答], 解説]  選択肢は実行時にシャッフル
+const Q=[
+["安全なパスワードの特徴はどれ?",["長くて推測されにくく、サービスごとに別のもの","自分の誕生日","全サービス共通の短いもの"],"「総当たり攻撃」とは、文字の組み合わせを片端から試す手口です。パスワードが長いほど試す数が増え、破られにくくなります。"],
+["二段階認証とは?",["パスワードに加えて別の確認を行う仕組み","パスワードを2回入力すること","2台のPCで同時にログインすること"],"「二段階認証」とは、パスワードに加えて、SMSのコードなど別の方法でも本人確認をする仕組みです。パスワードが漏れても乗っ取られにくくなります。"],
+["銀行を名乗るSMSにリンクがあった。どうする?",["開かず、公式アプリや正規サイトから確認する","すぐにリンクを開く","記載の番号に返信する"],"「フィッシング」とは、本物そっくりのメールやSMSで偽サイトへ誘導し、IDやパスワードを盗む手口です。魚釣り(fishing)が語源とされます。"],
+["偽サイトを見分ける最も確実な方法は?",["URLのドメイン名を確認する","見た目が本物そっくりなら安全","鍵マークがあれば必ず本物"],"「ドメイン」とは、URLのうちサイトの住所にあたる部分です。「鍵マーク」は通信が暗号化されている印で、運営者が本物という証明ではありません。"],
+["公衆Wi-Fiでの注意として正しいものは?",["暗号化されていない場合、重要情報の入力は避ける","公衆Wi-Fiは常に安全","ネット銀行はむしろ公衆Wi-Fiで使うべき"],"「暗号化」とは、第三者に読まれないよう情報を特別な形に変えることです。暗号化されていない公衆Wi-Fiでは、通信内容を盗み見られる恐れがあります。"],
+["OSやアプリの更新通知が来た。どうする?",["弱点が修正されるので早めに更新する","不具合が怖いので放置","広告なので無視"],"「脆弱性」とは、ソフトの欠陥や弱点のことです。更新(アップデート)には、これを塞ぐ修正が含まれるため、早めの適用が大切です。"],
+["知らない相手からのメールに添付ファイルがあった。",["開かずに削除する","とりあえず開く","友人に転送する"],"「添付ファイル」とは、メールに付けて送られる文書や画像などです。「マルウェア」(悪意あるソフト)が仕込まれている場合があり、開くだけで感染することがあります。"],
+["ウイルス対策ソフトについて正しいのは?",["導入し、常に最新の状態にしておく","スマホには一切不要","一度入れれば更新は不要"],"「ウイルス対策ソフト」は、不正なソフトを見つけて防ぐ道具です。新しい脅威に対応するため、見分けるための情報(定義ファイル)を常に最新にします。"],
+["閲覧中に「ウイルスに感染しました」と警告が出て電話番号が表示された。",["慌てず画面を閉じ、電話はしない","表示された番号に電話する","指示されたアプリを入れる"],"「サポート詐欺」とは、偽の警告画面で不安をあおり、電話をかけさせて金銭などを要求する手口です。表示された番号には連絡せず、画面を閉じましょう。"],
+["バックアップについて正しいのは?",["定期的に別の場所へ保存しておく","PCの中にあれば十分","必要ない"],"「バックアップ」とは、データの複製を別の場所に保存することです。故障やウイルス被害でデータが失われても、元に戻せます。"],
+["ランサムウェアとは?",["ファイルを暗号化して身代金を要求するウイルス","広告を消すソフト","通信を速くするソフト"],"「ランサムウェア」とは、データを暗号化して使えなくし、元に戻す代わりに「身代金(ランサム)」を要求するウイルスです。"],
+["SNSに写真を投稿するときの注意は?",["自宅や学校が特定できる情報が写り込まないようにする","全て公開設定が安全","住所を書くと友達が増える"],"「位置情報」とは、写真などに記録される撮影場所のデータです。背景の建物や位置情報から、自宅や学校を特定される恐れがあります。"],
+["アプリが不要な権限を求めてきた。",["必要最小限の権限だけ許可する","全て許可する","求められたら必ず許可する"],"「アクセス許可(権限)」とは、アプリが端末の機能や情報を使うための許可です。必要な分だけ許可する考え方を「最小権限」と呼びます。"],
+["アプリの入手先として安全なのは?",["公式ストア","便利そうな非公式サイト","知人から届いたファイル"],"「公式ストア」とは、App StoreやGoogle Playなど、運営会社が審査して公開している場所です。非公式の入手先は、不正なアプリが混ざる危険があります。"],
+["パスワードの管理方法として適切なのは?",["パスワード管理ツールを使う","付箋でモニターに貼る","全部をメモアプリで共有する"],"「パスワード管理ツール」は、複雑なパスワードを安全に保管し、自動で入力してくれる道具です。覚える負担を減らせます。"],
+["LINEで「番号が変わった、至急お金を送って」と家族から連絡が来た。",["別の連絡手段で本人に確認する","すぐに送金する","誰にも言わず指示に従う"],"「なりすまし」とは、他人のふりをして信用させる行為です。お金の依頼は、電話など普段の連絡手段で本人確認をしましょう。"],
+["見知らぬQRコードについて正しいのは?",["偽サイトに誘導されることがあるので注意する","どれも安全","読み取れば必ず公式サイトに行ける"],"「QRコード」とは、読み取るとURLなどが開く四角い図形です。貼り替えられた偽のQRコードで、偽サイトに誘導される被害があります。"],
+["スマホの画面ロックはどうする?",["生体認証や長めの暗証番号を設定する","設定しない","0000にする"],"「生体認証」とは、指紋や顔など体の特徴で本人確認をする方法です。「暗証番号(PIN)」は、長めにすると推測されにくくなります。"],
+["スマホをなくした。まずすることは?",["遠隔ロックや位置検索を使い、必要なら回線を止める","諦めて何もしない","放置して様子を見る"],"「遠隔ロック」とは、紛失した端末を離れた場所から使えなくする機能です。位置検索と合わせて、早く使うほど被害を減らせます。"],
+["メールの送信者を確認する方法は?",["表示名ではなくメールアドレスを確認する","表示名が正しければ安全","件名が丁寧なら安全"],"「表示名」は送信者が自由に設定できる名前で、偽装できます。確かなのは「メールアドレス」で、@以降のドメインまで確認しましょう。"],
+["警察や役所を名乗る電話で、暗証番号やカードを求められた。",["渡さず電話を切り、公式窓口に確認する","暗証番号を伝える","カードを預ける"],"「キャッシュカード詐欺」とは、役所や警察を装ってカードや暗証番号をだまし取る手口です。本物が暗証番号を聞くことはありません。"],
+["SNSのDMで「あなたは当選しました」と届いた。",["詐欺を疑い、相手にしない","個人情報を送る","手数料を支払う"],"「架空請求・当選詐欺」とは、ありもしない当選や請求を装い、情報や金銭をだまし取る手口です。「手数料」を求められたら要注意です。"],
+["道に落ちていたUSBメモリを見つけた。",["自分のPCに挿さず、落とし物として届ける","中身を確認する","自分のPCで使う"],"「USBメモリ」は持ち運べる記憶装置です。挿すだけでマルウェアが動く場合があるため、拾ったものは使わず、落とし物として届けます。"],
+["URLが https:// で始まるとは?",["通信内容が暗号化されている","サイトの安全性が保証されている","ウイルスが存在しない"],"「https」は、通信を暗号化する仕組み(TLS)を使うことを示します。ただし、サイト自体の安全を保証するものではありません。"],
+["パスワードを使い回すと何が危険?",["1つ漏れると他のサービスも乗っ取られる","特に問題はない","パスワードが長くなる"],"「使い回し」とは、同じパスワードを複数のサービスで使うことです。「不正ログイン」(他人のIDで入られること)の被害が連鎖するため危険です。"],
+["ソーシャルエンジニアリングとは?",["人の心理や隙を突いて情報を聞き出す手口","ネットワーク機器の名前","ゲームのジャンル"],"「ソーシャルエンジニアリング」とは、人の心理や油断を突いて、パスワードなどを聞き出す手口です。機械ではなく、人を狙います。"],
+["「今すぐ対応しないと口座停止」と急かすメッセージ。",["焦らせるのは詐欺の常套手段と考え、落ち着いて確認する","急いで指示通りにする","すぐに返信する"],"「常套手段」とは、よく使われる決まった手口のことです。焦らせて冷静な判断を奪うのは詐欺の典型なので、一度立ち止まりましょう。"],
+["使わなくなったPCやスマホの処分で正しいのは?",["データを完全に消去してから手放す","ゴミ箱に入れるだけ","初期化せずに売る"],"「初期化」とは、端末を購入時の状態に戻すことです。さらに「完全消去」を行うと、データの復元を防げます。"],
+["被害にあったかもしれないときの対応は?",["パスワードを変更し、カード会社や警察など窓口に相談する","恥ずかしいので隠す","そのまま放置する"],"「相談窓口」とは、被害の相談を受け付ける機関です。パスワードを変更して被害を止め、カード会社や警察などへ早めに相談しましょう。"],
+["偽のWi-Fi(悪魔の双子)への対策は?",["接続先の名前を確認し、不明な無料Wi-Fiは使わない","電波が強いものに自動接続する","名前が同じなら安全とみなす"],"「アクセスポイント」はWi-Fiの電波の発信元です。本物そっくりの名前の偽物を設置して通信を盗む手口があるため、正しい名前を確認します。"],
+["VPNとは?",["通信を暗号化した専用の通り道を作る仕組み","ウイルスを自動で削除する仕組み","パスワードを自動で作る仕組み"],"「VPN」は仮想の専用線のことで、公衆Wi-Fiなどでも通信内容を暗号化し、盗み見を防ぎます。ただし万能ではありません。"],
+["「ファイアウォール」の役割は?",["外部からの不正な通信を見張って遮断する","メールの文字を暗号化する","写真を自動でバックアップする"],"「ファイアウォール」は直訳で防火壁です。ネットワークの出入口で、許可されていない通信を止める働きをします。"],
+["「キーロガー」とは?",["キーボードの入力を盗み記録する不正なソフト","キーボードの掃除用ソフト","入力を速くする補助ソフト"],"「ロガー」は記録する道具の意味です。入力したパスワードやカード番号を盗まれるため、怪しいソフトを入れないことが大切です。"],
+["「スパイウェア」とは?",["利用者に気づかれず情報を集めて外部へ送るソフト","画面を録画する正規のゲーム機能","動画を保存する便利な拡張機能"],"「スパイ」は密かに探る人、「ウェア」はソフトのことです。閲覧履歴や入力内容を盗むため、怪しい無料アプリに注意しましょう。"],
+["「トロイの木馬」型ウイルスの特徴は?",["便利なソフトのふりをして侵入する","自分自身をコピーして増え続ける","画面を暗くするだけ"],"名前は、木馬に兵を隠した神話に由来します。無害なアプリに見せかけて入り込み、中で不正な動作をします。"],
+["「ゼロデイ攻撃」とは?",["修正プログラムが出る前の弱点を突く攻撃","午前0時にだけ行われる攻撃","0円で配られるソフトを使う攻撃"],"「ゼロデイ」は、弱点が知られてから対策までの日数が0日という意味です。更新を急ぎ、怪しいファイルを開かないことが対策になります。"],
+["「DDoS攻撃」の説明として正しいのは?",["大量のアクセスを送りつけてサイトを使えなくする","パスワードを一文字ずつ盗み見る","メールの本文を書き換える"],"「DDoS」は多数の機器から一斉にアクセスを送り、サービスを停止させる攻撃です。乗っ取られた機器の集まり(ボットネット)が使われます。"],
+["機器を「ボットネット」の一部にされないための対策は?",["初期パスワードを変更し、機器を最新の状態に保つ","機器の電源を常に入れておく","機器名を長くする"],"「ボットネット」は、乗っ取られて操られる機器の集まりです。カメラやルーターは、初期設定のままだと狙われやすくなります。"],
+["家のWi-Fiルーターの設定として適切なのは?",["初期パスワードを変更し、WPA2やWPA3の暗号化を使う","購入時のまま使う","暗号化をオフにして速度を優先する"],"「ルーター」は家の通信の出入口となる機器です。「WPA3」は新しい暗号化方式で、通信の盗み見や無断利用を防ぎます。"],
+["「中間者攻撃」とは?",["通信の途中に割り込み、内容を盗む・書き換える攻撃","会議中に画面を盗み見る攻撃","メールを大量に送る攻撃"],"通信する二者の「中間」に攻撃者が入り込む手口です。暗号化されていないWi-Fiや、偽サイトの警告を無視したときに起こりやすくなります。"],
+["「クレデンシャルスタッフィング」への対策は?",["サービスごとに別のパスワードを使う","同じパスワードを頻繁に変更する","ユーザー名を長くする"],"「クレデンシャル」は認証情報、「スタッフィング」は詰め込みの意味です。漏れたIDとパスワードを他のサービスに試す手口なので、使い回しを避けます。"],
+["「パスキー」とは?",["パスワードの代わりに生体認証などで使う新しい認証方式","パスワードを書き留める紙","特別に長い単語"],"「パスキー」は、端末に保管する鍵と指紋・顔認証で本人確認する方式です。偽サイトでは使えず、フィッシングに強いとされます。"],
+["SMSの認証コードを他人から聞かれた。",["絶対に教えない","家族なら教える","サポートを名乗る人には教える"],"「認証コード」は、本人であることを確かめる一時的な数字です。教えると乗っ取りに使われます。サービス側が電話で聞くことはまずありません。"],
+["「SIMスワップ」の被害を防ぐには?",["携帯会社のアカウントに強い暗証番号を設定する","電話番号を公開する","SIMカードを人に貸す"],"「SIM」は電話番号と契約者を結ぶカードです。本人になりすまして番号を別のSIMへ移され、認証コードを横取りされる手口があります。"],
+["アカウントの「回復コード」の扱いとして正しいのは?",["印刷などして安全な場所に保管する","画面を撮影して公開する","友人に預ける"],"「回復コード」は、スマホを失ったときなどにログインを取り戻す予備の鍵です。他人に知られると乗っ取りに使えるため、厳重に保管します。"],
+["「秘密の質問」(母の旧姓など)への答えとして安全なのは?",["他人に推測されない無関係な文字列にする","本当の答えを正直に入れる","SNSに書いた内容を使う"],"秘密の質問の答えは、SNSなどから調べられる場合があります。パスワード管理ツールに、答えとなる文字列を保管する方法もあります。"],
+["バックアップの「3-2-1ルール」とは?",["3つのコピーを2種類の媒体に作り、1つは別の場所に置く","毎日3回、2時間かけて1か所に保存する","3台のPCに2回ずつコピーする"],"「媒体」はデータを入れる器(外付けHDDやクラウドなど)です。火事や盗難、ランサムウェアにも備えられる考え方です。"],
+["クラウドの共有リンクを「リンクを知っている全員」に公開した。",["URLが漏れると誰でも見られるので、相手を限定する","安全なので問題ない","リンクは誰にも推測できない"],"「クラウド」はネット上のデータ保管場所です。共有リンクは転送や検索で広がる恐れがあるため、閲覧できる相手や期間を制限します。"],
+["多数の相手にメールを送るとき、アドレスはどこに入れる?",["BCCに入れる","TOに全員入れる","CCに全員入れる"],"「BCC」は他の受信者に見えない宛先欄です。TOやCCに入れると、全員のメールアドレスが互いに見えてしまいます。"],
+["メールを誤送信した。まずすることは?",["速やかに関係者へ報告し、相手へ削除を依頼する","黙っている","送信を取り消せないので何もしない"],"「誤送信」は、宛先や添付を間違えて送ることです。早い報告が被害の拡大を防ぎます。再発防止には、宛先確認の習慣が役立ちます。"],
+["「ショルダーハッキング(のぞき見)」を防ぐには?",["画面にのぞき見防止フィルターを貼る","画面の明るさを最大にする","大声で内容を読み上げる"],"「ショルダーハッキング」は、肩越しに画面や入力を盗み見る手口です。電車やカフェでは、重要な入力を避けることも有効です。"],
+["公共の充電スポットのUSBポートについて正しいのは?",["充電専用ケーブルや自分の充電器を使うと安全","どれも100%安全","データ通信できるほうが便利"],"「ジュースジャッキング」と呼ばれ、不正な充電口から情報を抜く・ウイルスを入れる手口が指摘されています。"],
+["Bluetoothの設定として望ましいのは?",["使わないときはオフにし、知らない機器とは接続しない","常に誰からでも見える状態にする","接続要求はすべて許可する"],"「Bluetooth」は近距離の無線通信です。常時オンで公開状態だと、不正な接続やデータの送り込みを受ける恐れがあります。"],
+["近距離共有(AirDropなど)で知らない人からファイルが届いた。",["受け取りを拒否する","開いて確認する","画面を見せ合って確認する"],"「AirDrop」は近くの端末へ写真などを直接送る機能です。不審な画像を送られる被害もあるため、受信設定を連絡先のみにします。"],
+["アプリやサイトの「通知許可」について正しいのは?",["必要なものだけ許可する","全部許可しておく","広告が出ても許可する"],"「プッシュ通知」は画面に届くお知らせです。怪しいサイトの通知を許可すると、偽の警告や詐欺広告が繰り返し表示されます。"],
+["ブラウザの「シークレットモード」でできることは?",["履歴をその端末に残さないこと","身元や通信を完全に隠すこと","ウイルスを防ぐこと"],"「シークレットモード」は、その端末に履歴などを残さない機能です。サイトや回線の事業者から見えなくなるわけではありません。"],
+["「Cookie(クッキー)」の説明として正しいのは?",["サイトが閲覧者の情報を端末に保存する小さなデータ","ウイルスの一種","パスワードの別名"],"ログイン状態を保つなどに使われますが、閲覧履歴を追う「トラッキング」にも使われます。同意の設定を確認しましょう。"],
+["共用PCで「パスワードを保存しますか」と出た。",["保存しない","保存して次回も使えるようにする","全員分を保存する"],"「共用PC」は不特定の人が使うパソコンです。保存すると、次に使う人がログインできてしまいます。使い終わりは必ずログアウトします。"],
+["ネット通販での安全な支払い方法は?",["信頼できる店か確認し、利用上限のある方法を選ぶ","知らない口座へ前払いで振り込む","カード番号をメールで送る"],"「利用上限」とは、使える金額の上限です。万一の被害を小さくできます。まず、店の実在を確認することが大切です。"],
+["極端に安い商品の通販サイトを見つけた。",["運営者情報や口コミを確認し、不審なら買わない","安いのですぐ買う","個人情報をすべて入力する"],"「運営者情報」は、会社名や住所、連絡先などの表示です。偽サイトは、本物のサイトの画像を盗用して作られていることがあります。"],
+["フリマアプリで「アプリ外で取引しよう」と誘われた。",["アプリ内の取引だけで行う","誘いに応じて別のサイトで連絡する","個人情報を送る"],"「フリマアプリ」は個人間売買の場です。外部へ誘うのは、補償を受けられなくなり、詐欺や個人情報の抜き取りにつながる手口です。"],
+["「簡単に高収入」の副業募集で、身分証の写真を求められた。",["送らず、応募を取りやめる","送る","家族の分も送る"],"「闇バイト」とは、犯罪に加担させる募集のことです。高額・即日・身分証の要求は要注意で、不安なら警察相談専用電話(#9110)へ相談します。"],
+["突然「登録完了」と表示され、料金を請求された(ワンクリック詐欺)。",["慌てず無視し、連絡や支払いはしない","表示の番号へ連絡する","すぐに支払う"],"「ワンクリック詐欺」は、クリックしただけで契約が成立したかのように見せて請求する手口です。慌てて連絡すると、個人情報を知られます。"],
+["「サブスクリプション」の契約でのトラブル防止には?",["無料期間の終了日と解約方法を確認する","規約を読まずに登録する","カード情報を複数に登録する"],"「サブスクリプション」は、定額で利用を続ける契約です。無料お試しから自動で有料になる場合があるため、終了日を控えておきます。"],
+["「ロマンス詐欺」の特徴はどれ?",["恋愛感情を利用して、投資や送金へ誘導する","お金は絶対に要求しない","必ず実際に会う"],"「ロマンス」は恋愛のことです。SNSなどで親しくなった後、「一緒に投資しよう」などと金銭を求めます。会ったことのない相手へは送金しません。"],
+["「必ず儲かる」と勧誘する投資話について正しいのは?",["元本保証や高配当をうたう話は詐欺を疑う","著名人が勧めていれば安全","少額からなら詐欺ではない"],"「元本」は最初に投資した金額です。高い利益を確実に約束することは、通常できません。著名人の名前を無断で使う偽広告もあります。"],
+["暗号資産の「シードフレーズ(秘密鍵)」を教えてほしいと言われた。",["誰にも教えない","サポートなら教える","スクリーンショットで送る"],"「暗号資産」はネット上の通貨で、「秘密鍵」「シードフレーズ」は資産を動かせる鍵です。知られると資産を盗まれ、取り戻すのは困難です。"],
+["見知らぬサイトが「エアドロップ」を理由にウォレット接続を求めてきた。",["接続せず、公式の情報源で確かめる","すぐ接続して署名する","友人にも勧める"],"「ウォレット」は暗号資産の財布で、「署名」は取引の承認です。偽サイトで署名すると、資産を抜き取られる被害があります。"],
+["「ディープフェイク」とは?",["AIで作られた本物そっくりの偽の画像・動画・音声","画質の高い動画","暗号化された通話"],"「ディープ」は深層学習(AIの一種)に由来します。有名人や家族の声を真似て詐欺に使う例もあるため、依頼は別の手段で確認します。"],
+["家族の声で「事故を起こした、お金が必要」と電話が来た。",["一度切り、本人の番号へかけ直して確かめる","声が似ているのですぐ振り込む","指示された口座へ送る"],"「オレオレ詐欺」の手口で、AIによる声の真似も指摘されています。家族で「合言葉」を決めておく方法も有効です。"],
+["写真の「位置情報(ジオタグ)」について正しいのは?",["撮影場所が分かるので、必要なければ切る","必ず入れたほうが良い","影響はない"],"「ジオタグ」は、写真に記録される撮影場所の座標です。自宅や行動パターンを知られ、ストーカーや空き巣につながる恐れがあります。"],
+["SNSで知らない人から友達申請が来た。",["本人確認ができるまで承認しない","全員承認する","すぐ個人情報を送る"],"「なりすまし」のアカウントで近づく人もいます。承認すると、友達限定の投稿や交友関係を見られてしまいます。"],
+["SNSの「公開範囲」の設定は?",["投稿ごとに誰に見せるか確認する","すべて「全体に公開」にする","設定は変えない"],"「公開範囲」は、投稿を誰が見られるかの設定です。一度公開した情報は、転載や保存で完全には消せないことを覚えておきます。"],
+["「誹謗中傷」について正しいのは?",["書き込む前に、事実と相手への影響を考える","匿名なら何を書いても大丈夫","他人の投稿は拡散してよい"],"「誹謗中傷」は、根拠なく悪口を言い、名誉を傷つける行為です。匿名でも発信者情報は開示され、法的責任を問われることがあります。"],
+["「デマ」や「チェーンメール」が届いた。",["拡散せず、公的機関などで事実を確かめる","友人に転送する","すぐに信じる"],"「デマ」は根拠のない嘘の情報です。善意で広めても混乱を招きます。「不幸になる」と脅す内容のメールも、無視して構いません。"],
+["子どもにスマホを持たせるときの対策は?",["フィルタリングや利用ルールを一緒に決める","制限なしで渡す","使い方を教えない"],"「フィルタリング」は、有害なサイトやアプリを見られないようにする仕組みです。「ペアレンタルコントロール」で、時間や購入も管理できます。"],
+["ブラウザの「拡張機能」を入れるときは?",["提供元と求められる権限を確認する","人気があれば何でも入れる","権限はすべて許可する"],"「拡張機能」は、ブラウザに機能を足す小さなプログラムです。悪意あるものは閲覧内容やパスワードを盗むため、必要最小限にします。"],
+["「海賊版」や「クラック版」ソフトについて正しいのは?",["違法であり、ウイルスが仕込まれる危険が高い","無料で安全","動作が速い"],"「海賊版」は、許可なく複製された違法なソフトです。「クラック」は有料機能を使えるよう改造することで、不正プログラムが混入していることがあります。"],
+["スマホ決済の安全な使い方は?",["画面ロックや認証を設定し、利用通知を確認する","ロックなしで使う","暗証番号を共有する"],"「決済」は支払いのことです。「利用通知」で、その場で不正利用に気づけます。身に覚えのない利用は、すぐ運営会社に連絡します。"],
+["ATMでの「スキミング」を防ぐには?",["挿入口に不審な部品がないか見て、暗証番号を隠して入力する","暗証番号を声に出す","誰かに操作を頼む"],"「スキミング」は、カードの磁気情報を不正に読み取る手口です。ICカードは、情報が複製されにくい仕組みになっています。"],
+["見知らぬ相手から「リモートデスクトップ」でのサポートを求められた。",["絶対に許可しない","許可して任せる","パスワードを教える"],"「リモートデスクトップ」は、離れた場所からPCを操作する機能です。許可すると、データの閲覧やソフトの導入、ネット銀行の操作までされてしまいます。"],
+["テレワークで会社のデータを扱うときの注意は?",["会社が許可した端末や方法を使う","私物のクラウドへ保存する","家族と画面を共有する"],"「テレワーク」は、自宅など会社以外で働くことです。「情報漏えい」を防ぐため、規則に沿った端末やVPNを使い、画面ののぞき見にも注意します。"],
+["使い終わった共用PCでの正しい行動は?",["ログアウトし、ダウンロードしたファイルを消す","画面を開いたまま離れる","パスワードを保存する"],"「ログアウト」は、利用を終えて本人確認の状態を解除することです。そのままだと、次の人があなたのアカウントを使えてしまいます。"],
+["スマホの自動ロックまでの時間は?",["短め(30秒から1分程度)に設定する","ロックしない","1時間に設定する"],"「自動ロック」は、操作がないと画面を自動で保護する機能です。置き忘れや盗難の際に、他人に使われる時間を短くできます。"],
+["Webカメラやスマートスピーカーのプライバシー対策は?",["使わないときはカバーをする、または電源を切る","常に向けておく","初期パスワードのまま使う"],"「スマートスピーカー」は、声で操作する機器です。「IoT機器」(ネットにつながる家電)は、初期設定のままだと外から覗かれる恐れがあります。"],
+["ファームウェアの更新とは?",["機器に内蔵されたソフトを新しくし、弱点を直すこと","機器の見た目を変えること","機器を初期化すること"],"「ファームウェア」は、ルーターなどの機器内部で動くソフトです。古いままだと、既知の弱点を突かれる恐れがあります。"],
+["短縮URLのリンクが届いた。",["行き先が分からないので、安易に開かない","すぐ開く","友人に転送する"],"「短縮URL」は、長いURLを短くしたものです。行き先が隠れるため、フィッシングに悪用されます。安全か確認できるまで開きません。"],
+["「個人情報」にあたるものはどれ?",["氏名・住所・電話番号・顔写真など、個人を特定できる情報","天気の情報","公開された統計データ"],"「個人情報」は、生きている個人を特定できる情報です。複数の情報を組み合わせて特定できる場合も含まれます。"],
+["マイナンバーの番号やカードの扱いは?",["むやみに他人へ見せたり教えたりしない","SNSに写真を載せる","知らない人に預ける"],"「マイナンバー」は、行政手続きなどで使う12桁の番号です。写真や番号を安易に見せると、悪用や「なりすまし」を招きます。"],
+["個人情報が「漏えい」したという通知が来た。",["公式サイトで事実を確認し、パスワードを変更する","通知のリンクから変更する","何もしない"],"「漏えい」は、情報が外部へ流出することです。通知を装った偽メールもあるため、公式アプリやブックマークから確認します。"],
+["不審なメールの「配信停止」リンクを押すとどうなる?",["アドレスが有効と知られ、さらに増える恐れがある","迷惑メールが止まる","安全に停止できる"],"「迷惑メール(スパム)」は、一方的に送られる広告などです。不審なものは開かず削除し、メールソフトの「迷惑メール報告」を使います。"],
+["メールの「自動転送」設定が、覚えのない宛先になっていた。",["乗っ取りの可能性があり、すぐ設定を直してパスワードを変更する","そのままにする","宛先を増やす"],"「自動転送」は、受信したメールを他のアドレスにも送る機能です。攻撃者が勝手に設定してメールを盗み見る手口があります。"],
+["アプリの「プライバシーポリシー」を確認する目的は?",["個人情報の扱いを知るため","読むと料金が下がるため","動作を速くするため"],"「プライバシーポリシー」は、個人情報をどう集めて使うかを示した文書です。不要な項目は、断る設定ができるか確認します。"],
+["Wi-Fiの「自動接続」設定として望ましいのは?",["知らないWi-Fiには自動接続しない","すべて自動で接続する","接続履歴は消さない"],"「自動接続」は、過去に使ったWi-Fiへ自動でつなぐ機能です。同じ名前の偽のWi-Fiへ、気づかないままつながる恐れがあります。"],
+["不審なメールの差出人ドメインが、本物と一字違いだった。",["偽物の可能性が高いので開かず、削除や通報をする","一字違いなら本物","返信して確かめる"],"「ドメイン」はメールアドレスの@以降の部分です。「rn」と「m」など、似た文字で見間違えさせる偽装があります。"],
+["ネット銀行のログイン画面を開く最も安全な方法は?",["公式アプリや、自分で登録したブックマークから開く","メールのリンクから開く","検索の広告から開く"],"「ブックマーク」は、よく使うサイトを登録する機能です。メールや検索広告の偽サイトで、IDとパスワードを入力させる手口があります。"],
+["「標的型攻撃メール」の特徴は?",["特定の組織や人に合わせ、自然な文面で送られる","全員に同じ広告が届く","文面が明らかに不自然"],"「標的型」は、特定の相手を狙うという意味です。取引先や上司を装い、添付ファイルを開かせます。送信者へ別の手段で確認します。"],
+["他人から借りたUSBメモリを自分のPCで使うときは?",["ウイルス感染の恐れがあるので、使わないか事前に検査する","そのまま挿す","パスワードを入力する"],"「媒体」を介してウイルスが広がることがあります。「検査(スキャン)」は、ウイルスが入っていないかを調べることです。"],
+["ウイルスに感染したかもしれない。最初にすることは?",["ネットワークから切り離し、相談窓口へ連絡する","そのまま使い続ける","重要ファイルを他のPCへコピーする"],"「ネットワークから切り離す」とは、Wi-Fiや有線をオフにして被害の拡大を止めることです。コピー作業は感染を広げる恐れがあります。"],
+["「二要素認証」の2つの要素の組み合わせとして正しいのは?",["知っていること(パスワード)と持っているもの(スマホ)","パスワードを2回","メールアドレスと名前"],"認証には「知識」「所持」「生体」の3種類があります。異なる種類を2つ組み合わせることで、1つが破られても守れます。"],
+["警察官を名乗る人から「あなたの口座が犯罪に使われている」と電話があり、LINEのビデオ通話へ誘導された。",["詐欺と判断して電話を切り、警察署か警察相談専用電話(#9110)に相談する","指示に従ってLINEへ移る","捜査協力のため、指定された口座へお金を移す"],"「偽警察官詐欺」とは、警察官を装って不安をあおり、お金をだまし取る手口です。警察がLINEなどで捜査したり、お金を要求したりすることはありません。"],
+["偽の警察官から、警察手帳や「逮捕状」の画像を見せられた。",["画像は偽造できるので信用しない","本物だと信じて指示に従う","画像を保存して返信する"],"「逮捕状」は、裁判官が出す令状です。電話やLINEで画像を送って見せることはありません。画像や制服姿は、簡単に偽造できます。"],
+["「捜査の秘密だから誰にも話すな」と言われた。",["口止めは詐欺の典型なので、すぐ家族や警察へ相談する","約束なので誰にも話さない","SNSで相談相手を探す"],"詐欺師は、周りの人に相談されると見破られるため「口止め」をします。「秘密にして」と言われた時点で、詐欺を疑いましょう。"],
+["息子を名乗る人から「携帯を落として番号が変わった、風邪で声も違う」と電話が来た。",["元から登録してある番号へかけ直して確認する","声が違うのは風邪のせいだと信じる","新しい番号へ折り返す"],"「オレオレ詐欺」とは、家族や親族を装い、トラブルを理由にお金を求める手口です。必ず、元から知っている番号で本人確認をします。"],
+["「会社の小切手を失くした、上司が受け取りに行く」と言われた。",["応じず、本人や家族へ別の方法で確認する","上司を名乗る人に現金を渡す","金額の値下げを交渉する"],"お金を受け取りに来る役を「受け子」と言い、逮捕されやすい役として使い捨てられます。現金を渡す前に、必ず確認しましょう。"],
+["オレオレ詐欺への対策として有効なのは?",["留守番電話や自動録音機能を使い、直接出ないようにする","常に電話に出る","家族の連絡先を誰にも教えない"],"「自動録音機」は、通話前に「録音します」と警告を流し、詐欺師に敬遠されます。留守番電話にして、折り返しで確認する方法も有効です。"],
+["銀行協会の職員を名乗り「口座が不正利用されている、カードを交換します」と言われた。",["カードは渡さず、銀行の公式窓口へ確認する","自宅に来てもらいカードを渡す","暗証番号を教えて対応を任せる"],"「預貯金詐欺」とは、金融機関や役所を装い、カードや暗証番号をだまし取る手口です。銀行員が自宅へカードを取りに来ることはありません。"],
+["「確認のため」とキャッシュカードの暗証番号を聞かれた。",["暗証番号は誰にも教えない","警察や銀行なら教える","メールで送る"],"「暗証番号」は、本人だけが知る合言葉です。銀行や警察、役所が電話や訪問で暗証番号を聞くことは、絶対にありません。"],
+["「カードを封筒に入れて保管して」と言われ、目を離す隙にすり替えられた。この手口の対策は?",["カードを他人に預けず、封筒に入れる指示にも応じない","封筒に入れて印鑑を押す","目の届く所で待ってもらう"],"「キャッシュカード詐欺盗」とは、だましてカードを封筒に入れさせ、隙に偽物とすり替えて盗む手口です。カードは渡さず、すり替えに警戒しましょう。"],
+["キャッシュカードをだまし取られた。まずすることは?",["すぐ金融機関へ連絡して利用を止め、警察へ通報する","翌日まで様子を見る","暗証番号を変えるだけで済ませる"],"「利用停止」とは、カードを使えなくする手続きです。早いほど被害を防げます。暗証番号の変更だけでは、窓口での引き出しを防げません。"],
+["「有料サイトの未納料金がある、今日中に払わないと訴訟」とSMSが届いた。",["身に覚えがなければ無視し、連絡しない","連絡して事情を説明する","期限内に支払う"],"「架空料金請求詐欺」とは、ありもしない料金を請求する手口です。「訴訟」「差押え」などの言葉で焦らせますが、連絡すると個人情報を知られます。"],
+["「コンビニで電子マネーを買い、番号を教えて」と言われた。",["詐欺なので番号を教えず、店員にも相談する","番号を写真に撮って送る","少額なら支払う"],"「電子マネー」は、番号を伝えるだけで使えるため、換金されて取り戻しにくくなります。支払いにコンビニで電子マネーを指定されたら、詐欺です。"],
+["架空請求などの消費者トラブルを相談できる「消費者ホットライン」の番号は?",["188(いやや)","177","117"],"「消費者ホットライン」は、近くの消費生活センターにつながる全国共通の番号です。177は天気予報、117は時報で、相談はできません。"],
+["市役所職員を名乗り「医療費の還付金がある、ATMで手続きを」と電話が来た。",["ATMで還付金は受け取れないので、電話を切り役所の公式番号へ確認する","ATMへ行き、案内に従って操作する","口座の暗証番号を教える"],"「還付金詐欺」とは、税金や保険料が戻るとだまし、ATMを操作させて相手の口座へ送金させる手口です。還付金がATMで受け取ることはありません。"],
+["電話をしながらATMを操作するよう指示された。",["送金させられているので、直ちに操作をやめて周囲や警察へ相談する","指示に従って操作する","画面の数字を読み上げる"],"「送金」は、自分の口座から他の口座へお金を移すことです。電話で指示されながらATMを使うこと自体が、詐欺の典型的な手口です。"],
+["還付金について、本物の手続きはどれ?",["通知書などを確認し、役所の窓口や公式の連絡先で問い合わせる","電話口で暗証番号を伝える","ATMで受け取る"],"「還付金」は、払いすぎた税金などが戻るお金です。本物の手続きは、書面の案内や窓口で行い、電話でATM操作を指示されることはありません。"],
+["「融資したいので、先に保証金を振り込んで」と言われた。",["融資の前に保証金や手数料を要求するのは詐欺の特徴なので、支払わない","必要な費用なので払う","少額なら払う"],"「融資保証金詐欺」とは、お金を貸すと言って「保証金」を先払いさせ、実際は貸さない手口です。融資前に保証金は不要です。"],
+["貸金業者が本物か確認する方法は?",["金融庁の登録貸金業者情報検索サービスで確認する","電話番号があれば本物","ホームページが立派なら本物"],"「貸金業者」とは、お金を貸す仕事を行う業者です。法律により登録が必要で、登録のない業者(ヤミ金)からは借りてはいけません。"],
+["SNSで「審査なし・即日融資」の広告を見つけた。",["無登録業者の可能性があるため、申し込まず、法テラスなどに相談する","すぐ申し込む","免許証の写真を送る"],"「ヤミ金」とは、登録を受けない違法な貸金業者です。法外な利息や個人情報の悪用につながるため、困ったときは公的な相談窓口を使います。"],
+["「未公開株が必ず値上がりする、あなただけの特別な話」と勧誘された。",["確実な利益や特別扱いを強調する話は、詐欺を疑う","必ず儲かるので買う","少額なら買う"],"「金融商品詐欺」とは、株や社債、暗号資産などへの投資をうたって、お金をだまし取る手口です。「必ず」「あなただけ」は警戒の合図です。"],
+["投資を勧誘してきた業者が、登録されているか確認するには?",["金融庁の登録業者一覧で確認する","パンフレットがあれば安心","担当者の肩書を信じる"],"「登録業者」とは、国に登録して金融商品を扱う業者です。未登録の業者との取引は、被害にあっても取り戻すことが難しくなります。"],
+["「名義を貸してくれれば謝礼を出す」と言われた。",["犯罪に巻き込まれる恐れがあるため、断る","謝礼をもらう","家族の名義も貸す"],"「名義貸し」とは、自分の名前や口座などを他人に使わせることです。詐欺に悪用され、貸した側も責任を問われるおそれがあります。"],
+["「パチンコの必勝法を教える、情報料は先払い」と言われた。",["必ず勝てるギャンブルはないので、詐欺を疑う","必勝法があるので払う","情報料は後払いなら払う"],"「ギャンブル詐欺」とは、必勝法や攻略情報などをうたって、情報料や登録料をだまし取る手口です。確実に勝てる方法は存在しません。"],
+["「競馬の的中情報、会員登録でポイントを購入して」と誘われた。",["的中保証とポイントの購入を組み合わせた誘いは詐欺の典型なので登録しない","ポイントを買う","会員になって様子を見る"],"「ポイント」を何度も買わせるのは、お金を取り続ける仕組みです。「的中保証」「儲かる」をうたう情報は信用してはいけません。"],
+["「異性を紹介する、まず登録料を」と言われた。",["会う前に登録料などを要求するのは詐欺の特徴なので、払わない","登録料を払えば出会える","退会のために追加料金を払う"],"「交際あっせん詐欺」とは、異性を紹介すると言って登録料やポイント代をだまし取る手口です。実際には会えないまま、追加の支払いを求めます。"],
+["出会い系サイトの「サクラ」とは?",["利用者に課金させるため、親しい異性を装う偽の相手","サイトの管理者","広告を作る人"],"「サクラ」とは、客の関心を引くために雇われた偽の利用者のことです。メッセージのやり取りで、料金を使わせようとします。"],
+["SNS広告で、著名人が勧めるという投資グループのLINEへ誘導された。",["著名人の名前や写真の無断使用を疑い、参加せず通報する","参加して様子を見る","少額から入金する"],"「SNS型投資詐欺」とは、SNSなどで知り合い、投資をうたってお金をだまし取る手口です。有名人の名前や写真は、無断で使われることがあります。"],
+["投資アプリの画面に利益が出たが、出金するには手数料や税金を求められた。",["画面の利益は偽りなので、追加の入金をせず、警察や消費生活センターへ相談する","手数料を払って出金する","友人にも勧める"],"「出金」とは、預けたお金を自分の口座へ戻すことです。出金のたびに追加の費用を求めるのは、さらにお金を取る詐欺の手口です。"],
+["マッチングアプリで知り合った相手が「一緒に暮らす資金を送ってほしい」と言ってきた。",["会ったことのない相手へは送金せず、第三者や警察へ相談する","愛情の証として送金する","暗号資産で送る"],"「SNS型ロマンス詐欺」とは、恋愛感情や親近感を利用し、投資や送金へ誘導してお金をだまし取る手口です。会う前の金銭要求は、詐欺を疑います。"],
+["ビデオ通話で顔が見えるので、相手は本人だと安心してよい?",["AIや他人の映像で偽装できるので、通話だけで信用しない","顔が見えれば本物","ビデオ通話は偽造できない"],"「ディープフェイク」などの技術で、別人の顔や声をリアルタイムに作ることもできます。お金の話が出たら、まず家族や警察へ相談しましょう。"]
+];
+const $=id=>document.getElementById(id),app=$('app');
+let QS,qi,correct,kills,total,score,combo,maxCombo,tm,ty,shield=100,mute=false,au;
+const show=h=>{clearInterval(tm);clearInterval(ty);app.innerHTML=h};
+const fx=t=>window.dispatchEvent(new CustomEvent("cyberfx",{detail:t}));
+function snd(f,d=.12,t='square'){if(mute)return;try{au=au||new(window.AudioContext||window.webkitAudioContext)();const o=au.createOscillator(),v=au.createGain();o.type=t;o.frequency.value=f;v.gain.value=.09;o.connect(v);v.connect(au.destination);o.start();v.gain.exponentialRampToValueAtTime(.001,au.currentTime+d);o.stop(au.currentTime+d)}catch(e){}}
+const BG={want:false,mode:'calm',bpm:124,step:0,next:0,tid:0,m:null,nz:null};
+const ROOT=[55,43.65,65.41,49],QUAL=[[0,3,7],[0,4,7],[0,4,7],[0,4,7]];
+function bgTone(f,t,d,ty,v,lp){const o=au.createOscillator(),g=au.createGain(),fl=au.createBiquadFilter();o.type=ty;o.frequency.value=f;fl.type='lowpass';fl.frequency.value=lp;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(v,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(fl);fl.connect(g);g.connect(BG.m);o.start(t);o.stop(t+d+.02)}
+function bgNoise(t,d,v,hp){const s=au.createBufferSource(),g=au.createGain(),fl=au.createBiquadFilter();s.buffer=BG.nz;fl.type='highpass';fl.frequency.value=hp;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(fl);fl.connect(g);g.connect(BG.m);s.start(t);s.stop(t+d)}
+function bgKick(t){const o=au.createOscillator(),g=au.createGain();o.frequency.setValueAtTime(160,t);o.frequency.exponentialRampToValueAtTime(40,t+.12);g.gain.setValueAtTime(.5,t);g.gain.exponentialRampToValueAtTime(.0001,t+.18);o.connect(g);g.connect(BG.m);o.start(t);o.stop(t+.2)}
+function bgStep(st,t,sl){const bar=st>>4,s=st&15,r=ROOT[bar],q=QUAL[bar],b=BG.mode=='battle';
+ if(s%4==0||(b&&(s==10||(bar==3&&s==14))))bgKick(t);
+ if(s==4||s==12)bgNoise(t,.14,.22,1500);
+ if(b||s%2==0)bgNoise(t,.04,s%4==2?.09:.05,7000);
+ if(b||s%2==0||s==15)bgTone(r*(s%4==3&&b?2:1),t,sl*1.7,'sawtooth',.16,b?700:420);
+ if(b||s%2==0)bgTone(r*4*Math.pow(2,q[s%3]/12)*(s%8<4?1:2),t,sl*1.2,'square',b?.05:.03,2200);
+ if(s==0)q.forEach(n=>bgTone(r*2*Math.pow(2,n/12),t,sl*15,'sawtooth',.03,900))}
+function bgTick(){const sl=60/BG.bpm/4;if(BG.next<au.currentTime-.5)BG.next=au.currentTime+.05;while(BG.next<au.currentTime+.25){bgStep(BG.step,BG.next,sl);BG.next+=sl;BG.step=(BG.step+1)%64}}
+function bgSync(){
+ if(mute||!BG.want){clearInterval(BG.tid);BG.tid=0;if(BG.m)BG.m.gain.value=0;return}
+ try{au=au||new(window.AudioContext||window.webkitAudioContext)();if(au.state=='suspended')au.resume();
+ if(!BG.nz){BG.nz=au.createBuffer(1,au.sampleRate*.3,au.sampleRate);const d=BG.nz.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}
+ if(!BG.m){BG.m=au.createGain();BG.m.connect(au.destination)}
+ BG.m.gain.value=.28;
+ if(!BG.tid){BG.next=au.currentTime+.08;BG.step=0;BG.tid=setInterval(bgTick,50)}}catch(e){}}
+function bgm(mode){BG.mode=mode;BG.bpm=mode=='battle'?150:124;BG.want=true;bgSync()}
+function bgmStop(){BG.want=false;bgSync()}
+function tglMute(){mute=!mute;const t='SOUND: '+(mute?'OFF':'ON');['sn','sd'].forEach(i=>{const e=$(i);if(e)e.textContent=t});bgSync()}
+function intro(){bgmStop();
+ show(`<div class="title">SECURITY<br>DEFENDERS</div><div class="sub">セキュリティ防衛隊</div><div class="aim"><b>制作の趣旨</b><br>このゲームは、沖縄県民の方々が、ネット詐欺の被害にあうことを1件でも減らすため、楽しみながら一人一人のセキュリティリテラシーを向上していただくことを目的に制作しました。お役立ていただけると幸いです。</div><div class="info"><b>出題について</b><br>全${Q.length}問のストックから、毎回ランダムに30問を出題します。<br><br><b>🎁認定証のプレゼント🎁</b><br>最高ランク SS に到達すると、認定証をPDFでダウンロードできます。</div><p>5問ごとに現れる犯罪者風オバケを撃退しながら進もう。連続正解でコンボ、早く答えるほど高得点。最後にランク C / B / A / S / SS が決まる。</p><button class="main blink" id="st">START</button><button class="sm" id="sn">SOUND: ${mute?'OFF':'ON'}</button>`);
+ $('sn').onclick=tglMute;
+ $('st').onclick=()=>{shield=100;QS=Q.map(q=>[Math.random(),q]).sort((x,y)=>x[0]-y[0]).slice(0,30).map(x=>x[1]);qi=0;correct=0;kills=0;total=0;score=0;combo=0;maxCombo=0;snd(520);bgm("calm");quiz()};
+}
+function quiz(){
+ const [q,c,e]=QS[qi],T=15;let left=T,fin=false;
+ const ch=c.map((t,i)=>({t,ok:i==0})).sort(()=>Math.random()-.5);
+ show(`<div class="hud"><span>STAGE ${Math.floor(qi/5)+1}</span><span>Q ${qi+1}/30</span><span>SCORE ${score}</span><span class="cb">COMBO ${combo}</span></div><div class="sh"><span>SHIELD</span><i><b style="width:${shield}%"></b></i><span>${shield<=0?"CRITICAL":shield+"%"}</span></div><div class="tbar"><i id="tb"></i></div><div class="qh">THREAT DETECTED // Q${String(qi+1).padStart(2,'0')}</div><h2 id="qt">${q}</h2>`+ch.map((x,i)=>`<button class="ch" data-i="${i}" style="animation-delay:${i*.08+.1}s"><b>${'ABC'[i]}</b><span>${x.t}</span></button>`).join('')+'<div id="fb"></div>');
+ const bs=app.querySelectorAll('.ch');
+ function end(pick){
+  if(fin)return;fin=true;clearInterval(tm);clearInterval(ty);$('qt').textContent=q;
+  const ok=pick>=0&&ch[pick].ok;let msg='';
+  bs.forEach((x,i)=>{x.disabled=true;if(ch[i].ok)x.classList.add('ok')});
+  if(ok){correct++;combo++;maxCombo=Math.max(maxCombo,combo);const p=100+Math.ceil(left)*10+Math.min(combo-1,9)*30;score+=p;shield=Math.min(100,shield+4);fx('ok');msg='+'+p;snd(660);setTimeout(()=>snd(880),90)}
+  else{combo=0;shield=Math.max(0,shield-12);fx('ng');if(pick>=0)bs[pick].classList.add('ng');msg=pick<0?'TIME UP':'';app.classList.add('shake');setTimeout(()=>app.classList.remove('shake'),400);snd(150,.25,'sawtooth')}
+  app.querySelector('.sh b').style.width=shield+'%';
+  $('fb').innerHTML=`<div class="res ${ok?'g':'b'}">${ok?'CORRECT':'MISS'} ${msg}</div><p>${e}</p><button class="main" id="nx">NEXT</button>`;
+  $('nx').onclick=()=>{qi++;if(qi%5==0)stage(qi/5);else quiz()};
+ }
+ bs.forEach(b=>b.onclick=()=>end(+b.dataset.i));
+ tm=setInterval(()=>{left-=.1;const t=$('tb');if(t)t.style.width=Math.max(left,0)/T*100+'%';if(left<=0)end(-1)},100);
+}
+function stage(lv){
+ const boss=lv==6;fx('warn');bgm('battle');
+ show(`<div class="warn">WARNING</div><h2>STAGE ${lv} / 6${boss?'  BOSS BATTLE':''}</h2><p>${boss?'親玉オバケが現れた。体力は高く、3方向に弾を撃ってくる。':'黒いオバケが現れた。'}ドラッグ(または矢印キー)で移動、弾は自動発射。</p><p class="meta">アイテム: T は3方向弾、R は連射、H はHP回復。倒したオバケが落とすことがある。</p><button class="main" id="go">GO</button>`);
+ $('go').onclick=()=>{snd(440);run(lv)};
+}
+function run(lv){
+ if(!window.Phaser){show('<p>Phaserの読み込みに失敗しました。通信環境を確認して、ページを再読み込みしてください。</p>');return}
+ show('<div class="hud" id="hud"></div><div id="ph"></div><div class="meta">敵が下まで来る、または触れるとHPが減る。HPが0でステージ終了。</div>');
+ const bx=$('ph'),H=Math.max(440,Math.min(640,innerHeight-190));bx.style.height=H+'px';const W=Math.floor(bx.clientWidth)||360,boss=lv==6,n=boss?7:5+lv*2,interval=1.7-lv*.15,speed=100+lv*50;
+ let hp=3,inv=0,spawned=0,killed=0,gain=0,sp=.8,fire=0,tri=0,rap=0,done=false,px=W/2,lastHud='',game;
+ function create(){
+  const s=this,cl=Phaser.Math.Clamp;
+  const mk=(k,w,h,f)=>{const t=s.textures.createCanvas(k,w,h),c=t.getContext();f(c);t.refresh()};
+  const body=c=>{c.beginPath();c.moveTo(14,70);c.bezierCurveTo(14,18,106,18,106,70);c.lineTo(106,116);let x=106;for(let i=0;i<4;i++){c.quadraticCurveTo(x-11.5,136,x-23,116);x-=23}c.closePath()};
+  const ghost=(c,b)=>{
+   const gc=b?'#ffcf5a':'#a77bff';
+   c.shadowColor=gc;c.shadowBlur=14;c.fillStyle='#07070c';c.strokeStyle=gc;c.lineWidth=3;body(c);c.fill();c.stroke();c.shadowBlur=0;
+   c.save();body(c);c.clip();c.fillStyle=b?'rgba(255,207,90,.7)':'rgba(255,255,255,.6)';for(let y=106;y<140;y+=12)c.fillRect(0,y,120,5);c.restore();
+   c.fillStyle='#3a3a55';c.beginPath();c.ellipse(60,63,40,19,0,0,7);c.fill();
+   c.shadowColor='#fff';c.shadowBlur=10;c.fillStyle='#fff';c.beginPath();c.ellipse(43,62,11,13,0,0,7);c.fill();c.beginPath();c.ellipse(77,62,11,13,0,0,7);c.fill();c.shadowBlur=0;
+   c.fillStyle=b?'#e11':'#6a2bd9';c.beginPath();c.arc(43,65,5,0,7);c.fill();c.beginPath();c.arc(77,65,5,0,7);c.fill();
+   c.strokeStyle='#fff';c.lineWidth=5;c.beginPath();c.moveTo(26,44);c.lineTo(52,54);c.moveTo(94,44);c.lineTo(68,54);c.stroke();
+   c.lineWidth=3;c.beginPath();c.moveTo(38,92);for(let i=0;i<6;i++)c.lineTo(38+i*8.8,i%2?92:100);c.stroke();
+   c.fillStyle='#ffcf5a';c.fillRect(56,93,6,8);
+   c.fillStyle='#8a5a2b';c.beginPath();c.arc(100,106,13,0,7);c.fill();c.fillStyle='#e5b94e';c.font='bold 15px monospace';c.textAlign='center';c.fillText('$',100,111);
+   if(b){c.fillStyle='#1d1d1d';c.beginPath();c.moveTo(34,38);c.lineTo(38,8);c.lineTo(82,8);c.lineTo(86,38);c.fill();c.fillStyle='#ffcf5a';c.fillRect(35,26,50,6);
+    c.fillStyle='#151515';c.strokeStyle='#ffcf5a';c.lineWidth=2;c.beginPath();c.ellipse(60,38,52,9,0,0,7);c.fill();c.stroke();
+    c.strokeStyle='#8a5a2b';c.lineWidth=6;c.beginPath();c.moveTo(62,98);c.lineTo(100,90);c.stroke();c.fillStyle='#ff7a1a';c.beginPath();c.arc(101,90,4,0,7);c.fill()}
+   else{}
+  };
+  mk('ghost',120,140,c=>ghost(c,0));mk('boss',120,140,c=>ghost(c,1));
+  mk('ship',48,56,c=>{c.fillStyle='#e5b94e';c.fillRect(2,34,8,16);c.fillRect(38,34,8,16);c.fillStyle='#4dd0e1';c.beginPath();c.moveTo(24,2);c.lineTo(44,48);c.lineTo(24,40);c.lineTo(4,48);c.fill();c.fillStyle='#fff';c.beginPath();c.arc(24,26,6,0,7);c.fill()});
+  mk('bullet',6,18,c=>{c.fillStyle='#ffd54f';c.fillRect(0,0,6,18)});
+  mk('ebullet',18,18,c=>{c.fillStyle='#ff9800';c.shadowColor='#ff5722';c.shadowBlur=6;c.beginPath();c.arc(9,9,6,0,7);c.fill()});
+  mk('spP',7,7,c=>{c.fillStyle='#c9a9ff';c.fillRect(0,0,7,7)});mk('spY',7,7,c=>{c.fillStyle='#ffd54f';c.fillRect(0,0,7,7)});
+  [['T','#6aa8ff'],['R','#e5b94e'],['H','#6bbf8a']].forEach(([k,col])=>mk('i'+k,32,32,c=>{c.fillStyle=col;c.beginPath();c.arc(16,16,15,0,7);c.fill();c.fillStyle='#111';c.font='bold 20px monospace';c.textAlign='center';c.fillText(k,16,23)}));
+  mk('stars',180,180,c=>{for(let i=0;i<30;i++){c.fillStyle='rgba(255,255,255,'+(.3+Math.random()*.5)+')';c.fillRect(Math.random()*180,Math.random()*180,2,2)}});
+  const stars=s.add.tileSprite(W/2,H/2,W,H,'stars').setAlpha(.7);
+  const bl=s.physics.add.group(),eb=s.physics.add.group(),en=s.physics.add.group(),it=s.physics.add.group();
+  const hb=s.add.graphics().setDepth(6);
+  const ship=s.physics.add.sprite(W/2,H-50,'ship').setDepth(5);ship.body.setSize(24,34);
+  const pP=s.add.particles(0,0,'spP',{speed:{min:50,max:240},lifespan:550,scale:{start:1.6,end:0},emitting:false}).setDepth(7);
+  const pY=s.add.particles(0,0,'spY',{speed:{min:40,max:140},lifespan:300,scale:{start:1,end:0},emitting:false}).setDepth(7);
+  const cur=s.input.keyboard.createCursorKeys();
+  s.input.on('pointermove',p=>px=cl(p.x,24,W-24));s.input.on('pointerdown',p=>px=cl(p.x,24,W-24));
+  function hurt(){if(inv>0)return;hp--;inv=1.2;s.cameras.main.shake(200,.012);s.cameras.main.flash(120,255,60,60);snd(120,.3,'sawtooth')}
+  function kill(e){e.dead=1;killed++;gain+=e.boss?500:50*e.mhp;pP.explode(e.boss?50:18,e.x,e.y);s.cameras.main.shake(e.boss?400:120,e.boss?.02:.006);snd(220,.15,'sawtooth');
+   if(e.boss||Math.random()<.25){const k=e.boss?'H':'TRH'[Math.random()*3|0],o=it.create(e.x,e.y,'i'+k);o.k=k;o.setVelocityY(90)}
+   e.destroy()}
+  function spawn(isBoss){
+   const r=Math.random(),e=en.create(isBoss?W/2:50+Math.random()*(W-100),-80,isBoss?'boss':'ghost');
+   let sc=.85,hpv=1,sv=speed*(.85+Math.random()*.4),sh=lv>=3&&Math.random()<.5;
+   if(isBoss){sc=1.8;hpv=25;sv=0;sh=true;e.boss=1}
+   else if(lv>=2&&r<.3){sc=.7;sv*=1.5}
+   else if(lv>=4&&r>.7){sc=1.1;hpv=lv>=5?4:3;sv*=.7;sh=true}
+   e.setScale(sc).setDepth(3);e.body.setSize(76,84);
+   e.hp=e.mhp=hpv;e.s=sv;e.sh=sh;e.f=1.5+Math.random()*2;e.ph=Math.random()*6;spawned++;
+  }
+  if(boss)spawn(true);
+  s.physics.add.overlap(bl,en,(b,e)=>{if(!b.active||e.dead)return;b.destroy();e.hp--;pY.explode(3,b.x,b.y);snd(300,.05);
+   if(e.hp<=0)kill(e);else{e.setTintFill(0xffffff);s.time.delayedCall(60,()=>e.active&&e.clearTint())}});
+  s.physics.add.overlap(ship,eb,(p,b)=>{b.destroy();hurt()});
+  s.physics.add.overlap(ship,en,(p,e)=>{if(!e.boss)e.destroy();hurt()});
+  s.physics.add.overlap(ship,it,(p,i)=>{snd(990,.1);if(i.k=='T')tri=7;else if(i.k=='R')rap=7;else hp=Math.min(3,hp+1);i.destroy()});
+  this.upd=function(dtms){
+   const dt=Math.min(dtms/1000,.05);
+   if(cur.left.isDown)px=cl(px-320*dt,24,W-24);if(cur.right.isDown)px=cl(px+320*dt,24,W-24);
+   ship.x+=(px-ship.x)*Math.min(1,dt*20);stars.tilePositionY-=dt*60;
+   fire-=dt;if(fire<=0){fire=rap>0?.13:.27;[0].concat(tri>0?[-90,90]:[]).forEach(vx=>{const b=bl.create(ship.x,ship.y-30,'bullet');b.setVelocity(vx,-560)});}
+   tri-=dt;rap-=dt;inv-=dt;ship.setAlpha(inv>0&&Math.floor(inv*10)%2?.3:1);
+   sp-=dt;if(sp<=0&&spawned<n){spawn(false);sp=interval}
+   hb.clear();
+   en.getChildren().forEach(e=>{
+    e.ph+=dt*(e.boss?1.2:2);
+    if(e.boss){if(e.y<130)e.y+=60*dt;else e.x=W/2+Math.sin(e.ph)*100}
+    else{e.y+=e.s*dt;if(lv>=2)e.x=cl(e.x+Math.sin(e.ph)*(15+lv*8)*dt,50,W-50);if(e.y+e.displayHeight/2>H-20){e.destroy();hurt();return}}
+    if(e.sh&&e.y>0){e.f-=dt;if(e.f<=0){const y=e.y+e.displayHeight*.4;
+     if(e.boss){for(let a=-1;a<=1;a++)eb.create(e.x,y,'ebullet').setVelocity(a*70,170);e.f=1.4}
+     else{eb.create(e.x,y,'ebullet').setVelocity(0,140+lv*15);e.f=2.8-lv*.2}}}
+    if(e.mhp>1){const w=e.displayWidth*.8,x=e.x-w/2,y=e.y-e.displayHeight/2-8;hb.fillStyle(0x000000,.6).fillRect(x,y,w,6);hb.fillStyle(0xe5586b,1).fillRect(x,y,w*Math.max(e.hp,0)/e.mhp,6)}
+   });
+   [bl,eb,it].forEach(g=>g.getChildren().slice().forEach(o=>{if(o.y<-30||o.y>H+30||o.x<-30||o.x>W+30)o.destroy()}));
+   const h=`<span>STAGE ${lv}</span><span>HP${'<i class="pip"></i>'.repeat(Math.max(hp,0))}</span><span>KILL ${killed}/${n}</span><span>${tri>0?'TRIPLE ':''}${rap>0?'RAPID':''}</span>`;
+   if(h!=lastHud&&$('hud')){lastHud=h;$('hud').innerHTML=h}
+   if(hp<=0||(spawned>=n&&en.countActive(true)==0))finish();
+  };
+ }
+ function finish(){
+  if(done)return;done=true;
+  setTimeout(()=>{
+   game.destroy(true);
+   if(hp>0)gain+=200+hp*100;score+=gain;kills+=killed;total+=n;
+   show(`<div class="res ${hp>0?'g':'b'}">STAGE ${lv} ${hp>0?'CLEAR':'FAILED'}</div><p>撃退 ${killed} / ${n}　獲得 +${gain} 点<br>現在のスコア ${score}</p><button class="main" id="nx">${qi>=30?'RESULT':'NEXT QUIZ'}</button>`);
+   snd(hp>0?880:200,.3);bgm("calm");$('nx').onclick=()=>qi>=30?result():quiz();
+  },60);
+ }
+ game=new Phaser.Game({type:Phaser.AUTO,parent:'ph',width:W,height:H,transparent:true,physics:{default:'arcade'},scene:{create,update:function(t,d){if(!done&&this.upd)this.upd(d)}}});
+}
+function result(){
+ const sc=correct/30*80+(total?kills/total:0)*20;
+ const r=sc>=95?'SS':sc>=85?'S':sc>=70?'A':sc>=50?'B':'C';
+ const m={SS:'完璧です。周りの人にも守り方を教えられるレベルです。',S:'非常に高い意識です。あと一歩で完璧です。認定証PDFプレゼント目指して頑張りましょう',A:'しっかりした知識があります。間違えた分野を復習しましょう。認定証PDFプレゼント目指して頑張りましょう',B:'基本は身についています。詐欺の手口を中心に見直しましょう。認定証PDFプレゼント目指して頑張りましょう',C:'まだ危険が残っています。もう一度挑戦して知識を固めましょう。認定証PDFプレゼント目指して頑張りましょう'}[r];
+ const cert=r=='SS'?'<div class="res g">最高ランク認定</div><p>認定証をPDFで受け取れます。</p><input id="nm" maxlength="20" placeholder="お名前(任意)"><button class="main" id="dl">認定証をPDFでダウンロード</button><div id="dm" class="meta"></div>':'';
+ show(`<div class="qh" style="text-align:center">FINAL RANK</div><div class="rank">${r}</div><p>クイズ正解: ${correct} / 30　最大コンボ: ${maxCombo}<br>オバケの撃退: ${kills} / ${total}<br>最終スコア: ${score} 点</p><p>${m}</p>${cert}<button class="main" id="rt">RETRY</button>`);
+ bgmStop();snd(r=='C'?200:990,.4);
+ $('rt').onclick=intro;
+ if(r=='SS')$('dl').onclick=()=>dlCert($('nm').value.trim());
+}
+
+function drawCert(name){
+ const W=1754,H=1240,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+ const gr=x.createLinearGradient(0,0,W,H);gr.addColorStop(0,'#e4eef6');gr.addColorStop(.5,'#f3eaf6');gr.addColorStop(1,'#f8f0d8');
+ x.fillStyle=gr;x.fillRect(0,0,W,H);
+ const cols=['#9ec3e6','#a8d5c2','#c9b3e6','#f0b6c8','#f3e19a'];
+ for(let i=0;i<220;i++){x.globalAlpha=.18;x.fillStyle=cols[i%5];x.beginPath();x.arc(Math.random()*W,Math.random()*H,10+Math.random()*50,0,7);x.fill()}
+ x.globalAlpha=1;x.strokeStyle='#b8902f';x.lineWidth=14;x.strokeRect(50,50,W-100,H-100);x.lineWidth=3;x.strokeRect(84,84,W-168,H-168);
+ x.textAlign='center';x.fillStyle='#1d2b4a';const F='"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif';
+ x.font='700 120px '+F;x.fillText('認 定 証',W/2,300);
+ x.font='36px sans-serif';x.fillText('OKINAWA SECURITY DEFENDER  CERTIFICATE',W/2,370);
+ x.font='700 84px '+F;x.fillText((name||'あなた')+' 殿',W/2,540);
+ x.fillRect(W/2-480,565,960,3);
+ x.font='44px '+F;['「セキュリティ防衛クイズ」全30問に挑み、','最高ランク SS の成績を収めたことを認定します。','あなたのセキュリティ意識は、極めて高い水準にあります。'].forEach((t,i)=>x.fillText(t,W/2,680+i*70));
+ x.fillStyle='#b8902f';x.font='900 190px sans-serif';x.fillText('SS',W/2,960);
+ x.fillStyle='#1d2b4a';x.font='38px '+F;x.fillText(`スコア ${score} 点 最大コンボ ${maxCombo}`,W/2,1030);
+ x.fillText(new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'})+'シーサー先輩',W/2,1090);
+ x.font='24px sans-serif';x.fillStyle='#667';x.fillText('本証はゲーム上の認定であり、公的な資格ではありません。',W/2,1145);
+ return c;
+}
+async function dlCert(name){
+ const dm=$('dm');
+ try{
+  const jsPDF = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
+  if(!jsPDF){dm.textContent='PDFライブラリの読み込みに失敗しました。再読み込みしてください。';return}
+  const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  pdf.addImage(drawCert(name).toDataURL('image/jpeg',.92),'JPEG',0,0,297,210);
+  pdf.save('security-defenders-SS-certificate.pdf');
+  dm.textContent='認定証を保存しました。';
+ }catch(e){dm.textContent='保存できませんでした。もう一度お試しください。'}
+}
+intro();
+
+</script></body></html>
