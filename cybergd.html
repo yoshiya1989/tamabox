@@ -1,79 +1,55 @@
-html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>✨ サイバーキャッスル防衛 - Cute Security Idler ✨</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        * {
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: none;
-            margin: 0;
-            padding: 0;
-        }
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #161224;
-            color: #ffffff;
-            font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', system-ui, sans-serif;
-        }
-        #game-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            background: #151022;
-        }
-        canvas {
-            display: block;
-            width: 100vw;
-            height: 100vh;
-        }
-        .ui-badge {
-            background: rgba(22, 16, 36, 0.88);
-            border: 1.5px solid #ffb7c5;
-            border-radius: 9999px;
-            padding: 4px 10px;
-            font-size: 11px;
-            font-weight: bold;
-            color: #ffffff;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            backdrop-filter: blur(6px);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            white-space: nowrap;
-        }
-        .ui-badge span {
-            color: #ffd166;
-            font-size: 12px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>✨ サイバーキャッスル防衛 - Cute Security Idler ✨</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+*{box-sizing:border-box;user-select:none;-webkit-user-select:none;touch-action:none;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background-color:#161224;color:#fff;font-family:'Hiragino Kaku Gothic ProN','Meiryo',system-ui,sans-serif}
+#game-container{position:relative;width:100vw;height:100vh;overflow:hidden;background:#151022}
+canvas{display:block;width:100vw;height:100vh}
+.ui-badge{background:rgba(22,16,36,.88);border:1.5px solid #ffb7c5;border-radius:9999px;padding:4px 10px;font-size:11px;font-weight:bold;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.5);backdrop-filter:blur(6px);display:flex;align-items:center;gap:4px;white-space:nowrap}
+.ui-badge span{color:#ffd166;font-size:12px}
+
+#ticker{position:absolute;top:0;left:0;right:0;height:26px;background:linear-gradient(90deg,#3a1d5c,#5b2a86);border-bottom:2px solid #ffb7c5;z-index:20;display:flex;align-items:center;pointer-events:none;overflow:hidden}
+#ticker .lbl{flex:none;background:#ffb7c5;color:#3a1d5c;font-weight:bold;font-size:11px;padding:0 8px;height:100%;display:flex;align-items:center;z-index:2}
+#tickWrap{flex:1;overflow:hidden;white-space:nowrap}
+#tickText{display:inline-block;padding-left:100%;font-size:12px;color:#fff;animation:tick linear infinite}
+@keyframes tick{to{transform:translateX(-100%)}}
+#toast{position:absolute;left:10px;right:10px;bottom:34px;z-index:15;text-align:center;font-size:12px;font-weight:bold;color:#3a2a4e;background:#fff8fb;border:2px solid #ffb7c5;border-radius:16px;padding:8px 12px;opacity:0;transition:opacity .4s;pointer-events:none}
+#banner{position:absolute;left:10px;right:10px;top:80px;z-index:15;text-align:center;font-size:14px;font-weight:bold;color:#fff;background:rgba(91,42,134,.92);border:2px solid #ffd166;border-radius:18px;padding:8px;opacity:0;transform:translateY(-10px);transition:all .4s;pointer-events:none}
+#quiz,#lec,#go,#end{position:absolute;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:rgba(10,6,24,.72);padding:16px}
+#quiz .card,#lec .card,#go .card,#end .card{background:#fff8fb;color:#3a2a4e;border:3px solid #ffb7c5;border-radius:22px;max-width:420px;width:100%;padding:16px;box-shadow:0 10px 40px rgba(0,0,0,.6);max-height:92vh;overflow:auto}
+.opt{display:block;width:100%;margin-top:8px;padding:10px;border-radius:14px;border:2px solid #d6a8ff;background:#fff;color:#3a2a4e;font-weight:bold;font-size:14px;text-align:left}
+.opt.ok{background:#c8f7d6;border-color:#2ecc71}.opt.ng{background:#ffd6dc;border-color:#ff6b81}
+#qExp{display:none;margin-top:10px;font-size:13px;line-height:1.5;background:#fff0c9;border-radius:12px;padding:8px}
+#qNext{display:none;width:100%;margin-top:10px;padding:10px;border-radius:14px;background:#ff7597;color:#fff;font-weight:bold}
+#lecBody p{margin-top:8px;font-size:13px;line-height:1.7}#lecBody ul,#endBody ol{margin:6px 0 0 18px;font-size:13px;line-height:1.7}#lecBody b,#endBody b{color:#d63a6a}.pt{background:#fff0c9;border-radius:12px;padding:8px;margin-top:10px;font-size:13px;line-height:1.6}
+</style>
 </head>
 <body>
-
 <div id="game-container">
-    <canvas id="gameCanvas"></canvas>
-
-    <!-- Floating HUD Header -->
-    <div class="absolute top-2 left-2 right-2 flex justify-between items-center pointer-events-none z-10 gap-1 flex-wrap sm:flex-nowrap">
-        <div class="ui-badge">🪙 資金: <span id="coinText">80</span></div>
-        <div class="ui-badge">🏰 Castle Height: <span id="castleHeightText">10m (Lv.1)</span></div>
-        <div class="ui-badge">🎓 社員教育: Lv.<span id="trainLvText">0</span></div>
-        <div class="ui-badge">🔄 OS v<span id="osLvText">1.0</span></div>
-        <div class="ui-badge">📦 <span id="codeText">0/10</span></div>
-    </div>
-
-    <!-- Interactive Hint Bar -->
-    <div class="absolute bottom-2 left-0 right-0 text-center pointer-events-none z-10 text-[10px] sm:text-xs text-pink-200/90 font-bold drop-shadow">
-        📱 タッチ移動 ｜ 🏰お城は攻撃されると縮む! ｜ 🎓社員教育・🛡️ワクチン・🔄OS更新で全画面防衛!
-    </div>
+<canvas id="gameCanvas"></canvas>
+<div id="ticker"><div class="lbl">🛡️ 豆知識</div><div id="tickWrap"><span id="tickText"></span></div></div>
+<div id="banner"></div><div id="toast"></div>
+<div id="lec"><div class="card"><div id="lecStage" style="font-weight:bold;color:#ff7597;font-size:12px"></div><div id="lecTitle" style="font-weight:bold;font-size:17px;margin-top:2px"></div><div id="lecBody"></div><button id="lecNext" style="width:100%;margin-top:12px;padding:10px;border-radius:14px;background:#ff7597;color:#fff;font-weight:bold">つぎへ ▶</button></div></div>
+<div id="go"><div class="card" style="text-align:center"><div style="font-size:40px">😢</div><div style="font-weight:bold;font-size:18px;margin-top:4px">ゲームオーバー</div><div id="goText" style="font-size:13px;line-height:1.7;margin-top:8px"></div><button class="opt" id="goRetry" style="text-align:center;background:#ffe3ec">🔁 このステージからやり直す</button><button class="opt" id="goReset" style="text-align:center">🌱 さいしょから</button></div></div>
+<div id="end"><div class="card"><div id="endBody"></div><button class="opt" id="endGo" style="text-align:center;background:#ffe3ec">♾️ エンドレスで続ける</button><button class="opt" id="endReset" style="text-align:center">🌱 最初から遊ぶ</button></div></div>
+<div id="quiz"><div class="card"><div id="qTitle" style="font-weight:bold;color:#ff7597;font-size:13px"></div><div id="qText" style="margin-top:6px;font-weight:bold;font-size:15px;line-height:1.5"></div><div id="qOpts"></div><div id="qExp"></div><button id="qNext">つぎへ ▶</button></div></div>
+<div class="absolute top-8 left-2 right-2 flex justify-between items-center pointer-events-none z-10 gap-1 flex-wrap sm:flex-nowrap">
+<div class="ui-badge">🪙 資金: <span id="coinText">80</span></div>
+<div class="ui-badge">🤝 信頼: <span id="castleHeightText">Lv.1</span></div>
+<div class="ui-badge">🎓 社員教育: Lv.<span id="trainLvText">0</span></div>
+<div class="ui-badge">🔄 OS v<span id="osLvText">1.0</span></div>
+<div class="ui-badge">📦 <span id="codeText">0/10</span></div>
+<div class="ui-badge">📚 知識 <span id="kText">0/0</span></div>
+<div class="ui-badge">🌊 <span id="waveText">W1</span></div>
+</div>
+<div class="absolute bottom-2 left-0 right-0 text-center pointer-events-none z-10 text-[10px] sm:text-xs text-pink-200/90 font-bold drop-shadow">
+📱 タッチ移動 ｜ 🎁を拾おう ｜ 🧠クイズに答えて知識UP ｜ 🤝信頼は攻撃されると下がる!
+</div>
 </div>
 
 <script>
@@ -81,385 +57,632 @@ const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playBeep(freq, type = 'sine', duration = 0.08) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
     try {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+        const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
         osc.type = type;
         osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
         gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
     } catch(e){}
+}
+
+// ===== 沖縄ステージ背景モジュール =====
+// 0:首里城風 / 1:国際通り風 / 2:美ら海水族館風 / 3:残波岬風
+const STAGE_NAMES = ['🏯 首里城', '🌃 国際通り', '🐋 美ら海水族館', '🌅 残波岬', '🌉 古宇利大橋'];
+const LEVELS_PER_STAGE = 3;
+
+let bgStage = 0, bgPrevStage = 0, bgFade = 1;
+
+function stageOf(level) {
+    return Math.min(4, Math.floor((level - 1) / LEVELS_PER_STAGE));
+}
+
+function drawBackground(ctx, w, h, level, t) {
+    const s = stageOf(level);
+    if (s !== bgStage) { bgPrevStage = bgStage; bgStage = s; bgFade = 0; }
+    if (bgFade < 1) {
+        bgFade = Math.min(1, bgFade + 0.02);
+        drawStage(ctx, w, h, bgPrevStage, t);
+        ctx.globalAlpha = bgFade;
+        drawStage(ctx, w, h, bgStage, t);
+        ctx.globalAlpha = 1;
+    } else {
+        drawStage(ctx, w, h, bgStage, t);
+    }
+    // ゲーム要素を見やすくする薄い暗幕
+    ctx.fillStyle = 'rgba(15,10,30,0.28)';
+    ctx.fillRect(0, 0, w, h);
+}
+
+function grad(ctx, w, h, stops) {
+    const g = ctx.createLinearGradient(0, 0, 0, h);
+    stops.forEach(([p, c]) => g.addColorStop(p, c));
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+}
+
+function cloud(ctx, x, y, r, a) {
+    ctx.fillStyle = `rgba(255,255,255,${a})`;
+    [[0, 0, 1], [r * 0.9, r * 0.2, 0.8], [-r * 0.9, r * 0.2, 0.7]].forEach(([dx, dy, k]) => {
+        ctx.beginPath(); ctx.arc(x + dx, y + dy, r * k, 0, 7); ctx.fill();
+    });
+}
+
+function drawStage(ctx, w, h, s, t) {
+    ctx.save();
+    if (s === 0) shuri(ctx, w, h, t);
+    else if (s === 1) kokusai(ctx, w, h, t);
+    else if (s === 2) churaumi(ctx, w, h, t);
+    else if (s === 3) zanpa(ctx, w, h, t);
+    else koori(ctx, w, h, t);
+    ctx.restore();
+}
+
+// --- 首里城風:朝焼けの空と朱色の正殿 ---
+function shuri(ctx, w, h, t) {
+    grad(ctx, w, h, [[0, '#ff9ecb'], [0.5, '#ffcba4'], [1, '#ffe9a8']]);
+    for (let i = 0; i < 4; i++) cloud(ctx, ((t * 0.15 + i * w / 3) % (w + 200)) - 100, h * (0.1 + i * 0.07), 22 + i * 4, 0.7);
+    // 丘
+    ctx.fillStyle = '#7bc47f';
+    ctx.beginPath(); ctx.moveTo(0, h); ctx.lineTo(0, h * 0.75);
+    ctx.quadraticCurveTo(w * 0.5, h * 0.55, w, h * 0.75); ctx.lineTo(w, h); ctx.fill();
+    // 石垣
+    ctx.fillStyle = '#d9d2c3';
+    ctx.fillRect(w * 0.12, h * 0.7, w * 0.76, h * 0.06);
+    ctx.strokeStyle = '#b8b09f'; ctx.lineWidth = 1;
+    for (let x = w * 0.12; x < w * 0.88; x += 24) { ctx.beginPath(); ctx.moveTo(x, h * 0.7); ctx.lineTo(x, h * 0.76); ctx.stroke(); }
+    // 正殿(二層)
+    const cx = w / 2, by = h * 0.7;
+    ctx.fillStyle = '#e8383d'; ctx.fillRect(cx - 70, by - 38, 140, 38);
+    ctx.fillStyle = '#c0282e'; ctx.fillRect(cx - 52, by - 70, 104, 32);
+    ctx.fillStyle = '#b5322f';
+    ctx.beginPath(); ctx.moveTo(cx - 90, by - 38); ctx.lineTo(cx + 90, by - 38); ctx.lineTo(cx + 60, by - 52); ctx.lineTo(cx - 60, by - 52); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx - 68, by - 70); ctx.lineTo(cx + 68, by - 70); ctx.lineTo(cx + 40, by - 90); ctx.lineTo(cx - 40, by - 90); ctx.fill();
+    ctx.fillStyle = '#ffd166'; ctx.fillRect(cx - 12, by - 28, 24, 28);
+    for (let i = -2; i <= 2; i++) ctx.fillRect(cx + i * 24 - 3, by - 62, 6, 14);
+    // 龍の飾り
+    ctx.fillRect(cx - 4, by - 98, 8, 8);
+}
+
+// --- 国際通り風:夕暮れのネオン街 ---
+function kokusai(ctx, w, h, t) {
+    grad(ctx, w, h, [[0, '#2b1055'], [0.55, '#7b3fa0'], [1, '#ff8fb1']]);
+    const cols = ['#ff6b81', '#ffd166', '#70a1ff', '#7bed9f', '#ff9ff3'];
+    const bw = Math.max(46, w / 7);
+    for (let i = 0; i * bw < w + bw; i++) {
+        const bh = h * (0.28 + ((i * 37) % 17) / 70);
+        const x = i * bw, y = h * 0.82 - bh;
+        ctx.fillStyle = i % 2 ? '#3a2a5e' : '#4a3472';
+        ctx.fillRect(x, y, bw - 4, bh);
+        // 窓
+        for (let r = 0; r < 5; r++) for (let c = 0; c < 3; c++) {
+            const on = ((i * 7 + r * 3 + c + Math.floor(t / 90)) % 4) !== 0;
+            ctx.fillStyle = on ? '#ffeaa7' : '#2d2150';
+            ctx.fillRect(x + 6 + c * (bw / 3.4), y + 10 + r * 20, 9, 11);
+        }
+        // ネオン看板
+        const c = cols[i % cols.length];
+        ctx.shadowColor = c; ctx.shadowBlur = 12 + 4 * Math.sin(t / 20 + i);
+        ctx.fillStyle = c; ctx.fillRect(x + 6, y + bh * 0.62, bw - 16, 8);
+        ctx.shadowBlur = 0;
+    }
+    // 道路
+    ctx.fillStyle = '#2a2140'; ctx.fillRect(0, h * 0.82, w, h * 0.18);
+    // 提灯(ちょうちん)
+    for (let x = 20; x < w; x += 56) {
+        const sway = Math.sin(t / 40 + x) * 3;
+        ctx.strokeStyle = '#ffd166'; ctx.beginPath(); ctx.moveTo(x, h * 0.78); ctx.lineTo(x + sway, h * 0.82); ctx.stroke();
+        ctx.fillStyle = '#ff4757'; ctx.beginPath(); ctx.ellipse(x + sway, h * 0.835, 5, 7, 0, 0, 7); ctx.fill();
+    }
+}
+
+// --- 美ら海水族館風:大水槽とジンベエザメ ---
+function churaumi(ctx, w, h, t) {
+    grad(ctx, w, h, [[0, '#2fd0e8'], [0.5, '#1479c2'], [1, '#07224f']]);
+    // 光のカーテン
+    for (let i = 0; i < 5; i++) {
+        const x = w * (0.1 + i * 0.2) + Math.sin(t / 80 + i) * 20;
+        const g = ctx.createLinearGradient(x, 0, x + 60, h * 0.8);
+        g.addColorStop(0, 'rgba(255,255,255,0.22)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + 40, 0); ctx.lineTo(x + 110, h * 0.8); ctx.lineTo(x - 30, h * 0.8); ctx.fill();
+    }
+    // ジンベエザメ
+    const sx = ((t * 0.5) % (w + 400)) - 200, sy = h * 0.5 + Math.sin(t / 60) * 14;
+    ctx.fillStyle = '#4b6584';
+    ctx.beginPath(); ctx.ellipse(sx, sy, 90, 26, 0, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(sx - 80, sy); ctx.lineTo(sx - 125, sy - 28 + Math.sin(t / 10) * 6); ctx.lineTo(sx - 120, sy + 26); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(sx - 5, sy - 22); ctx.lineTo(sx + 12, sy - 46); ctx.lineTo(sx + 22, sy - 20); ctx.fill();
+    ctx.fillStyle = '#dff9fb';
+    for (let i = 0; i < 9; i++) { ctx.beginPath(); ctx.arc(sx - 55 + i * 14, sy - 10 + (i % 3) * 9, 2.6, 0, 7); ctx.fill(); }
+    ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(sx + 62, sy - 6, 3, 0, 7); ctx.fill();
+    // 小魚の群れ
+    for (let i = 0; i < 14; i++) {
+        const fx = ((t * (0.8 + (i % 3) * 0.3) + i * 90) % (w + 60)) - 30;
+        const fy = h * (0.2 + (i % 7) * 0.09) + Math.sin(t / 30 + i) * 8;
+        ctx.fillStyle = i % 2 ? '#ffd166' : '#ff9ff3';
+        ctx.beginPath(); ctx.ellipse(fx, fy, 7, 3.5, 0, 0, 7); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(fx - 6, fy); ctx.lineTo(fx - 12, fy - 4); ctx.lineTo(fx - 12, fy + 4); ctx.fill();
+    }
+    // 泡
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    for (let i = 0; i < 12; i++) {
+        const bx = (i * 83) % w, by = h - ((t * (0.6 + i % 3 * 0.3) + i * 60) % h);
+        ctx.beginPath(); ctx.arc(bx + Math.sin(t / 25 + i) * 6, by, 3 + i % 3, 0, 7); ctx.stroke();
+    }
+    // 砂地
+    ctx.fillStyle = '#e8d9a8'; ctx.fillRect(0, h * 0.94, w, h * 0.06);
+}
+
+// --- 残波岬風:夕日・断崖・白い灯台 ---
+function zanpa(ctx, w, h, t) {
+    grad(ctx, w, h, [[0, '#4a2c82'], [0.35, '#ff6b81'], [0.6, '#ffb36b'], [0.6, '#1e6fa8'], [1, '#0a3b66']]);
+    // 夕日と反射
+    ctx.fillStyle = '#fff3b0';
+    ctx.beginPath(); ctx.arc(w * 0.68, h * 0.55, 34, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = 'rgba(255,230,150,0.35)';
+    for (let i = 0; i < 6; i++) ctx.fillRect(w * 0.68 - 30 + Math.sin(t / 20 + i) * 6, h * 0.62 + i * 14, 60 - i * 7, 4);
+    cloud(ctx, ((t * 0.1) % (w + 200)) - 100, h * 0.15, 26, 0.5);
+    // 波
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 2;
+    for (let r = 0; r < 5; r++) {
+        ctx.beginPath();
+        for (let x = 0; x <= w; x += 10) {
+            const y = h * (0.68 + r * 0.06) + Math.sin(x / 30 + t / 25 + r) * 3;
+            x ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+        }
+        ctx.stroke();
+    }
+    // 断崖
+    ctx.fillStyle = '#3b2f3a';
+    ctx.beginPath(); ctx.moveTo(0, h); ctx.lineTo(0, h * 0.62);
+    ctx.lineTo(w * 0.22, h * 0.6); ctx.lineTo(w * 0.34, h * 0.7); ctx.lineTo(w * 0.3, h); ctx.fill();
+    ctx.fillStyle = '#5ea05a'; ctx.fillRect(0, h * 0.6, w * 0.22, 6);
+    // 灯台
+    const lx = w * 0.1, ly = h * 0.6;
+    ctx.fillStyle = '#fff'; ctx.beginPath();
+    ctx.moveTo(lx - 10, ly); ctx.lineTo(lx - 6, ly - 70); ctx.lineTo(lx + 6, ly - 70); ctx.lineTo(lx + 10, ly); ctx.fill();
+    ctx.fillStyle = '#ff4757'; ctx.fillRect(lx - 8, ly - 45, 16, 7);
+    ctx.fillStyle = '#ffd166'; ctx.fillRect(lx - 6, ly - 82, 12, 12);
+    ctx.fillStyle = '#c0392b'; ctx.beginPath(); ctx.moveTo(lx - 9, ly - 82); ctx.lineTo(lx, ly - 94); ctx.lineTo(lx + 9, ly - 82); ctx.fill();
+    // 灯台の光
+    ctx.fillStyle = `rgba(255,240,150,${0.15 + 0.1 * Math.sin(t / 15)})`;
+    ctx.beginPath(); ctx.moveTo(lx, ly - 76); ctx.lineTo(lx + w * 0.5, ly - 110); ctx.lineTo(lx + w * 0.5, ly - 40); ctx.fill();
+}
+
+
+/* ===== 学習・イベント・ゆるふわキャラ ===== */
+const TIPS=['宅配業者を名乗るSMSのURLは開かない(スミッシング)。公式アプリで確認しよう','パスワードの使い回しはNG。1つ漏れると他も破られるよ','長いパスフレーズ(12文字以上)は短い複雑パスワードより強い','二段階認証・パスキーを使うと乗っ取り被害がぐっと減る','「ウイルス感染!電話して」の警告は偽物(サポート詐欺)。電話せず画面を閉じよう','OSやアプリの更新は穴(脆弱性)をふさぐ大事な作業','ランサムウェア対策の決め手は定期バックアップ(3-2-1ルール)','https:// と鍵マークは「通信が暗号化」されるだけ。サイトの安全保証ではないよ','知らない貼り紙のQRコードは読まない(クイッシング)','公衆Wi-Fiでの銀行・買い物は避けよう。モバイル回線が安心','生成AIに個人情報や社外秘を入力しない','SNSの写真は位置情報や背景から自宅や学校がバレることも','怪しいメールの添付ファイル(.exe .zip .docm)は開かず削除','極端な値引き・不自然な日本語・個人口座への振込は偽ショップのサイン','スマホは画面ロック+「探す」機能で紛失に備えよう','アプリは公式ストアからだけ入れよう。不要な権限は許可しない','詐欺かも?と思ったら警察相談専用電話 #9110、消費者ホットラインは188','メールの「至急!」「アカウント停止」は焦らせる手口。まず深呼吸','ログインの通知メールが来たら自分か確認。心当たりがなければ即パスワード変更','USBメモリは拾わない・差さない','短縮URLはリンク先が見えない。展開してから確認しよう','SNSのDMで「当選」「儲かる」は詐欺の入口','セキュリティ対策は多層防御。1つに頼らず重ねて守る','会社でも家でも、困ったら一人で抱えず相談が最強の対策','ウイルス対策ソフトは最新の状態に。更新を止めない','家族にも教えよう。高齢の家族ほど電話・SMS詐欺の標的に','個人情報は「必要最小限」だけ入力。安易に渡さない','パスワードは紙やパスワード管理アプリで安全に保管','知らない人からの友達申請・フォローはまず疑おう'];
+const KILL_TIPS={fast:'🎣 フィッシング:本物そっくりの偽サイトへ誘導。リンクは公式から開こう',normal:'🦠 マルウェア:怪しい添付・アプリは開かない・入れない',tank:'🔒 ランサム:データを人質に。バックアップがいちばんの備え',swarm:'🌊 DDoS:大量アクセスで業務をマヒさせる攻撃',split:'🧬 ワーム:自己増殖するマルウェア。広がる前に止めよう',stealth:'👻 標的型攻撃:潜伏されがち。ログ監視と早期発見が大切',healer:'📡 ボットネットは司令塔を断てば仲間も弱る'};
+const PAD_TIPS={'🔥FW防壁':'🔥ファイアウォール=通信の見張り番。不要な通信を止めて侵入を防ぐよ','🤖AI防御員':'🤖AIは異常の早期発見が得意。でも最終判断は人間が大切!','💼システム販売':'💼システムは納品して終わりじゃない。保守とセキュリティ対応までが信頼!','⚡攻撃強化':'⚡多層防御:対策は重ねるほど強くなる','🛡️ワクチン':'🛡️ウイルス対策ソフトは定義ファイルを最新に','🔄OSアプデ':'🔄OS更新は脆弱性の修正。攻撃の侵入口を壁のようにふさぐ!','🎓社員教育':'🎓人が最大の防御。訓練された人はフィッシングに強い!','🤝信頼':'🤝信頼は日々の小さな安全対応の積み重ね。守れなかった時の復旧力も信頼のうち'};
+const QUIZ=[
+{q:'「不在のため再配達」というSMSにURLが。どうする?',o:['URLは開かず、公式アプリ/サイトで確認','急いで開いて確認','返信して問い合わせる'],e:'偽の配送通知(スミッシング)は定番。SMS内のリンクは開かないのが鉄則。'},
+{q:'パスワードの使い回しが危険な理由は?',o:['1つ漏れると他のサービスにも不正ログインされる','覚えるのが大変だから','サービスが重くなるから'],e:'漏れたID/パスワードを他サイトで試す「リスト型攻撃」が多発中。'},
+{q:'画面に「ウイルス感染!今すぐ電話を」と警告が出た。',o:['電話せず、ブラウザを閉じる/再起動する','表示の番号に電話する','指示通りソフトを入れる'],e:'サポート詐欺。電話すると遠隔操作や金銭要求につながるよ。'},
+{q:'二要素認証/パスキーの良いところは?',o:['パスワードが漏れても乗っ取られにくい','パスワードが不要になりログが消える','ウイルスが消える'],e:'「知っていること」+「持っているもの」で守りが2倍に。'},
+{q:'カフェの無料Wi-Fiでネットバンキング。',o:['避けて、モバイル回線を使う','鍵マークがあれば絶対安全','Wi-Fi名が良さそうなら使う'],e:'偽アクセスポイントや盗み見のおそれ。重要な操作は避けよう。'},
+{q:'OSアップデートの主な意味は?',o:['見つかった脆弱性(穴)をふさぐ','見た目を変えるだけ','端末を遅くする'],e:'更新を放置すると、公開済みの穴を狙われやすい。'},
+{q:'ランサムウェア被害にいちばん効く備えは?',o:['オフライン含む定期バックアップ','ファイル名を長くする','デスクトップを整理する'],e:'3-2-1ルール:3つのコピー・2種類の媒体・1つは別の場所。'},
+{q:'https://と鍵マークのサイトは安全?',o:['通信が暗号化されるだけで、運営の安全は別','運営も100%安全','詐欺サイトは使えない'],e:'偽サイトもhttpsを使える。URLと運営元を確認しよう。'},
+{q:'街で見つけた貼り紙のQRコード。',o:['むやみに読み取らない','とりあえず読み取る','読み取って個人情報を入力する'],e:'QRを貼り替える手口(クイッシング)がある。'},
+{q:'強いパスワードはどれ?',o:['長くて推測されにくく、サービスごとに別','誕生日+名前','全サービス共通の短い単語'],e:'長さが最大の武器。管理アプリの活用もおすすめ。'},
+{q:'生成AIに入力してはいけないのは?',o:['個人情報や社外秘の情報','天気の質問','料理のレシピ相談'],e:'入力内容が意図せず保存・利用されるおそれがあるよ。'},
+{q:'旅行写真をSNSに投稿するとき注意することは?',o:['位置情報や背景から場所が特定されないか','フィルターの色','投稿時間帯'],e:'自宅や学校が割り出されたり、留守が知られるリスクがある。'},
+{q:'「詐欺かも?」と思った時の相談先は?',o:['警察相談専用電話 #9110','177','117'],e:'緊急は110。消費者ホットラインは188。ひとりで悩まないで。'},
+{q:'知らない差出人のメールに添付ファイルが。',o:['開かず削除し、必要なら別手段で確認','とりあえず開く','転送して友達に見せる'],e:'添付ファイルはマルウェアの入口。'},
+{q:'偽ショッピングサイトの特徴は?',o:['極端な値引き・不自然な日本語・個人口座への振込','商品写真がきれい','サイトが日本語表示'],e:'支払い方法が限られる場合は特に要注意。'},
+{q:'スマホを紛失したときの備えは?',o:['画面ロック+「探す」機能(遠隔ロック/消去)','何も設定しない','パスワードをメモして貼る'],e:'遠隔ロックと消去で情報漏えいを防ごう。'},
+{q:'ソフトやアプリはどこから入手する?',o:['公式ストア/公式サイト','広告のダウンロードボタン','知らない人が送ったリンク'],e:'偽アプリや改ざん版を避けられる。'}];
+
+let paused=false,incomeMul=1,goldenT=0,evT=900,lastEv='',gifts=[],toastAt=0,killTipAt=-999,mastered=new Set(),queue=[],c0=0;
+const $=id=>document.getElementById(id);
+const shuffle=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(p=>p[1]);
+function buildTicker(){const t=$('tickText'),s=shuffle(TIPS).join('　🌺　');t.textContent=s;t.style.animationDuration=Math.round((s.length*12+innerWidth)/55)+'s';}
+function toast(m,ms=4200){const t=$('toast');t.textContent=m;t.style.opacity=1;clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.opacity=0,ms);}
+function banner(m){const b=$('banner');b.textContent=m;b.style.opacity=1;b.style.transform='translateY(0)';clearTimeout(banner.h);banner.h=setTimeout(()=>{b.style.opacity=0;b.style.transform='translateY(-10px)';},3800);}
+function updK(){$('kText').textContent=mastered.size+'/'+QUIZ.length;}
+function nextQuiz(){
+ if(!queue.length)queue=shuffle(QUIZ.map((_,i)=>i).filter(i=>!mastered.has(i)));
+ if(!queue.length){mastered.clear();updK();queue=shuffle(QUIZ.map((_,i)=>i));banner('🎓 全問クリア!マスター2周目へ');}
+ return queue.shift();
+}
+function showQuiz(title){
+ const i=nextQuiz(),Q=QUIZ[i];paused=true;
+ const opts=shuffle(Q.o.map((t,k)=>({t,ok:k===0})));
+ $('qTitle').textContent=title;$('qText').textContent=Q.q;
+ const box=$('qOpts');box.innerHTML='';$('qExp').style.display='none';$('qNext').style.display='none';
+ opts.forEach(o=>{const b=document.createElement('button');b.className='opt';b.textContent=o.t;
+  b.onclick=()=>{[...box.children].forEach(x=>x.disabled=true);
+   if(o.ok){b.classList.add('ok');mastered.add(i);const g=60+castleHeightLevel*10;coins+=g;castleCodeStored+=3;playBeep(1200,'triangle',.2);$('qExp').textContent='⭕ 正解! +'+g+'🪙 +3📦　'+Q.e;updK();}
+   else{b.classList.add('ng');queue.splice(Math.min(2,queue.length),0,i);playBeep(200,'sawtooth',.2);$('qExp').textContent='❌ おしい! 正解は「'+Q.o[0]+'」　'+Q.e+'(あとでもう一度出るよ)';}
+   $('qExp').style.display='block';$('qNext').style.display='block';};
+  box.appendChild(b);});
+ $('quiz').style.display='flex';
+}
+$('qNext').onclick=()=>{$('quiz').style.display='none';paused=modalOpen();};
+
+function eventTick(){
+ c0=coins;waveTick();if(gameTime%300===0)saveGame();
+ if(goldenT>0&&--goldenT===0){incomeMul=1;banner('🌈 ゴールデンタイム終了');}
+ for(let i=gifts.length-1;i>=0;i--){const g=gifts[i];
+  if(Math.hypot(player.x-g.x,player.y-g.y)<28){const r=40+castleHeightLevel*15;coins+=r;gifts.splice(i,1);playBeep(1400,'triangle',.2);addParticles(g.x,g.y,'#ffd166',20);toast('🎁 +'+r+'🪙 　'+TIPS[Math.floor(Math.random()*TIPS.length)]);}
+  else if(--g.t<=0)gifts.splice(i,1);}
+ if(--evT>0)return;
+ evT=1800+Math.floor(Math.random()*900);
+ const ev=shuffle(['quiz','wave','golden','gift','boss'].filter(e=>e!==lastEv))[0];lastEv=ev;
+ if(ev==='quiz')showQuiz('🧠 ぬくぬくクイズタイム!');
+ else if(ev==='wave'){banner('🎣 フィッシング大行進!偽メールに注意!');for(let i=0;i<10;i++)spawnVirus(0);}
+ else if(ev==='golden'){goldenT=900;incomeMul=2;banner('🌈 ゴールデンタイム!15秒間 収入2倍!');}
+ else if(ev==='gift'){banner('🎁 ボーナスプレゼント出現!拾いに行こう!');for(let i=0;i<3;i++)gifts.push({x:screenWidth*(.12+Math.random()*.76),y:screenHeight*(.3+Math.random()*.5),t:720});}
+ else spawnBoss();
+}
+function applyIncome(){if(incomeMul>1&&coins>c0)coins+=Math.floor((coins-c0)*(incomeMul-1));}
+function onLevelUp(){
+ const L=castleHeightLevel;
+ if(L>=FINAL_LV&&finalState===0){setTimeout(()=>showLec(5,startFinal),500);return;}
+ if(L>1&&L<FINAL_LV&&(L-1)%LEVELS_PER_STAGE===0){const st=(L-1)/LEVELS_PER_STAGE;banner('🌺 ステージ'+(st+1)+' 開始!'+(st>=3?'(難関ステージ)':''));setTimeout(()=>showLec(st,()=>showQuiz('📝 ステージ'+st+' 確認テスト')),700);return;}
+ setTimeout(()=>{if(!paused)showQuiz('🤝 信頼Lv.'+L+' 達成クイズ!');},600);
+}
+function onKill(v){if(v.final){finalState=2;setTimeout(showEnding,1200);}if(v.boss){coins+=200;banner('🎉 ボス撃破!+200🪙');}
+ if(gameTime-killTipAt>600){killTipAt=gameTime;toast(KILL_TIPS[v.type]);}}
+function padTip(pad){if(PAD_TIPS[pad.label])toast(PAD_TIPS[pad.label]);}
+buildTicker();updK();$('tickText').addEventListener('animationiteration',buildTicker);
+
+/* ---- ウェーブ・壁・セーブ ---- */
+const ECOL={fast:'#ffb3d1',normal:'#ffc89b',tank:'#c9b3ff',swarm:'#ffd6a5',split:'#b8f2c9',stealth:'#d7d7ff',healer:'#fff0a0'};
+const EICON={fast:'🎣',normal:'🦠',tank:'🔒',swarm:'🌊',split:'🧬',stealth:'👻',healer:'📡'};
+const THEMES={normal:['⚔️ 通常攻撃',''],swarm:['🌊 DDoSぷに大群','DDoS=大量アクセスで業務をマヒさせる攻撃'],heavy:['🔒 ランサムくま行進','ランサム=データを人質に身代金要求。備えはバックアップ'],split:['🧬 ワームもち増殖','ワーム=自己増殖するマルウェア。倒すと分裂するよ'],stealth:['👻 ステルス潜入','標的型攻撃=気づかれないよう潜伏。ログ監視が大事'],healer:['📡 ボットマスター登場','ボットネットは司令塔を止めるのが先決。回復役から倒そう']};
+let wave={n:1,t:0,phase:'fight',theme:'normal',mul:1};
+function spawnBoss(){const hp=900*(1+castleHeightLevel*.08)*(1+Math.min(gameTime/2400,2.5));viruses.push({x:screenWidth/2,y:screenHeight+30,type:'tank',boss:true,speed:.55,hp,maxHp:hp,color:'#c9b3ff',size:32,eatTimer:0,slowTimer:0});banner('🔒 ランサムボス襲来!バックアップを忘れずに!');}
+function waveTick(){
+ const w=wave;w.t++;
+ if(finalState===1){w.phase='fight';w.theme='healer';w.mul=1.3;w.t=0;$('waveText').textContent='👑FINAL';return;}
+ if(w.phase==='fight'&&w.t>1500){w.phase='calm';w.t=0;banner('☕ ひと息タイム!今のうちに強化しよう');}
+ else if(w.phase==='calm'&&w.t>420){
+  w.phase='fight';w.t=0;w.n++;
+  const ks=Object.keys(THEMES).filter(k=>k!==w.theme);w.theme=ks[Math.floor(Math.random()*ks.length)];w.mul=.7+Math.random()*.8;
+  banner('🌊 Wave '+w.n+': '+THEMES[w.theme][0]);if(THEMES[w.theme][1])toast(THEMES[w.theme][1],6000);
+  if(w.n%(stageOf(castleHeightLevel)>=4?3:5)===0)spawnBoss();
+ }
+ $('waveText').textContent='W'+w.n+(w.phase==='calm'?'☕':'');
+}
+function wallEffect(v){
+ const P=world.pads;let m=1;
+ [[P.firewall.level,.54,.05,.5,.35],[P.osUpdate.level-1,.75,.06,.6,0]].forEach(([lv,fy,sl,base,dm],i)=>{
+  if(lv<=0||Math.abs(v.y-screenHeight*fy)>9)return;
+  m*=Math.max(.1,base-lv*sl);if(dm)v.hp-=lv*dm;if(i)v.weak=true;
+ });
+ return m;
+}
+function drawWalls(){
+ const P=world.pads;
+ [[P.firewall.level,.54,'255,127,80','🔥ファイアウォール'],[P.osUpdate.level-1,.75,'232,67,147','🔄OSパッチ壁']].forEach(([lv,fy,c,name])=>{
+  if(lv<=0)return;
+  const y=screenHeight*fy,g=.25+.1*Math.sin(gameTime/15);
+  ctx.fillStyle='rgba('+c+','+g+')';ctx.fillRect(0,y-8,screenWidth,16);
+  ctx.strokeStyle='rgba('+c+',.9)';ctx.lineWidth=2;ctx.strokeRect(-2,y-8,screenWidth+4,16);
+  ctx.lineWidth=1;for(let x=(gameTime*.3%22)-22;x<screenWidth;x+=22){ctx.beginPath();ctx.moveTo(x,y-8);ctx.lineTo(x,y+8);ctx.stroke();}
+  ctx.fillStyle='#fff';ctx.font='bold 9px sans-serif';ctx.textAlign='left';ctx.fillText(name+' Lv.'+lv,6,y-11);
+ });
+}
+const SAVE_KEY='cyberCastle_v2';
+function saveGame(){if(noSave)return;try{const P=world.pads,o={coins,lv:castleHeightLevel,hp:castleHp,mhp:castleMaxHp,cs:castleCodeStored,ct:castleCodeTarget,os:osVersion,gt:gameTime,m:[...mastered],fs:finalState,en:endless,p:{}};for(const k in P){const q=P[k];o.p[k]={level:q.level,cost:q.cost,count:q.count};}localStorage.setItem(SAVE_KEY,JSON.stringify(o));}catch(e){}}
+function loadGame(){try{const o=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(!o)return;
+ coins=o.coins;castleHeightLevel=o.lv;castleHp=o.hp;castleMaxHp=o.mhp;castleCodeStored=o.cs;castleCodeTarget=o.ct;osVersion=o.os;gameTime=o.gt||0;mastered=new Set(o.m||[]);finalState=o.fs||0;endless=!!o.en;
+ const P=world.pads;for(const k in o.p)for(const f in o.p[k])if(o.p[k][f]!=null)P[k][f]=o.p[k][f];
+ P.castleRepair.codeRequired=castleCodeTarget;for(let i=0;i<(P.aiStaff.count||0);i++)aiUnits.push({x:world.castle.x,y:world.castle.y,angle:Math.random()*6.28});updK();
+ if(castleHeightLevel>=FINAL_LV&&finalState===0)setTimeout(startFinal,1500);
+ if(finalState===1){finalState=0;setTimeout(startFinal,1500);}}catch(e){}}
+window.addEventListener('pagehide',saveGame);
+
+/* ---- ステージ・ゲームオーバー・エンディング・授業 ---- */
+const FINAL_LV=16,SD=[{m:1,rate:1,dmg:1},{m:1.1,rate:1.1,dmg:1},{m:1.2,rate:1.25,dmg:1},{m:1.5,rate:1.5,dmg:1.3},{m:1.8,rate:1.8,dmg:1.7}];
+let finalState=0,endless=false,noSave=false,goFlag=false;
+const stageDiff=()=>SD[stageOf(castleHeightLevel)];
+const stageFloor=()=>stageOf(castleHeightLevel)*LEVELS_PER_STAGE+1;
+const modalOpen=()=>['go','end','lec','quiz'].some(id=>$(id).style.display==='flex');
+const LEC=[null,
+['ステージ1 クリア!(首里城編)','守るべきものを知ろう',`<p>最初の授業は<b>情報セキュリティの基本</b>です。守る対象(<b>情報資産</b>)について、次の3つの性質を保つことが基本とされています。</p><ul><li><b>機密性</b>:許可された人だけが情報を見られること</li><li><b>完全性</b>:情報が改ざんされず、正確であること</li><li><b>可用性</b>:必要なときに使えること</li></ul><p>攻撃者やウイルスなどの<b>脅威</b>が、システムの弱点(<b>脆弱性</b>)を突くと、被害が起きる可能性、つまり<b>リスク</b>が生まれます。</p><div class="pt">📝 ポイント:脅威を完全になくすことは難しいので、弱点(脆弱性)を減らすことが対策の入口になります。</div>`],
+['ステージ2 クリア!(国際通り編)','人の心理を突く攻撃',`<p>第2回は<b>ソーシャルエンジニアリング</b>です。技術ではなく、人の心理や行動の隙を突いて情報をだまし取る手口の総称です。</p><p>代表例が<b>フィッシング</b>です。メールやSMSで本物そっくりの偽サイトに誘導し、ID・パスワードやカード情報を入力させます。「至急」「アカウント停止」など、焦らせる言葉がよく使われます。</p><ul><li>リンクは開かず、公式アプリやブックマークから確認する</li><li>差出人やURLを落ち着いて確認する</li><li><b>多要素認証</b>やパスキーを使い、パスワードだけに頼らない</li><li>パスワードは長く、サービスごとに別のものにする</li></ul><div class="pt">📝 ポイント:攻撃者は「人」も狙います。立ち止まって確認する習慣が大きな防御になります。</div>`],
+['ステージ3 クリア!(美ら海編)','マルウェアとランサムウェア',`<p>第3回は<b>マルウェア</b>(悪意のあるソフトウェアの総称)です。ウイルス、ワーム、ランサムウェアなどがあります。</p><p><b>ランサムウェア</b>は、データを暗号化して使えなくし、元に戻す代わりに金銭を要求します。主な侵入経路は、メールの添付ファイル、不正なWebサイト、そしてソフトウェアの<b>脆弱性</b>の悪用です。</p><ul><li>OSやソフトウェアを常に最新の状態にする</li><li>ウイルス対策ソフトを導入し、最新の状態に保つ</li><li>定期的に<b>バックアップ</b>を取る(3つのコピー・2種類の媒体・1つは別の場所、という「3-2-1ルール」が目安)</li><li>怪しい添付ファイルやリンクは開かない</li></ul><div class="pt">📝 ポイント:感染を完全に防ぐのは難しいため、「やられても復旧できる」備えが重要です。</div>`],
+['ステージ4 クリア!(残波岬編)','多層防御と脆弱性対策',`<p>第4回は<b>多層防御</b>です。1つの対策が破られても次の対策で守れるように、防御を何層にも重ねる考え方です。ゲームの壁やワクチンを重ねてきたのと同じですね。</p><ul><li><b>入口</b>:ファイアウォールなどで不要な通信を遮断する</li><li><b>内部</b>:パッチ適用で脆弱性を修正、ウイルス対策、アクセス権を必要最小限に</li><li><b>人</b>:教育と訓練で、だまされにくくする</li><li><b>検知と対応</b>:ログを監視し、異常時の連絡手順を決めておく</li></ul><p>脆弱性の公表や修正パッチの提供前に行われる<b>ゼロデイ攻撃</b>のように、完全には防げない攻撃もあります。だからこそ「見つける・広げない・復旧する」準備が大切です。</p><div class="pt">📝 ポイント:セキュリティに100%はありません。被害を小さくする設計と、事故のときの手順を用意しましょう。</div>`],
+['最終ステージへ!','インシデント対応と相談先',`<p>最終回は<b>インシデント対応</b>です。どれだけ備えても、事故(インシデント)がゼロになるとは限りません。起きたときに被害を小さくする手順が大切です。</p><ul><li><b>検知</b>:いつもと違う動きに気づく</li><li><b>初動</b>:ネットワークから切り離すなど、被害の拡大を防ぐ</li><li><b>報告・相談</b>:自分で抱え込まず、会社や学校の担当者へ</li><li><b>復旧と再発防止</b>:バックアップから戻し、原因をふさぐ</li></ul><p>相談先は、警察相談専用電話 <b>#9110</b>(緊急は110)、消費者ホットライン <b>188</b>、IPAの情報セキュリティ安心相談窓口などです。</p><p>いよいよ最終決戦。まだ対策が存在しない弱点を突く<b>ゼロデイ大魔王</b>が現れます。これまでの壁・ワクチン・AI・教育のすべてを活かしましょう!</p><div class="pt">📝 ポイント:異変に気づいたら、慌てて操作を重ねず、早めに相談しましょう。</div>`]];
+function showLec(i,after){paused=true;const L=LEC[i];$('lecStage').textContent=L[0];$('lecTitle').textContent=L[1];$('lecBody').innerHTML=L[2];$('lec').style.display='flex';$('lecNext').onclick=()=>{$('lec').style.display='none';paused=modalOpen();if(after)after();};}
+function startFinal(){finalState=1;const hp=2200*(1+castleHeightLevel*.08)*(1+Math.min(gameTime/2400,2.5));viruses.push({x:screenWidth/2,y:screenHeight+40,type:'tank',boss:true,final:true,speed:.45,hp,maxHp:hp,color:'#c9b3ff',size:40,eatTimer:0,slowTimer:0});banner('👿 最終決戦!ゼロデイ大魔王があらわれた!');}
+function gameOver(){if(goFlag)return;goFlag=true;paused=true;
+ $('goText').innerHTML='信頼がゼロになり、システムを守りきれませんでした。<br>でも大丈夫。強化したものは残っています!<br><br>💡 '+['壁(ファイアウォールとOSパッチ)を先に育てよう','ワクチンとAI防御員で多層防御を作ろう','社員教育で人の守りを固めよう','ひと息タイムに強化を進めよう'][Math.floor(Math.random()*4)];
+ $('go').style.display='flex';}
+$('goRetry').onclick=()=>{castleHp=castleMaxHp;viruses.length=0;pulseWaves.length=0;finalState=0;wave={n:wave.n,t:0,phase:'calm',theme:'normal',mul:1};goFlag=false;$('go').style.display='none';paused=modalOpen();banner('🔁 立て直そう!今のうちに強化!');};
+$('goReset').onclick=()=>{noSave=true;try{localStorage.removeItem(SAVE_KEY);}catch(e){}location.reload();};
+$('endReset').onclick=$('goReset').onclick;
+function showEnding(){paused=true;const min=Math.max(1,Math.round(gameTime/3600));
+ $('endBody').innerHTML=`<div style="font-size:38px;text-align:center">🎉🌺🛡️</div><div style="text-align:center;font-weight:bold;font-size:18px;margin-top:4px">エンディング</div><p style="margin-top:8px;font-size:13px;line-height:1.7">ゼロデイ大魔王を倒し、沖縄のシステムの<b>安全は守られました</b>!全5ステージクリア、おめでとうございます。</p><p style="margin-top:8px;font-size:13px;line-height:1.7">学んだことを、IPAの「情報セキュリティ5か条」で振り返りましょう。</p><ol><li>OSやソフトウェアは常に最新の状態にする</li><li>ウイルス対策ソフトを導入する</li><li>パスワードを強化する</li><li>共有設定を見直す</li><li>脅威や攻撃の手口を知る</li></ol><div class="pt">困ったときは、警察相談専用電話 #9110(緊急は110)、消費者ホットライン 188、IPAの情報セキュリティ安心相談窓口へ。ひとりで抱え込まないでくださいね。<br>プレイ時間:約${min}分 ／ 知識:${mastered.size}/${QUIZ.length}</div>`;
+ $('end').style.display='flex';}
+$('endGo').onclick=()=>{endless=true;$('end').style.display='none';paused=modalOpen();};
+function koori(ctx,w,h,t){
+ grad(ctx,w,h,[[0,'#59c8ff'],[.5,'#bff0ff'],[.58,'#00c2c7'],[1,'#006e8c']]);
+ for(let i=0;i<3;i++)cloud(ctx,((t*.12+i*w/2)%(w+200))-100,h*(.1+i*.08),24,.8);
+ ctx.fillStyle='#5cbf6a';ctx.beginPath();ctx.moveTo(w*.62,h*.58);ctx.quadraticCurveTo(w*.8,h*.4,w,h*.5);ctx.lineTo(w,h*.58);ctx.fill();
+ const by=h*.6,dy=x=>by+18-32*Math.sin(Math.min(1,x/(w*.75))*Math.PI*.9);
+ ctx.fillStyle='#f4f4f4';for(let i=0;i<=7;i++){const x=w*.75*i/7;ctx.fillRect(x-3,dy(x),6,h*.72-dy(x));}
+ ctx.strokeStyle='#fff';ctx.lineWidth=6;ctx.beginPath();for(let x=0;x<=w*.75;x+=8){x?ctx.lineTo(x,dy(x)):ctx.moveTo(x,dy(x));}ctx.stroke();
+ ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=2;
+ for(let r=0;r<5;r++){ctx.beginPath();for(let x=0;x<=w;x+=10){const y=h*(.72+r*.05)+Math.sin(x/28+t/22+r)*3;x?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();}
+}
+
+/* ---- ゆるふわキャラ描画 ---- */
+function face(x,y,s,ph){
+ const bl=((gameTime+(ph*40|0))%190)<6,ex=s*.34,ey=y-s*.1;
+ ctx.strokeStyle='#3a2a4e';ctx.lineWidth=1.6;
+ [-1,1].forEach(d=>{
+  ctx.fillStyle='#3a2a4e';
+  if(bl){ctx.beginPath();ctx.moveTo(x+d*ex-3,ey);ctx.lineTo(x+d*ex+3,ey);ctx.stroke();}
+  else{ctx.beginPath();ctx.arc(x+d*ex,ey,s*.17,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(x+d*ex-1,ey-1.5,s*.06,0,7);ctx.fill();}
+  ctx.fillStyle='rgba(255,120,150,.55)';ctx.beginPath();ctx.ellipse(x+d*s*.6,y+s*.18,s*.16,s*.1,0,0,7);ctx.fill();
+ });
+ ctx.beginPath();ctx.arc(x,y+s*.12,s*.14,.1*Math.PI,.9*Math.PI);ctx.stroke();
+}
+function blob(x,y,s,col,ph){const w=Math.sin(gameTime/10+ph)*.07;ctx.fillStyle=col;ctx.beginPath();ctx.ellipse(x,y,s*(1+w),s*(.92-w),0,0,7);ctx.fill();ctx.fillStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.ellipse(x-s*.3,y-s*.4,s*.35,s*.2,-.5,0,7);ctx.fill();}
+function ear(x,y,r,col,rot){ctx.fillStyle=col;ctx.beginPath();ctx.ellipse(x,y,r*.6,r,rot,0,7);ctx.fill();}
+function tri(x,y,w,h,col){ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x-w,y);ctx.lineTo(x,y-h);ctx.lineTo(x+w,y);ctx.fill();}
+function drawEnemy(v){
+ v.ph=v.ph??Math.random()*6.28;v.vis=v.type==='stealth'?(Math.sin(gameTime/40+v.ph)>0?1:.3):1;ctx.globalAlpha=v.vis;
+ const s=v.size*1.05,y=v.y+Math.sin(gameTime/9+v.ph)*2,x=v.x,slow=v.slowTimer>0;
+ const col=slow?'#a8e6ff':ECOL[v.type];
+ if(v.type==='tank'){ear(x-s*.7,y-s*.85,s*.4,col,-.3);ear(x+s*.7,y-s*.85,s*.4,col,.3);}
+ else if(v.type==='normal'||v.type==='split'){tri(x-s*.55,y-s*.55,s*.3,s*.55,col);tri(x+s*.55,y-s*.55,s*.3,s*.55,col);}
+ else{tri(x-s*.4,y-s*.7,s*.18,s*.4,'#ff7aa8');tri(x+s*.4,y-s*.7,s*.18,s*.4,'#ff7aa8');}
+ blob(x,y,s,col,v.ph);face(x,y,s,v.ph);
+ ctx.font=Math.round(s*.9)+'px sans-serif';ctx.textAlign='center';
+ ctx.fillText((v.final?'👿':EICON[v.type]),x+s*.95,y-s*.8);
+ ctx.fillStyle='#2d3436';ctx.fillRect(x-12,y-s-10,24,4);ctx.fillStyle='#ff7675';ctx.fillRect(x-12,y-s-10,24*Math.max(0,v.hp/v.maxHp),4);ctx.globalAlpha=1;
+}
+function drawAlly(a){
+ a.ph=a.ph??Math.random()*6.28;
+ const y=a.y+Math.sin(gameTime/12+a.ph)*3;
+ ctx.fillStyle='#fff';[[-8,2,8],[8,2,8],[0,-4,10],[0,4,10]].forEach(([dx,dy,r])=>{ctx.beginPath();ctx.arc(a.x+dx,y+dy,r,0,7);ctx.fill();});
+ ctx.strokeStyle='#ffeaa7';ctx.lineWidth=2.5;ctx.beginPath();ctx.ellipse(a.x,y-17,8,3,0,0,7);ctx.stroke();
+ face(a.x,y,12,a.ph);ctx.font='10px sans-serif';ctx.textAlign='center';ctx.fillText('🛡️',a.x+13,y+12);
+}
+function drawPlayer(){
+ const x=player.x,r=player.radius,mv=touchStartPos||keys.w||keys.a||keys.s||keys.d,y=player.y-Math.abs(Math.sin(gameTime/8))*(mv?3:.5);
+ ear(x-r*.5,y-r*1.3,r*.9,'#ffb3c9',-.15);ear(x+r*.5,y-r*1.3,r*.9,'#ffb3c9',.15);
+ ear(x-r*.5,y-r*1.25,r*.5,'#ff8fb0',-.15);ear(x+r*.5,y-r*1.25,r*.5,'#ff8fb0',.15);
+ blob(x,y,r*1.15,'#ff9eb5',0);
+ ctx.strokeStyle='#00cec9';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,r*1.2,Math.PI*1.05,Math.PI*1.95);ctx.stroke();
+ face(x,y,r*1.1,1);
+}
+function drawGifts(){
+ if(goldenT>0){ctx.fillStyle='rgba(255,223,100,.08)';ctx.fillRect(0,0,screenWidth,screenHeight);}
+ gifts.forEach(g=>{const y=g.y+Math.sin(gameTime/10)*4;ctx.font='24px sans-serif';ctx.textAlign='center';ctx.globalAlpha=g.t<120&&gameTime%10<5?.4:1;ctx.fillText('🎁',g.x,y);ctx.globalAlpha=1;});
 }
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-
-let screenWidth = window.innerWidth;
-let screenHeight = window.innerHeight;
-let screenShake = 0;
-let gameTime = 0;
+let screenWidth = window.innerWidth, screenHeight = window.innerHeight, screenShake = 0, gameTime = 0;
 
 function resizeCanvas() {
-    screenWidth = window.innerWidth;
-    screenHeight = window.innerHeight;
-    canvas.width = screenWidth;
-    canvas.height = screenHeight;
+    screenWidth = window.innerWidth; screenHeight = window.innerHeight;
+    canvas.width = screenWidth; canvas.height = screenHeight;
     repositionWorld();
 }
 window.addEventListener('resize', resizeCanvas);
 
 let world = {};
-
 function repositionWorld() {
-    const cx = screenWidth / 2;
-
+    const cx = screenWidth / 2, old = world.pads, oldProg = world.devTerminal && world.devTerminal.progress;
     world = {
         castle: { x: cx, y: screenHeight * 0.28 },
         devTerminal: { x: screenWidth * 0.12, y: screenHeight * 0.86, w: 70, h: 48, progress: 0 },
         pads: {
-            castleRepair: { x: cx, y: screenHeight * 0.40, r: 27, label: "🏰お城建設", codeRequired: 10 },
+            castleRepair: { x: cx, y: screenHeight * 0.40, r: 27, label: "🤝信頼", codeRequired: 10 },
             firewall: { x: cx - Math.min(135, screenWidth * 0.34), y: screenHeight * 0.54, r: 26, level: 0, cost: 40, label: "🔥FW防壁" },
             aiStaff: { x: cx + Math.min(135, screenWidth * 0.34), y: screenHeight * 0.54, r: 26, count: 0, cost: 60, label: "🤖AI防御員" },
-            scpSpeed: { x: screenWidth * 0.14, y: screenHeight * 0.38, r: 25, level: 1, cost: 35, label: "🚀SCP速度" },
+            scpSpeed: { x: screenWidth * 0.14, y: screenHeight * 0.38, r: 25, level: 1, cost: 35, label: "💼システム販売" },
             playerPower: { x: screenWidth * 0.86, y: screenHeight * 0.38, r: 25, level: 1, cost: 30, label: "⚡攻撃強化" },
             antivirus: { x: cx - Math.min(120, screenWidth * 0.30), y: screenHeight * 0.68, r: 26, level: 0, cost: 50, label: "🛡️ワクチン", pulseTimer: 0 },
             osUpdate: { x: cx + Math.min(120, screenWidth * 0.30), y: screenHeight * 0.68, r: 26, level: 1, cost: 70, label: "🔄OSアプデ" },
             training: { x: cx, y: screenHeight * 0.82, r: 27, level: 0, cost: 45, label: "🎓社員教育" }
         }
     };
+    if (old) for (const k in old) for (const f of ['level', 'cost', 'count', 'pulseTimer', 'codeRequired']) if (old[k][f] !== undefined) world.pads[k][f] = old[k][f];
+    if (oldProg) world.devTerminal.progress = oldProg;
 }
 
-const player = {
-    x: screenWidth / 2,
-    y: screenHeight * 0.72,
-    radius: 14,
-    speed: 4.2,
-    carryingCode: 0,
-    maxCapacity: 10,
-    attackRange: 105
-};
+const player = { x: screenWidth / 2, y: screenHeight * 0.72, radius: 14, speed: 4.2, carryingCode: 0, maxCapacity: 10, attackRange: 105 };
 
-let coins = 80;
-let castleHeightLevel = 1; // Infinite growth metric!
-let osVersion = 1.0;
-let castleHp = 100;
-let castleMaxHp = 100;
-let castleCodeStored = 0;
-let castleCodeTarget = 10;
-
-let scpPackages = [];
-let scpTimer = 0;
-
-let viruses = [];
-let virusSpawnTimer = 0;
-let aiUnits = [];
-let particles = [];
-let castleDebris = [];
-let pulseWaves = [];
-
+let coins = 80, castleHeightLevel = 1, osVersion = 1.0, castleHp = 100, castleMaxHp = 100, castleCodeStored = 0, castleCodeTarget = 10;
+let scpPackages = [], scpTimer = 0, viruses = [], virusSpawnTimer = 0, aiUnits = [], particles = [], castleDebris = [], pulseWaves = [];
 const keys = {};
-let touchStartPos = null;
-let touchCurrentPos = null;
+let touchStartPos = null, touchCurrentPos = null;
 
 window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
 window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
-
 window.addEventListener('touchstart', e => {
     touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     touchCurrentPos = { ...touchStartPos };
 }, { passive: true });
-
 window.addEventListener('touchmove', e => {
     if (!touchStartPos) return;
     touchCurrentPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
 }, { passive: true });
+window.addEventListener('touchend', () => { touchStartPos = null; touchCurrentPos = null; });
 
-window.addEventListener('touchend', () => {
-    touchStartPos = null;
-    touchCurrentPos = null;
-});
-
-function spawnVirus() {
-    const timeScale = 1 + (gameTime / 2400); 
-    const heightScale = 1 + (castleHeightLevel * 0.08); // Higher castle = stronger viruses!
-    const difficultyMultiplier = timeScale * heightScale;
-
-    // Staff training reduces phishing critical strikes
-    const trainingMitigation = Math.max(0.5, 1.0 - (world.pads.training.level * 0.06));
-
+function spawnVirus(forceIdx) {
+    const timeScale = (1 + Math.min(gameTime / 2400, 2.5)) * wave.mul * stageDiff().m;
+    const heightScale = 1 + (castleHeightLevel * 0.08);
+    const dm = timeScale * heightScale;
+    const mitig = Math.max(0.5, 1.0 - (world.pads.training.level * 0.06));
     const types = [
-        { type: 'fast', speed: 1.7 * Math.min(2.0, timeScale), hp: 16 * difficultyMultiplier, maxHp: 16 * difficultyMultiplier, color: '#ff6b81', size: 11, label: 'チビ' },
-        { type: 'normal', speed: 1.1 * Math.min(1.8, timeScale), hp: 38 * difficultyMultiplier, maxHp: 38 * difficultyMultiplier, color: '#ff4757', size: 15, label: 'ウイルス' },
-        { type: 'tank', speed: 0.65 * Math.min(1.5, timeScale), hp: 110 * difficultyMultiplier * trainingMitigation, maxHp: 110 * difficultyMultiplier * trainingMitigation, color: '#a55eea', size: 21, label: 'ボス' }
+        { type: 'fast', speed: 1.7 * Math.min(2.0, timeScale), hp: 16 * dm, maxHp: 16 * dm, color: '#ff6b81', size: 11, label: 'チビ' },
+        { type: 'normal', speed: 1.1 * Math.min(1.8, timeScale), hp: 38 * dm, maxHp: 38 * dm, color: '#ff4757', size: 15, label: 'ウイルス' },
+        { type: 'tank', speed: 0.65 * Math.min(1.5, timeScale), hp: 110 * dm * mitig, maxHp: 110 * dm * mitig, color: '#a55eea', size: 21, label: 'ボス' },
+        { type: 'swarm', speed: 1.5 * Math.min(2.0, timeScale), hp: 7 * dm, maxHp: 7 * dm, color: '#ffd6a5', size: 8, label: 'ぷに' },
+        { type: 'split', speed: 0.9 * Math.min(1.8, timeScale), hp: 45 * dm, maxHp: 45 * dm, color: '#b8f2c9', size: 16, label: 'もち' },
+        { type: 'stealth', speed: 1.2 * Math.min(1.8, timeScale), hp: 30 * dm, maxHp: 30 * dm, color: '#d7d7ff', size: 13, label: 'おばけ' },
+        { type: 'healer', speed: 0.8 * Math.min(1.8, timeScale), hp: 55 * dm, maxHp: 55 * dm, color: '#fff0a0', size: 15, label: 'マスター' }
     ];
-
-    let rand = Math.random();
+    const rand = Math.random();
     let chosen = types[1];
     if (rand < 0.45) chosen = types[0];
     else if (rand > (0.82 - Math.min(0.3, gameTime / 8000))) chosen = types[2];
-
-    viruses.push({
-        x: screenWidth * 0.1 + Math.random() * (screenWidth * 0.8),
-        y: screenHeight + 20,
-        ...chosen,
-        eatTimer: 0,
-        slowTimer: 0
-    });
+    const th = wave.theme;
+    if (th === 'swarm') chosen = rand < 0.8 ? types[3] : types[0];
+    else if (th === 'split') chosen = rand < 0.6 ? types[4] : types[1];
+    else if (th === 'stealth') chosen = rand < 0.6 ? types[5] : types[0];
+    else if (th === 'healer') chosen = rand < 0.25 ? types[6] : (rand < 0.7 ? types[1] : types[0]);
+    else if (th === 'heavy') chosen = rand < 0.5 ? types[2] : types[1];
+    if (forceIdx !== undefined) chosen = types[forceIdx];
+    viruses.push({ x: screenWidth * 0.1 + Math.random() * (screenWidth * 0.8), y: screenHeight + 20, ...chosen, eatTimer: 0, slowTimer: 0 });
 }
 
 function addParticles(x, y, color, count = 6) {
-    for (let i = 0; i < count; i++) {
-        particles.push({
-            x, y,
-            vx: (Math.random() - 0.5) * 5,
-            vy: (Math.random() - 0.5) * 5,
-            life: 1.0,
-            color,
-            size: Math.random() * 4 + 2
-        });
-    }
+    for (let i = 0; i < count; i++) particles.push({ x, y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, life: 1.0, color, size: Math.random() * 4 + 2 });
 }
-
 function addDebris(x, y) {
-    for (let i = 0; i < 5; i++) {
-        castleDebris.push({
-            x, y,
-            vx: (Math.random() - 0.5) * 7,
-            vy: (Math.random() - 0.7) * 5,
-            life: 1.0,
-            color: ['#ffb7c5', '#ffeaa7', '#74b9ff', '#ffd166', '#a29bfe'][Math.floor(Math.random() * 5)],
-            size: Math.random() * 6 + 3
-        });
-    }
+    for (let i = 0; i < 5; i++) castleDebris.push({
+        x, y, vx: (Math.random() - 0.5) * 7, vy: (Math.random() - 0.7) * 5, life: 1.0,
+        color: ['#ffb7c5', '#ffeaa7', '#74b9ff', '#ffd166', '#a29bfe'][Math.floor(Math.random() * 5)],
+        size: Math.random() * 6 + 3
+    });
 }
 
 function update() {
     gameTime++;
+    eventTick();
+    const P = world.pads;
 
-    // OS Auto-Repair & Passive Regen
-    if (gameTime % 60 === 0 && castleHp < castleMaxHp) {
-        const regenAmount = (world.pads.osUpdate.level * 0.7);
-        castleHp = Math.min(castleMaxHp, castleHp + regenAmount);
-    }
+    if (gameTime % 60 === 0 && castleHp < castleMaxHp) castleHp = Math.min(castleMaxHp, castleHp + P.osUpdate.level * 0.7);
 
-    // Player Touch / Key Movement
-    let moveX = 0;
-    let moveY = 0;
-
+    let moveX = 0, moveY = 0;
     if (keys['w'] || keys['arrowup']) moveY -= 1;
     if (keys['s'] || keys['arrowdown']) moveY += 1;
     if (keys['a'] || keys['arrowleft']) moveX -= 1;
     if (keys['d'] || keys['arrowright']) moveX += 1;
-
     if (touchStartPos && touchCurrentPos) {
-        const dx = touchCurrentPos.x - touchStartPos.x;
-        const dy = touchCurrentPos.y - touchStartPos.y;
+        const dx = touchCurrentPos.x - touchStartPos.x, dy = touchCurrentPos.y - touchStartPos.y;
         const dist = Math.hypot(dx, dy);
-        if (dist > 6) {
-            moveX = dx / dist;
-            moveY = dy / dist;
-        }
+        if (dist > 6) { moveX = dx / dist; moveY = dy / dist; }
     }
+    if (moveX !== 0 && moveY !== 0 && !touchStartPos) { moveX *= 0.7071; moveY *= 0.7071; }
+    player.x = Math.max(player.radius, Math.min(screenWidth - player.radius, player.x + moveX * player.speed));
+    player.y = Math.max(player.radius, Math.min(screenHeight - player.radius, player.y + moveY * player.speed));
 
-    if (moveX !== 0 && moveY !== 0 && !touchStartPos) {
-        moveX *= 0.7071;
-        moveY *= 0.7071;
-    }
-
-    player.x += moveX * player.speed;
-    player.y += moveY * player.speed;
-
-    player.x = Math.max(player.radius, Math.min(screenWidth - player.radius, player.x));
-    player.y = Math.max(player.radius, Math.min(screenHeight - player.radius, player.y));
-
-    // Developer Terminal & Staff Education Multiplier
     const term = world.devTerminal;
-    const devSpeedBoost = (1 + (world.pads.osUpdate.level * 0.05) + (world.pads.training.level * 0.08));
-    term.progress += 0.95 * devSpeedBoost;
+    term.progress += 0.95 * (1 + P.osUpdate.level * 0.05 + P.training.level * 0.08);
     if (term.progress >= 100) {
         term.progress = 0;
-        if (player.carryingCode < player.maxCapacity) {
-            const distToDev = Math.hypot(player.x - term.x, player.y - term.y);
-            if (distToDev < 90) {
-                player.carryingCode++;
-                // Employee Training passive bonus income when generating code
-                const trainBonus = world.pads.training.level * 2;
-                coins += trainBonus;
-                playBeep(650, 'triangle', 0.04);
-                addParticles(term.x, term.y, '#70a1ff', 3);
-            }
+        if (player.carryingCode < player.maxCapacity && Math.hypot(player.x - term.x, player.y - term.y) < 90) {
+            player.carryingCode++;
+            coins += P.training.level * 2;
+            playBeep(650, 'triangle', 0.04);
+            addParticles(term.x, term.y, '#70a1ff', 3);
         }
     }
 
-    // SCP Pipeline Line & Speed Calculation
-    const scpSpeedBoost = (1 + (world.pads.osUpdate.level * 0.08));
-    scpTimer += world.pads.scpSpeed.level * 0.95 * scpSpeedBoost;
-    if (scpTimer >= 65) {
-        scpTimer = 0;
-        scpPackages.push({ progress: 0 });
-    }
-
+    const scpBoost = 1 + P.osUpdate.level * 0.08;
+    scpTimer += P.scpSpeed.level * 0.95 * scpBoost;
+    if (scpTimer >= 65) { scpTimer = 0; scpPackages.push({ progress: 0 }); }
     for (let i = scpPackages.length - 1; i >= 0; i--) {
         const p = scpPackages[i];
-        p.progress += 0.022 * world.pads.scpSpeed.level * scpSpeedBoost;
+        p.progress += 0.022 * P.scpSpeed.level * scpBoost;
         if (p.progress >= 1.0) {
             scpPackages.splice(i, 1);
             castleCodeStored++;
-            const baseGain = 5 + (world.pads.training.level * 2);
-            coins += Math.floor(baseGain * (1 + (world.pads.osUpdate.level * 0.1)));
+            coins += Math.floor((5 + P.scpSpeed.level * 4 + P.training.level * 2) * (1 + P.osUpdate.level * 0.1));
             addParticles(world.castle.x, world.castle.y, '#ffbe76', 5);
             playBeep(880, 'sine', 0.05);
         }
     }
 
-    // Direct Code Delivery to Castle
-    const distToCastle = Math.hypot(player.x - world.castle.x, player.y - world.castle.y);
-    if (distToCastle < 75 && player.carryingCode > 0) {
+    if (Math.hypot(player.x - world.castle.x, player.y - world.castle.y) < 75 && player.carryingCode > 0) {
         castleCodeStored += player.carryingCode;
-        const codeReward = player.carryingCode * (9 + world.pads.training.level * 2);
-        coins += Math.floor(codeReward * (1 + (world.pads.osUpdate.level * 0.1)));
+        coins += Math.floor(player.carryingCode * (9 + P.training.level * 2) * (1 + P.osUpdate.level * 0.1));
         addParticles(world.castle.x, world.castle.y, '#ffeaa7', player.carryingCode * 3);
         player.carryingCode = 0;
         playBeep(1020, 'sine', 0.08);
     }
 
-    // Antivirus Pulse Wave Emission
-    if (world.pads.antivirus.level > 0) {
-        world.pads.antivirus.pulseTimer++;
-        const pulseInterval = Math.max(80, 230 - (world.pads.antivirus.level * 25));
-        if (world.pads.antivirus.pulseTimer >= pulseInterval) {
-            world.pads.antivirus.pulseTimer = 0;
-            pulseWaves.push({
-                x: world.pads.antivirus.x,
-                y: world.pads.antivirus.y,
-                r: 10,
-                maxR: Math.max(screenWidth, screenHeight) * 0.85,
-                damage: 25 + (world.pads.antivirus.level * 16)
-            });
+    if (P.antivirus.level > 0) {
+        P.antivirus.pulseTimer++;
+        if (P.antivirus.pulseTimer >= Math.max(80, 230 - P.antivirus.level * 25)) {
+            P.antivirus.pulseTimer = 0;
+            pulseWaves.push({ x: P.antivirus.x, y: P.antivirus.y, r: 10, maxR: Math.max(screenWidth, screenHeight) * 0.85, damage: 25 + P.antivirus.level * 16 });
             playBeep(420, 'square', 0.18);
         }
     }
-
-    // Update Pulse Shockwaves
     for (let i = pulseWaves.length - 1; i >= 0; i--) {
         const pw = pulseWaves[i];
         pw.r += 13;
-
         viruses.forEach(v => {
-            const dist = Math.hypot(v.x - pw.x, v.y - pw.y);
-            if (Math.abs(dist - pw.r) < 22) {
-                v.hp -= pw.damage * 0.1;
-                v.slowTimer = 65;
+            if (Math.abs(Math.hypot(v.x - pw.x, v.y - pw.y) - pw.r) < 22) {
+                v.hp -= pw.damage * 0.1; v.slowTimer = 65;
                 addParticles(v.x, v.y, '#00cec9', 2);
             }
         });
-
-        if (pw.r >= pw.maxR) {
-            pulseWaves.splice(i, 1);
-        }
+        if (pw.r >= pw.maxR) pulseWaves.splice(i, 1);
     }
 
-    // Dynamic Virus Spawn Rate
     virusSpawnTimer++;
-    const minSpawnDelay = Math.max(10, 105 - Math.floor(castleHeightLevel * 3) - Math.floor(gameTime / 130));
-    if (virusSpawnTimer > minSpawnDelay) {
+    if (wave.phase === 'fight' && virusSpawnTimer > Math.max(12, (105 - castleHeightLevel * 3 - Math.min(gameTime / 130, 60)) / (wave.mul * stageDiff().rate))) {
         virusSpawnTimer = 0;
         spawnVirus();
+        if (wave.theme === 'swarm') { spawnVirus(); spawnVirus(); }
         if (gameTime > 1500 && Math.random() < 0.35) spawnVirus();
         if (castleHeightLevel > 10 && Math.random() < 0.45) spawnVirus();
     }
 
-    // Virus Combat & Castle Damage / Structural Shrinkage Mechanism
     for (let i = viruses.length - 1; i >= 0; i--) {
         const v = viruses[i];
-        let targetX = world.castle.x;
+        const hp0 = v.hp;
+        if (v.type === 'healer') viruses.forEach(o => { if (o !== v && Math.hypot(o.x - v.x, o.y - v.y) < 90) o.hp = Math.min(o.maxHp, o.hp + 0.25); });
         let targetY = world.castle.y;
-
         if (v.slowTimer > 0) v.slowTimer--;
-        const currentSpeed = v.slowTimer > 0 ? v.speed * 0.45 : v.speed;
+        const spd = v.slowTimer > 0 ? v.speed * 0.45 : v.speed;
+        const wm = wallEffect(v);
+        const ang = Math.atan2(targetY - v.y, world.castle.x - v.x);
+        v.x += Math.cos(ang) * spd * wm; v.y += Math.sin(ang) * spd * wm;
 
-        if (world.pads.firewall.level > 0 && v.y > screenHeight * 0.54) {
-            targetY = screenHeight * 0.54;
-        }
-
-        const angle = Math.atan2(targetY - v.y, targetX - v.x);
-        v.x += Math.cos(angle) * currentSpeed;
-        v.y += Math.sin(angle) * currentSpeed;
-
-        const distToCore = Math.hypot(v.x - world.castle.x, v.y - world.castle.y);
-        if (distToCore < 50) {
+        if (Math.hypot(v.x - world.castle.x, v.y - world.castle.y) < 50) {
             v.eatTimer++;
             if (v.eatTimer % 15 === 0) {
-                screenShake = 8;
-                addDebris(v.x, v.y);
-                playBeep(140, 'sawtooth', 0.1);
-
-                // Reduce stored code & Castle HP
-                if (castleCodeStored > 0) castleCodeStored = Math.max(0, castleCodeStored - 1);
-                castleHp -= 5;
-
-                // 🚨 UNLIMITED SHRINKAGE MECHANIC: If HP reaches 0, Castle loses Height Levels & Shrinks!
+                screenShake = 8; addDebris(v.x, v.y); playBeep(140, 'sawtooth', 0.1);
+                if (castleCodeStored > 0) castleCodeStored--;
+                castleHp -= (v.weak ? 2.5 : 5) * stageDiff().dmg;
                 if (castleHp <= 0) {
-                    if (castleHeightLevel > 1) {
-                        castleHeightLevel--; // Castle shrinks in height!
-                        castleHp = castleMaxHp;
-                        screenShake = 15;
-                        addDebris(world.castle.x, world.castle.y);
-                        playBeep(100, 'sawtooth', 0.3);
-                    } else {
-                        castleHp = 10; // Minimum bottom boundary
-                    }
+                    if (castleHeightLevel > stageFloor()) {
+                        castleHeightLevel--; castleHp = castleMaxHp; screenShake = 15;
+                        addDebris(world.castle.x, world.castle.y); playBeep(100, 'sawtooth', 0.3);
+                    } else gameOver();
                 }
             }
         }
-
-        // Player & Defense Attacks
-        const distToPlayer = Math.hypot(v.x - player.x, v.y - player.y);
-        if (distToPlayer < player.attackRange) {
-            v.hp -= world.pads.playerPower.level * 1.0 * (1 + (world.pads.osUpdate.level * 0.05));
+        if (Math.hypot(v.x - player.x, v.y - player.y) < player.attackRange) {
+            v.hp -= P.playerPower.level * (1 + P.osUpdate.level * 0.05);
             addParticles(v.x, v.y, '#ff4757', 2);
         }
-
-        if (world.pads.firewall.level > 0) {
-            const distToFW = Math.hypot(v.x - world.pads.firewall.x, v.y - world.pads.firewall.y);
-            if (distToFW < 135) {
-                v.hp -= world.pads.firewall.level * 0.7;
-                addParticles(v.x, v.y, '#ff7f50', 1);
-            }
+        if (P.firewall.level > 0 && Math.hypot(v.x - P.firewall.x, v.y - P.firewall.y) < 135) {
+            v.hp -= P.firewall.level * 0.7;
+            addParticles(v.x, v.y, '#ff7f50', 1);
         }
-
+        if (v.type === 'stealth' && v.vis < 1 && v.hp < hp0) v.hp = hp0 - (hp0 - v.hp) * 0.3;
         if (v.hp <= 0) {
-            addParticles(v.x, v.y, v.color, 12);
+            addParticles(v.x, v.y, v.color, 12); onKill(v);
+            if (v.type === 'split') for (let k = 0; k < 2; k++) viruses.push({ x: v.x + (k ? 10 : -10), y: v.y, type: 'fast', speed: 1.8, hp: 12, maxHp: 12, color: '#ffb3d1', size: 8, eatTimer: 0, slowTimer: 0 });
             coins += v.maxHp > 60 ? 25 : 12;
             viruses.splice(i, 1);
             playBeep(780, 'sine', 0.05);
         }
     }
 
-    // AI Security Guard Patrol
     aiUnits.forEach(ai => {
-        let nearest = null;
-        let minDist = 999;
-        viruses.forEach(v => {
-            const d = Math.hypot(v.x - ai.x, v.y - ai.y);
-            if (d < minDist) {
-                minDist = d;
-                nearest = v;
-            }
-        });
-
+        let nearest = null, minDist = 999;
+        viruses.forEach(v => { const d = Math.hypot(v.x - ai.x, v.y - ai.y); if (d < minDist) { minDist = d; nearest = v; } });
         if (nearest) {
-            const angle = Math.atan2(nearest.y - ai.y, nearest.x - ai.x);
-            ai.x += Math.cos(angle) * 2.4;
-            ai.y += Math.sin(angle) * 2.4;
-
-            if (minDist < 100) {
-                nearest.hp -= 0.75 * (1 + (world.pads.osUpdate.level * 0.05));
-                addParticles(nearest.x, nearest.y, '#a55eea', 1);
-            }
+            const a = Math.atan2(nearest.y - ai.y, nearest.x - ai.x);
+            ai.x += Math.cos(a) * 2.4; ai.y += Math.sin(a) * 2.4;
+            if (minDist < 100) { nearest.hp -= 0.75 * (1 + P.osUpdate.level * 0.05); addParticles(nearest.x, nearest.y, '#a55eea', 1); }
         } else {
             ai.angle = (ai.angle || 0) + 0.035;
             ai.x = world.castle.x + Math.cos(ai.angle) * 110;
@@ -467,430 +690,190 @@ function update() {
         }
     });
 
-    // Pad Interactions (Step-On Upgrades)
-    checkPad(world.pads.castleRepair, () => {
-        if (castleCodeStored >= castleCodeTarget) {
+    checkPad(P.castleRepair, () => {
+        if (castleCodeStored >= castleCodeTarget && castleHeightLevel < (endless ? 999 : FINAL_LV)) {
             castleCodeStored -= castleCodeTarget;
-            castleHeightLevel++; // Build higher infinitely!
-            castleMaxHp += 20;
-            castleHp = castleMaxHp;
-            castleCodeTarget = Math.floor(castleCodeTarget * 1.5);
-            world.pads.castleRepair.codeRequired = castleCodeTarget;
+            castleHeightLevel++; castleMaxHp += 20; castleHp = castleMaxHp; onLevelUp();
+            castleCodeTarget = Math.floor(castleCodeTarget * 1.25);
+            P.castleRepair.codeRequired = castleCodeTarget;
             addParticles(world.castle.x, world.castle.y, '#ffb7c5', 30);
             playBeep(1200, 'triangle', 0.25);
         } else if (castleHp < castleMaxHp && coins >= 10) {
-            coins -= 10;
-            castleHp = Math.min(castleMaxHp, castleHp + 25);
+            coins -= 10; castleHp = Math.min(castleMaxHp, castleHp + 25);
             playBeep(620, 'sine', 0.08);
         }
     });
-
-    checkPad(world.pads.firewall, () => {
-        if (coins >= world.pads.firewall.cost) {
-            coins -= world.pads.firewall.cost;
-            world.pads.firewall.level++;
-            world.pads.firewall.cost = Math.floor(world.pads.firewall.cost * 1.7);
-            playBeep(820, 'square', 0.12);
-        }
-    });
-
-    checkPad(world.pads.aiStaff, () => {
-        if (coins >= world.pads.aiStaff.cost) {
-            coins -= world.pads.aiStaff.cost;
-            world.pads.aiStaff.count++;
+    checkPad(P.firewall, () => { if (coins >= P.firewall.cost) { coins -= P.firewall.cost; P.firewall.level++; P.firewall.cost = Math.floor(P.firewall.cost * 1.7); playBeep(820, 'square', 0.12); } });
+    checkPad(P.aiStaff, () => {
+        if (coins >= P.aiStaff.cost) {
+            coins -= P.aiStaff.cost; P.aiStaff.count++;
             aiUnits.push({ x: world.castle.x, y: world.castle.y, angle: Math.random() * Math.PI * 2 });
-            world.pads.aiStaff.cost = Math.floor(world.pads.aiStaff.cost * 1.8);
-            playBeep(920, 'sine', 0.15);
+            P.aiStaff.cost = Math.floor(P.aiStaff.cost * 1.8); playBeep(920, 'sine', 0.15);
         }
     });
-
-    checkPad(world.pads.scpSpeed, () => {
-        if (coins >= world.pads.scpSpeed.cost) {
-            coins -= world.pads.scpSpeed.cost;
-            world.pads.scpSpeed.level++;
-            world.pads.scpSpeed.cost = Math.floor(world.pads.scpSpeed.cost * 1.6);
-            playBeep(860, 'triangle', 0.12);
-        }
-    });
-
-    checkPad(world.pads.playerPower, () => {
-        if (coins >= world.pads.playerPower.cost) {
-            coins -= world.pads.playerPower.cost;
-            world.pads.playerPower.level++;
-            world.pads.playerPower.cost = Math.floor(world.pads.playerPower.cost * 1.6);
-            playBeep(1100, 'sine', 0.12);
-        }
-    });
-
-    checkPad(world.pads.antivirus, () => {
-        if (coins >= world.pads.antivirus.cost) {
-            coins -= world.pads.antivirus.cost;
-            world.pads.antivirus.level++;
-            world.pads.antivirus.cost = Math.floor(world.pads.antivirus.cost * 1.7);
-            playBeep(1000, 'square', 0.15);
-        }
-    });
-
-    checkPad(world.pads.osUpdate, () => {
-        if (coins >= world.pads.osUpdate.cost) {
-            coins -= world.pads.osUpdate.cost;
-            world.pads.osUpdate.level++;
-            osVersion = (1.0 + (world.pads.osUpdate.level - 1) * 0.5).toFixed(1);
-            castleMaxHp += 20;
-            castleHp += 20;
-            world.pads.osUpdate.cost = Math.floor(world.pads.osUpdate.cost * 1.8);
+    checkPad(P.scpSpeed, () => { if (coins >= P.scpSpeed.cost) { coins -= P.scpSpeed.cost; P.scpSpeed.level++; P.scpSpeed.cost = Math.floor(P.scpSpeed.cost * 1.6); playBeep(860, 'triangle', 0.12); } });
+    checkPad(P.playerPower, () => { if (coins >= P.playerPower.cost) { coins -= P.playerPower.cost; P.playerPower.level++; P.playerPower.cost = Math.floor(P.playerPower.cost * 1.6); playBeep(1100, 'sine', 0.12); } });
+    checkPad(P.antivirus, () => { if (coins >= P.antivirus.cost) { coins -= P.antivirus.cost; P.antivirus.level++; P.antivirus.cost = Math.floor(P.antivirus.cost * 1.7); playBeep(1000, 'square', 0.15); } });
+    checkPad(P.osUpdate, () => {
+        if (coins >= P.osUpdate.cost) {
+            coins -= P.osUpdate.cost; P.osUpdate.level++;
+            osVersion = (1.0 + (P.osUpdate.level - 1) * 0.5).toFixed(1);
+            castleMaxHp += 20; castleHp += 20;
+            P.osUpdate.cost = Math.floor(P.osUpdate.cost * 1.8);
             playBeep(1300, 'triangle', 0.25);
-            addParticles(world.pads.osUpdate.x, world.pads.osUpdate.y, '#e84393', 20);
+            addParticles(P.osUpdate.x, P.osUpdate.y, '#e84393', 20);
         }
     });
-
-    // NEW: Employee Training Station Purchase
-    checkPad(world.pads.training, () => {
-        if (coins >= world.pads.training.cost) {
-            coins -= world.pads.training.cost;
-            world.pads.training.level++;
-            world.pads.training.cost = Math.floor(world.pads.training.cost * 1.65);
+    checkPad(P.training, () => {
+        if (coins >= P.training.cost) {
+            coins -= P.training.cost; P.training.level++;
+            P.training.cost = Math.floor(P.training.cost * 1.65);
             playBeep(1150, 'sine', 0.18);
-            addParticles(world.pads.training.x, world.pads.training.y, '#fdcb6e', 20);
+            addParticles(P.training.x, P.training.y, '#fdcb6e', 20);
         }
     });
 
-    // Particle decay
-    particles.forEach((p, index) => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.life -= 0.04;
-        if (p.life <= 0) particles.splice(index, 1);
-    });
-
-    castleDebris.forEach((d, index) => {
-        d.x += d.vx;
-        d.y += d.vy;
-        d.vy += 0.3;
-        d.life -= 0.03;
-        if (d.life <= 0) castleDebris.splice(index, 1);
-    });
-
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i]; p.x += p.vx; p.y += p.vy; p.life -= 0.04;
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+    for (let i = castleDebris.length - 1; i >= 0; i--) {
+        const d = castleDebris[i]; d.x += d.vx; d.y += d.vy; d.vy += 0.3; d.life -= 0.03;
+        if (d.life <= 0) castleDebris.splice(i, 1);
+    }
     if (screenShake > 0) screenShake *= 0.85;
+    applyIncome();
 
-    // HUD Text Updates
     document.getElementById('coinText').innerText = coins;
-    document.getElementById('castleHeightText').innerText = `${castleHeightLevel * 10}m (Lv.${castleHeightLevel})`;
-    document.getElementById('trainLvText').innerText = world.pads.training.level;
+    document.getElementById('castleHeightText').innerText = `S${stageOf(castleHeightLevel) + 1}/5 ${STAGE_NAMES[stageOf(castleHeightLevel)]} Lv.${castleHeightLevel}`;
+    document.getElementById('trainLvText').innerText = P.training.level;
     document.getElementById('osLvText').innerText = osVersion;
     document.getElementById('codeText').innerText = `${player.carryingCode}/${player.maxCapacity}`;
 }
 
 function checkPad(pad, callback) {
-    const dist = Math.hypot(player.x - pad.x, player.y - pad.y);
-    if (dist < pad.r) {
+    if (Math.hypot(player.x - pad.x, player.y - pad.y) < pad.r) {
         pad.stepTimer = (pad.stepTimer || 0) + 1;
-        if (pad.stepTimer > 14) {
-            pad.stepTimer = 0;
-            callback();
-        }
-    } else {
-        pad.stepTimer = 0;
-    }
+        if (pad.stepTimer > 14) { pad.stepTimer = 0; const c = coins, h = castleHeightLevel; callback(); if (coins < c || castleHeightLevel > h) padTip(pad); }
+    } else pad.stepTimer = 0;
 }
 
 function draw() {
     ctx.save();
-
-    if (screenShake > 0.5) {
-        ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
-    }
-
+    if (screenShake > 0.5) ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Background Grid
-    ctx.fillStyle = '#151022';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // 🌺 沖縄ステージ背景(レベルで切り替え)
+    drawBackground(ctx, canvas.width, canvas.height, castleHeightLevel, gameTime);
 
-    ctx.strokeStyle = '#221a36';
-    ctx.lineWidth = 1.5;
-    for (let x = 0; x < canvas.width; x += 35) {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-    }
-    for (let y = 0; y < canvas.height; y += 35) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-    }
-
-    // Antivirus Pulse Waves
     pulseWaves.forEach(pw => {
-        ctx.strokeStyle = 'rgba(0, 206, 201, 0.6)';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.arc(pw.x, pw.y, pw.r, 0, Math.PI * 2);
-        ctx.stroke();
+        ctx.strokeStyle = 'rgba(0,206,201,0.6)'; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.arc(pw.x, pw.y, pw.r, 0, Math.PI * 2); ctx.stroke();
     });
 
-    // SCP Pipeline Rail
-    const term = world.devTerminal;
-    const castle = world.castle;
-    ctx.strokeStyle = '#74b9ff';
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    ctx.moveTo(term.x, term.y);
-    ctx.lineTo(term.x, castle.y + 20);
-    ctx.lineTo(castle.x, castle.y + 20);
-    ctx.stroke();
+    const term = world.devTerminal, castle = world.castle;
+    ctx.strokeStyle = '#74b9ff'; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(term.x, term.y); ctx.lineTo(term.x, castle.y + 20); ctx.lineTo(castle.x, castle.y + 20); ctx.stroke();
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.stroke();
 
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // SCP Capsules
     scpPackages.forEach(p => {
         let px, py;
-        if (p.progress < 0.65) {
-            px = term.x;
-            py = term.y - (p.progress / 0.65) * (term.y - (castle.y + 20));
-        } else {
-            px = term.x + ((p.progress - 0.65) / 0.35) * (castle.x - term.x);
-            py = castle.y + 20;
-        }
-        ctx.fillStyle = '#ffeaa7';
-        ctx.beginPath();
-        ctx.arc(px, py, 7, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#fdcb6e';
-        ctx.stroke();
+        if (p.progress < 0.65) { px = term.x; py = term.y - (p.progress / 0.65) * (term.y - (castle.y + 20)); }
+        else { px = term.x + ((p.progress - 0.65) / 0.35) * (castle.x - term.x); py = castle.y + 20; }
+        ctx.fillStyle = '#ffeaa7'; ctx.beginPath(); ctx.arc(px, py, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#fdcb6e'; ctx.stroke();
     });
 
-    // Developer Terminal
-    ctx.fillStyle = '#0984e3';
-    ctx.fillRect(term.x - term.w/2, term.y - term.h/2, term.w, term.h);
-    ctx.strokeStyle = '#74b9ff';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(term.x - term.w/2, term.y - term.h/2, term.w, term.h);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.textAlign = 'center';
+    ctx.fillStyle = '#0984e3'; ctx.fillRect(term.x - term.w / 2, term.y - term.h / 2, term.w, term.h);
+    ctx.strokeStyle = '#74b9ff'; ctx.lineWidth = 2; ctx.strokeRect(term.x - term.w / 2, term.y - term.h / 2, term.w, term.h);
+    ctx.fillStyle = '#ffffff'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center';
     ctx.fillText('💻 開発端末', term.x, term.y - 8);
+    ctx.fillStyle = '#2d3436'; ctx.fillRect(term.x - 28, term.y + 8, 56, 7);
+    ctx.fillStyle = '#00cec9'; ctx.fillRect(term.x - 28, term.y + 8, 56 * (term.progress / 100), 7);
 
-    ctx.fillStyle = '#2d3436';
-    ctx.fillRect(term.x - 28, term.y + 8, 56, 7);
-    ctx.fillStyle = '#00cec9';
-    ctx.fillRect(term.x - 28, term.y + 8, 56 * (term.progress / 100), 7);
+    const P = world.pads;
+    drawPad(P.castleRepair, '#ffb7c5', `🤝信頼 ${castleCodeStored}/${P.castleRepair.codeRequired}`);
+    drawPad(P.firewall, '#ff7f50', `FW Lv.${P.firewall.level} (${P.firewall.cost}₡)`);
+    drawPad(P.aiStaff, '#a55eea', `AI ${P.aiStaff.count}体 (${P.aiStaff.cost}₡)`);
+    drawPad(P.scpSpeed, '#74b9ff', `販売 Lv.${P.scpSpeed.level} (${P.scpSpeed.cost}₡)`);
+    drawPad(P.playerPower, '#ffeaa7', `攻撃 Lv.${P.playerPower.level} (${P.playerPower.cost}₡)`);
+    drawPad(P.antivirus, '#00cec9', `ワクチン Lv.${P.antivirus.level} (${P.antivirus.cost}₡)`);
+    drawPad(P.osUpdate, '#e84393', `OS壁 Lv.${P.osUpdate.level} (${P.osUpdate.cost}₡)`);
+    drawPad(P.training, '#fdcb6e', `🎓教育 Lv.${P.training.level} (${P.training.cost}₡)`);
 
-    // Upgrade Stations
-    drawPad(world.pads.castleRepair, '#ffb7c5', `建設 [${castleCodeStored}/${world.pads.castleRepair.codeRequired}]`);
-    drawPad(world.pads.firewall, '#ff7f50', `FW Lv.${world.pads.firewall.level} (${world.pads.firewall.cost}₡)`);
-    drawPad(world.pads.aiStaff, '#a55eea', `AI ${world.pads.aiStaff.count}体 (${world.pads.aiStaff.cost}₡)`);
-    drawPad(world.pads.scpSpeed, '#74b9ff', `SCP Lv.${world.pads.scpSpeed.level} (${world.pads.scpSpeed.cost}₡)`);
-    drawPad(world.pads.playerPower, '#ffeaa7', `攻撃 Lv.${world.pads.playerPower.level} (${world.pads.playerPower.cost}₡)`);
-    drawPad(world.pads.antivirus, '#00cec9', `ワクチン Lv.${world.pads.antivirus.level} (${world.pads.antivirus.cost}₡)`);
-    drawPad(world.pads.osUpdate, '#e84393', `OS Lv.${world.pads.osUpdate.level} (${world.pads.osUpdate.cost}₡)`);
-    drawPad(world.pads.training, '#fdcb6e', `🎓教育 Lv.${world.pads.training.level} (${world.pads.training.cost}₡)`);
-
-    // Draw Studying Employee Icons around Training Station
-    if (world.pads.training.level > 0) {
-        for (let i = 0; i < Math.min(6, world.pads.training.level); i++) {
-            const ang = (i / 6) * Math.PI * 2 + (gameTime * 0.02);
-            const ex = world.pads.training.x + Math.cos(ang) * 36;
-            const ey = world.pads.training.y + Math.sin(ang) * 20;
-            ctx.font = '10px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('✏️', ex, ey);
+    if (P.training.level > 0) {
+        for (let i = 0; i < Math.min(6, P.training.level); i++) {
+            const a = (i / 6) * Math.PI * 2 + gameTime * 0.02;
+            ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('✏️', P.training.x + Math.cos(a) * 36, P.training.y + Math.sin(a) * 20);
         }
     }
 
-    // Firewall Beam
-    if (world.pads.firewall.level > 0) {
-        ctx.fillStyle = 'rgba(255, 127, 80, 0.35)';
-        ctx.fillRect(screenWidth * 0.1, screenHeight * 0.54 - 5, screenWidth * 0.8, 10);
-        ctx.strokeStyle = '#ff7f50';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(screenWidth * 0.1, screenHeight * 0.54 - 5, screenWidth * 0.8, 10);
-    }
+    drawWalls();
 
-    // 🏰 INFINITE STACKABLE CASTLE
     drawInfiniteCastle(castle.x, castle.y, castleHeightLevel);
 
-    // 🤖 AI Guards
-    aiUnits.forEach(ai => {
-        ctx.fillStyle = '#a55eea';
-        ctx.beginPath();
-        ctx.arc(ai.x, ai.y, 10, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
+    drawGifts();
+    aiUnits.forEach(drawAlly);
+    viruses.forEach(drawEnemy);
+    drawPlayer();
+    ctx.strokeStyle = 'rgba(255,234,167,0.35)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(player.x, player.y, player.attackRange, 0, Math.PI * 2); ctx.stroke();
 
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '10px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('🤖', ai.x, ai.y + 4);
-    });
-
-    // 👾 Viruses
-    viruses.forEach(v => {
-        ctx.fillStyle = v.slowTimer > 0 ? '#00cec9' : v.color;
-        ctx.beginPath();
-        ctx.arc(v.x, v.y, v.size, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(v.x - 3, v.y - 2, 2.5, 0, Math.PI * 2);
-        ctx.arc(v.x + 3, v.y - 2, 2.5, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = '#2d3436';
-        ctx.fillRect(v.x - 12, v.y - v.size - 8, 24, 4);
-        ctx.fillStyle = '#ff7675';
-        ctx.fillRect(v.x - 12, v.y - v.size - 8, 24 * (v.hp / v.maxHp), 4);
-    });
-
-    // 🏃 Player Engineer
-    ctx.fillStyle = '#ff7597';
-    ctx.beginPath();
-    ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2.5;
-    ctx.stroke();
-
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.arc(player.x - 4, player.y - 2, 3, 0, Math.PI * 2);
-    ctx.arc(player.x + 4, player.y - 2, 3, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = 'rgba(255, 234, 167, 0.2)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.arc(player.x, player.y, player.attackRange, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Stacked Code Cubes
     for (let i = 0; i < player.carryingCode; i++) {
-        ctx.fillStyle = '#70a1ff';
-        ctx.fillRect(player.x - 8, player.y - 22 - (i * 8), 16, 6);
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(player.x - 8, player.y - 22 - (i * 8), 16, 6);
+        ctx.fillStyle = '#70a1ff'; ctx.fillRect(player.x - 8, player.y - 22 - i * 8, 16, 6);
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1; ctx.strokeRect(player.x - 8, player.y - 22 - i * 8, 16, 6);
     }
 
-    // Particles & Debris
-    particles.forEach(p => {
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = p.life;
-        ctx.fillRect(p.x, p.y, p.size, p.size);
-    });
-    castleDebris.forEach(d => {
-        ctx.fillStyle = d.color;
-        ctx.globalAlpha = d.life;
-        ctx.fillRect(d.x, d.y, d.size, d.size);
-    });
+    particles.forEach(p => { ctx.fillStyle = p.color; ctx.globalAlpha = p.life; ctx.fillRect(p.x, p.y, p.size, p.size); });
+    castleDebris.forEach(d => { ctx.fillStyle = d.color; ctx.globalAlpha = d.life; ctx.fillRect(d.x, d.y, d.size, d.size); });
     ctx.globalAlpha = 1.0;
 
-    // Mobile Virtual Joystick Overlay
     if (touchStartPos && touchCurrentPos) {
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(touchStartPos.x, touchStartPos.y, 35, 0, Math.PI * 2);
-        ctx.stroke();
-
-        ctx.fillStyle = 'rgba(255, 158, 187, 0.65)';
-        ctx.beginPath();
-        ctx.arc(touchCurrentPos.x, touchCurrentPos.y, 16, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(touchStartPos.x, touchStartPos.y, 35, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = 'rgba(255,158,187,0.65)';
+        ctx.beginPath(); ctx.arc(touchCurrentPos.x, touchCurrentPos.y, 16, 0, Math.PI * 2); ctx.fill();
     }
-
     ctx.restore();
 }
 
 function drawInfiniteCastle(x, y, heightLv) {
-    ctx.save();
-    ctx.translate(x, y);
-
-    // Castle Base
-    ctx.fillStyle = '#ffb7c5';
-    ctx.fillRect(-45, -10, 90, 30);
-
-    // Infinite Vertical Tier Stacking!
-    const numTiers = Math.min(12, heightLv); // Visual cap on screen tiers, but scales upward
+    ctx.save(); ctx.translate(x, y);
+    ctx.fillStyle = '#ffb7c5'; ctx.fillRect(-45, -10, 90, 30);
+    const numTiers = Math.min(12, heightLv);
     const tierColors = ['#ffeaa7', '#74b9ff', '#ff9ff3', '#feca57', '#55efc4', '#a29bfe'];
-
     for (let i = 0; i < numTiers; i++) {
-        const hOffset = -10 - (i * 18);
-        const width = Math.max(30, 80 - (i * 4));
-        ctx.fillStyle = tierColors[i % tierColors.length];
-        ctx.fillRect(-width/2, hOffset - 18, width, 18);
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(-width/2, hOffset - 18, width, 18);
+        const hOffset = -10 - i * 18, width = Math.max(30, 80 - i * 4);
+        ctx.fillStyle = tierColors[i % tierColors.length]; ctx.fillRect(-width / 2, hOffset - 18, width, 18);
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1; ctx.strokeRect(-width / 2, hOffset - 18, width, 18);
     }
-
-    // Roof Cone on Top Tier
-    const topH = -10 - (numTiers * 18);
-    ctx.fillStyle = '#ff6b6b';
-    ctx.beginPath();
-    ctx.moveTo(-25, topH);
-    ctx.lineTo(0, topH - 25);
-    ctx.lineTo(25, topH);
-    ctx.closePath();
-    ctx.fill();
-
-    // Crown / Floating Stars on High Castles
-    if (heightLv >= 5) {
-        ctx.font = '16px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('👑', 0, topH - 30);
-    }
-
-    // Door
-    ctx.fillStyle = '#6c5ce7';
-    ctx.fillRect(-10, 5, 20, 15);
-
-    // Castle HP Gauge
-    ctx.fillStyle = '#2d3436';
-    ctx.fillRect(-40, 25, 80, 7);
-    ctx.fillStyle = '#55efc4';
-    ctx.fillRect(-40, 25, 80 * (castleHp / castleMaxHp), 7);
-
+    const topH = -10 - numTiers * 18;
+    ctx.fillStyle = '#ff6b6b'; ctx.beginPath(); ctx.moveTo(-25, topH); ctx.lineTo(0, topH - 25); ctx.lineTo(25, topH); ctx.closePath(); ctx.fill();
+    if (heightLv >= 5) { ctx.font = '16px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('👑', 0, topH - 30); }
+    ctx.fillStyle = '#6c5ce7'; ctx.fillRect(-10, 5, 20, 15);
+    ctx.fillStyle = '#2d3436'; ctx.fillRect(-40, 25, 80, 7);
+    ctx.fillStyle = '#55efc4'; ctx.fillRect(-40, 25, 80 * (castleHp / castleMaxHp), 7);
     ctx.restore();
 }
 
 function drawPad(pad, color, label) {
     ctx.save();
-    ctx.fillStyle = color;
-    ctx.globalAlpha = 0.22;
-    ctx.beginPath();
-    ctx.arc(pad.x, pad.y, pad.r, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.globalAlpha = 0.85;
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
+    ctx.fillStyle = color; ctx.globalAlpha = 0.22;
+    ctx.beginPath(); ctx.arc(pad.x, pad.y, pad.r, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 0.85; ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
     if (pad.stepTimer > 0) {
-        ctx.beginPath();
-        ctx.arc(pad.x, pad.y, pad.r, 0, (Math.PI * 2) * (pad.stepTimer / 14));
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 4;
-        ctx.stroke();
+        ctx.beginPath(); ctx.arc(pad.x, pad.y, pad.r, 0, Math.PI * 2 * (pad.stepTimer / 14));
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 4; ctx.stroke();
     }
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 9px sans-serif';
-    ctx.textAlign = 'center';
+    ctx.fillStyle = '#ffffff'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
     ctx.fillText(label, pad.x, pad.y + 3);
     ctx.restore();
 }
 
 window.onload = function() {
-    resizeCanvas();
-    function gameLoop() {
-        update();
-        draw();
-        requestAnimationFrame(gameLoop);
-    }
-    gameLoop();
+    resizeCanvas(); loadGame();
+    (function gameLoop() { if (!paused) update(); draw(); requestAnimationFrame(gameLoop); })();
 };
 </script>
 </body>
