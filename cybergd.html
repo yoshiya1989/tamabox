@@ -1,0 +1,897 @@
+html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>✨ サイバーキャッスル防衛 - Cute Security Idler ✨</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+            margin: 0;
+            padding: 0;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #161224;
+            color: #ffffff;
+            font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', system-ui, sans-serif;
+        }
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #151022;
+        }
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+        .ui-badge {
+            background: rgba(22, 16, 36, 0.88);
+            border: 1.5px solid #ffb7c5;
+            border-radius: 9999px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: bold;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .ui-badge span {
+            color: #ffd166;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Floating HUD Header -->
+    <div class="absolute top-2 left-2 right-2 flex justify-between items-center pointer-events-none z-10 gap-1 flex-wrap sm:flex-nowrap">
+        <div class="ui-badge">🪙 資金: <span id="coinText">80</span></div>
+        <div class="ui-badge">🏰 Castle Height: <span id="castleHeightText">10m (Lv.1)</span></div>
+        <div class="ui-badge">🎓 社員教育: Lv.<span id="trainLvText">0</span></div>
+        <div class="ui-badge">🔄 OS v<span id="osLvText">1.0</span></div>
+        <div class="ui-badge">📦 <span id="codeText">0/10</span></div>
+    </div>
+
+    <!-- Interactive Hint Bar -->
+    <div class="absolute bottom-2 left-0 right-0 text-center pointer-events-none z-10 text-[10px] sm:text-xs text-pink-200/90 font-bold drop-shadow">
+        📱 タッチ移動 ｜ 🏰お城は攻撃されると縮む! ｜ 🎓社員教育・🛡️ワクチン・🔄OS更新で全画面防衛!
+    </div>
+</div>
+
+<script>
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playBeep(freq, type = 'sine', duration = 0.08) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    } catch(e){}
+}
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+let screenWidth = window.innerWidth;
+let screenHeight = window.innerHeight;
+let screenShake = 0;
+let gameTime = 0;
+
+function resizeCanvas() {
+    screenWidth = window.innerWidth;
+    screenHeight = window.innerHeight;
+    canvas.width = screenWidth;
+    canvas.height = screenHeight;
+    repositionWorld();
+}
+window.addEventListener('resize', resizeCanvas);
+
+let world = {};
+
+function repositionWorld() {
+    const cx = screenWidth / 2;
+
+    world = {
+        castle: { x: cx, y: screenHeight * 0.28 },
+        devTerminal: { x: screenWidth * 0.12, y: screenHeight * 0.86, w: 70, h: 48, progress: 0 },
+        pads: {
+            castleRepair: { x: cx, y: screenHeight * 0.40, r: 27, label: "🏰お城建設", codeRequired: 10 },
+            firewall: { x: cx - Math.min(135, screenWidth * 0.34), y: screenHeight * 0.54, r: 26, level: 0, cost: 40, label: "🔥FW防壁" },
+            aiStaff: { x: cx + Math.min(135, screenWidth * 0.34), y: screenHeight * 0.54, r: 26, count: 0, cost: 60, label: "🤖AI防御員" },
+            scpSpeed: { x: screenWidth * 0.14, y: screenHeight * 0.38, r: 25, level: 1, cost: 35, label: "🚀SCP速度" },
+            playerPower: { x: screenWidth * 0.86, y: screenHeight * 0.38, r: 25, level: 1, cost: 30, label: "⚡攻撃強化" },
+            antivirus: { x: cx - Math.min(120, screenWidth * 0.30), y: screenHeight * 0.68, r: 26, level: 0, cost: 50, label: "🛡️ワクチン", pulseTimer: 0 },
+            osUpdate: { x: cx + Math.min(120, screenWidth * 0.30), y: screenHeight * 0.68, r: 26, level: 1, cost: 70, label: "🔄OSアプデ" },
+            training: { x: cx, y: screenHeight * 0.82, r: 27, level: 0, cost: 45, label: "🎓社員教育" }
+        }
+    };
+}
+
+const player = {
+    x: screenWidth / 2,
+    y: screenHeight * 0.72,
+    radius: 14,
+    speed: 4.2,
+    carryingCode: 0,
+    maxCapacity: 10,
+    attackRange: 105
+};
+
+let coins = 80;
+let castleHeightLevel = 1; // Infinite growth metric!
+let osVersion = 1.0;
+let castleHp = 100;
+let castleMaxHp = 100;
+let castleCodeStored = 0;
+let castleCodeTarget = 10;
+
+let scpPackages = [];
+let scpTimer = 0;
+
+let viruses = [];
+let virusSpawnTimer = 0;
+let aiUnits = [];
+let particles = [];
+let castleDebris = [];
+let pulseWaves = [];
+
+const keys = {};
+let touchStartPos = null;
+let touchCurrentPos = null;
+
+window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+window.addEventListener('touchstart', e => {
+    touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    touchCurrentPos = { ...touchStartPos };
+}, { passive: true });
+
+window.addEventListener('touchmove', e => {
+    if (!touchStartPos) return;
+    touchCurrentPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+}, { passive: true });
+
+window.addEventListener('touchend', () => {
+    touchStartPos = null;
+    touchCurrentPos = null;
+});
+
+function spawnVirus() {
+    const timeScale = 1 + (gameTime / 2400); 
+    const heightScale = 1 + (castleHeightLevel * 0.08); // Higher castle = stronger viruses!
+    const difficultyMultiplier = timeScale * heightScale;
+
+    // Staff training reduces phishing critical strikes
+    const trainingMitigation = Math.max(0.5, 1.0 - (world.pads.training.level * 0.06));
+
+    const types = [
+        { type: 'fast', speed: 1.7 * Math.min(2.0, timeScale), hp: 16 * difficultyMultiplier, maxHp: 16 * difficultyMultiplier, color: '#ff6b81', size: 11, label: 'チビ' },
+        { type: 'normal', speed: 1.1 * Math.min(1.8, timeScale), hp: 38 * difficultyMultiplier, maxHp: 38 * difficultyMultiplier, color: '#ff4757', size: 15, label: 'ウイルス' },
+        { type: 'tank', speed: 0.65 * Math.min(1.5, timeScale), hp: 110 * difficultyMultiplier * trainingMitigation, maxHp: 110 * difficultyMultiplier * trainingMitigation, color: '#a55eea', size: 21, label: 'ボス' }
+    ];
+
+    let rand = Math.random();
+    let chosen = types[1];
+    if (rand < 0.45) chosen = types[0];
+    else if (rand > (0.82 - Math.min(0.3, gameTime / 8000))) chosen = types[2];
+
+    viruses.push({
+        x: screenWidth * 0.1 + Math.random() * (screenWidth * 0.8),
+        y: screenHeight + 20,
+        ...chosen,
+        eatTimer: 0,
+        slowTimer: 0
+    });
+}
+
+function addParticles(x, y, color, count = 6) {
+    for (let i = 0; i < count; i++) {
+        particles.push({
+            x, y,
+            vx: (Math.random() - 0.5) * 5,
+            vy: (Math.random() - 0.5) * 5,
+            life: 1.0,
+            color,
+            size: Math.random() * 4 + 2
+        });
+    }
+}
+
+function addDebris(x, y) {
+    for (let i = 0; i < 5; i++) {
+        castleDebris.push({
+            x, y,
+            vx: (Math.random() - 0.5) * 7,
+            vy: (Math.random() - 0.7) * 5,
+            life: 1.0,
+            color: ['#ffb7c5', '#ffeaa7', '#74b9ff', '#ffd166', '#a29bfe'][Math.floor(Math.random() * 5)],
+            size: Math.random() * 6 + 3
+        });
+    }
+}
+
+function update() {
+    gameTime++;
+
+    // OS Auto-Repair & Passive Regen
+    if (gameTime % 60 === 0 && castleHp < castleMaxHp) {
+        const regenAmount = (world.pads.osUpdate.level * 0.7);
+        castleHp = Math.min(castleMaxHp, castleHp + regenAmount);
+    }
+
+    // Player Touch / Key Movement
+    let moveX = 0;
+    let moveY = 0;
+
+    if (keys['w'] || keys['arrowup']) moveY -= 1;
+    if (keys['s'] || keys['arrowdown']) moveY += 1;
+    if (keys['a'] || keys['arrowleft']) moveX -= 1;
+    if (keys['d'] || keys['arrowright']) moveX += 1;
+
+    if (touchStartPos && touchCurrentPos) {
+        const dx = touchCurrentPos.x - touchStartPos.x;
+        const dy = touchCurrentPos.y - touchStartPos.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist > 6) {
+            moveX = dx / dist;
+            moveY = dy / dist;
+        }
+    }
+
+    if (moveX !== 0 && moveY !== 0 && !touchStartPos) {
+        moveX *= 0.7071;
+        moveY *= 0.7071;
+    }
+
+    player.x += moveX * player.speed;
+    player.y += moveY * player.speed;
+
+    player.x = Math.max(player.radius, Math.min(screenWidth - player.radius, player.x));
+    player.y = Math.max(player.radius, Math.min(screenHeight - player.radius, player.y));
+
+    // Developer Terminal & Staff Education Multiplier
+    const term = world.devTerminal;
+    const devSpeedBoost = (1 + (world.pads.osUpdate.level * 0.05) + (world.pads.training.level * 0.08));
+    term.progress += 0.95 * devSpeedBoost;
+    if (term.progress >= 100) {
+        term.progress = 0;
+        if (player.carryingCode < player.maxCapacity) {
+            const distToDev = Math.hypot(player.x - term.x, player.y - term.y);
+            if (distToDev < 90) {
+                player.carryingCode++;
+                // Employee Training passive bonus income when generating code
+                const trainBonus = world.pads.training.level * 2;
+                coins += trainBonus;
+                playBeep(650, 'triangle', 0.04);
+                addParticles(term.x, term.y, '#70a1ff', 3);
+            }
+        }
+    }
+
+    // SCP Pipeline Line & Speed Calculation
+    const scpSpeedBoost = (1 + (world.pads.osUpdate.level * 0.08));
+    scpTimer += world.pads.scpSpeed.level * 0.95 * scpSpeedBoost;
+    if (scpTimer >= 65) {
+        scpTimer = 0;
+        scpPackages.push({ progress: 0 });
+    }
+
+    for (let i = scpPackages.length - 1; i >= 0; i--) {
+        const p = scpPackages[i];
+        p.progress += 0.022 * world.pads.scpSpeed.level * scpSpeedBoost;
+        if (p.progress >= 1.0) {
+            scpPackages.splice(i, 1);
+            castleCodeStored++;
+            const baseGain = 5 + (world.pads.training.level * 2);
+            coins += Math.floor(baseGain * (1 + (world.pads.osUpdate.level * 0.1)));
+            addParticles(world.castle.x, world.castle.y, '#ffbe76', 5);
+            playBeep(880, 'sine', 0.05);
+        }
+    }
+
+    // Direct Code Delivery to Castle
+    const distToCastle = Math.hypot(player.x - world.castle.x, player.y - world.castle.y);
+    if (distToCastle < 75 && player.carryingCode > 0) {
+        castleCodeStored += player.carryingCode;
+        const codeReward = player.carryingCode * (9 + world.pads.training.level * 2);
+        coins += Math.floor(codeReward * (1 + (world.pads.osUpdate.level * 0.1)));
+        addParticles(world.castle.x, world.castle.y, '#ffeaa7', player.carryingCode * 3);
+        player.carryingCode = 0;
+        playBeep(1020, 'sine', 0.08);
+    }
+
+    // Antivirus Pulse Wave Emission
+    if (world.pads.antivirus.level > 0) {
+        world.pads.antivirus.pulseTimer++;
+        const pulseInterval = Math.max(80, 230 - (world.pads.antivirus.level * 25));
+        if (world.pads.antivirus.pulseTimer >= pulseInterval) {
+            world.pads.antivirus.pulseTimer = 0;
+            pulseWaves.push({
+                x: world.pads.antivirus.x,
+                y: world.pads.antivirus.y,
+                r: 10,
+                maxR: Math.max(screenWidth, screenHeight) * 0.85,
+                damage: 25 + (world.pads.antivirus.level * 16)
+            });
+            playBeep(420, 'square', 0.18);
+        }
+    }
+
+    // Update Pulse Shockwaves
+    for (let i = pulseWaves.length - 1; i >= 0; i--) {
+        const pw = pulseWaves[i];
+        pw.r += 13;
+
+        viruses.forEach(v => {
+            const dist = Math.hypot(v.x - pw.x, v.y - pw.y);
+            if (Math.abs(dist - pw.r) < 22) {
+                v.hp -= pw.damage * 0.1;
+                v.slowTimer = 65;
+                addParticles(v.x, v.y, '#00cec9', 2);
+            }
+        });
+
+        if (pw.r >= pw.maxR) {
+            pulseWaves.splice(i, 1);
+        }
+    }
+
+    // Dynamic Virus Spawn Rate
+    virusSpawnTimer++;
+    const minSpawnDelay = Math.max(10, 105 - Math.floor(castleHeightLevel * 3) - Math.floor(gameTime / 130));
+    if (virusSpawnTimer > minSpawnDelay) {
+        virusSpawnTimer = 0;
+        spawnVirus();
+        if (gameTime > 1500 && Math.random() < 0.35) spawnVirus();
+        if (castleHeightLevel > 10 && Math.random() < 0.45) spawnVirus();
+    }
+
+    // Virus Combat & Castle Damage / Structural Shrinkage Mechanism
+    for (let i = viruses.length - 1; i >= 0; i--) {
+        const v = viruses[i];
+        let targetX = world.castle.x;
+        let targetY = world.castle.y;
+
+        if (v.slowTimer > 0) v.slowTimer--;
+        const currentSpeed = v.slowTimer > 0 ? v.speed * 0.45 : v.speed;
+
+        if (world.pads.firewall.level > 0 && v.y > screenHeight * 0.54) {
+            targetY = screenHeight * 0.54;
+        }
+
+        const angle = Math.atan2(targetY - v.y, targetX - v.x);
+        v.x += Math.cos(angle) * currentSpeed;
+        v.y += Math.sin(angle) * currentSpeed;
+
+        const distToCore = Math.hypot(v.x - world.castle.x, v.y - world.castle.y);
+        if (distToCore < 50) {
+            v.eatTimer++;
+            if (v.eatTimer % 15 === 0) {
+                screenShake = 8;
+                addDebris(v.x, v.y);
+                playBeep(140, 'sawtooth', 0.1);
+
+                // Reduce stored code & Castle HP
+                if (castleCodeStored > 0) castleCodeStored = Math.max(0, castleCodeStored - 1);
+                castleHp -= 5;
+
+                // 🚨 UNLIMITED SHRINKAGE MECHANIC: If HP reaches 0, Castle loses Height Levels & Shrinks!
+                if (castleHp <= 0) {
+                    if (castleHeightLevel > 1) {
+                        castleHeightLevel--; // Castle shrinks in height!
+                        castleHp = castleMaxHp;
+                        screenShake = 15;
+                        addDebris(world.castle.x, world.castle.y);
+                        playBeep(100, 'sawtooth', 0.3);
+                    } else {
+                        castleHp = 10; // Minimum bottom boundary
+                    }
+                }
+            }
+        }
+
+        // Player & Defense Attacks
+        const distToPlayer = Math.hypot(v.x - player.x, v.y - player.y);
+        if (distToPlayer < player.attackRange) {
+            v.hp -= world.pads.playerPower.level * 1.0 * (1 + (world.pads.osUpdate.level * 0.05));
+            addParticles(v.x, v.y, '#ff4757', 2);
+        }
+
+        if (world.pads.firewall.level > 0) {
+            const distToFW = Math.hypot(v.x - world.pads.firewall.x, v.y - world.pads.firewall.y);
+            if (distToFW < 135) {
+                v.hp -= world.pads.firewall.level * 0.7;
+                addParticles(v.x, v.y, '#ff7f50', 1);
+            }
+        }
+
+        if (v.hp <= 0) {
+            addParticles(v.x, v.y, v.color, 12);
+            coins += v.maxHp > 60 ? 25 : 12;
+            viruses.splice(i, 1);
+            playBeep(780, 'sine', 0.05);
+        }
+    }
+
+    // AI Security Guard Patrol
+    aiUnits.forEach(ai => {
+        let nearest = null;
+        let minDist = 999;
+        viruses.forEach(v => {
+            const d = Math.hypot(v.x - ai.x, v.y - ai.y);
+            if (d < minDist) {
+                minDist = d;
+                nearest = v;
+            }
+        });
+
+        if (nearest) {
+            const angle = Math.atan2(nearest.y - ai.y, nearest.x - ai.x);
+            ai.x += Math.cos(angle) * 2.4;
+            ai.y += Math.sin(angle) * 2.4;
+
+            if (minDist < 100) {
+                nearest.hp -= 0.75 * (1 + (world.pads.osUpdate.level * 0.05));
+                addParticles(nearest.x, nearest.y, '#a55eea', 1);
+            }
+        } else {
+            ai.angle = (ai.angle || 0) + 0.035;
+            ai.x = world.castle.x + Math.cos(ai.angle) * 110;
+            ai.y = world.castle.y + Math.sin(ai.angle) * 55;
+        }
+    });
+
+    // Pad Interactions (Step-On Upgrades)
+    checkPad(world.pads.castleRepair, () => {
+        if (castleCodeStored >= castleCodeTarget) {
+            castleCodeStored -= castleCodeTarget;
+            castleHeightLevel++; // Build higher infinitely!
+            castleMaxHp += 20;
+            castleHp = castleMaxHp;
+            castleCodeTarget = Math.floor(castleCodeTarget * 1.5);
+            world.pads.castleRepair.codeRequired = castleCodeTarget;
+            addParticles(world.castle.x, world.castle.y, '#ffb7c5', 30);
+            playBeep(1200, 'triangle', 0.25);
+        } else if (castleHp < castleMaxHp && coins >= 10) {
+            coins -= 10;
+            castleHp = Math.min(castleMaxHp, castleHp + 25);
+            playBeep(620, 'sine', 0.08);
+        }
+    });
+
+    checkPad(world.pads.firewall, () => {
+        if (coins >= world.pads.firewall.cost) {
+            coins -= world.pads.firewall.cost;
+            world.pads.firewall.level++;
+            world.pads.firewall.cost = Math.floor(world.pads.firewall.cost * 1.7);
+            playBeep(820, 'square', 0.12);
+        }
+    });
+
+    checkPad(world.pads.aiStaff, () => {
+        if (coins >= world.pads.aiStaff.cost) {
+            coins -= world.pads.aiStaff.cost;
+            world.pads.aiStaff.count++;
+            aiUnits.push({ x: world.castle.x, y: world.castle.y, angle: Math.random() * Math.PI * 2 });
+            world.pads.aiStaff.cost = Math.floor(world.pads.aiStaff.cost * 1.8);
+            playBeep(920, 'sine', 0.15);
+        }
+    });
+
+    checkPad(world.pads.scpSpeed, () => {
+        if (coins >= world.pads.scpSpeed.cost) {
+            coins -= world.pads.scpSpeed.cost;
+            world.pads.scpSpeed.level++;
+            world.pads.scpSpeed.cost = Math.floor(world.pads.scpSpeed.cost * 1.6);
+            playBeep(860, 'triangle', 0.12);
+        }
+    });
+
+    checkPad(world.pads.playerPower, () => {
+        if (coins >= world.pads.playerPower.cost) {
+            coins -= world.pads.playerPower.cost;
+            world.pads.playerPower.level++;
+            world.pads.playerPower.cost = Math.floor(world.pads.playerPower.cost * 1.6);
+            playBeep(1100, 'sine', 0.12);
+        }
+    });
+
+    checkPad(world.pads.antivirus, () => {
+        if (coins >= world.pads.antivirus.cost) {
+            coins -= world.pads.antivirus.cost;
+            world.pads.antivirus.level++;
+            world.pads.antivirus.cost = Math.floor(world.pads.antivirus.cost * 1.7);
+            playBeep(1000, 'square', 0.15);
+        }
+    });
+
+    checkPad(world.pads.osUpdate, () => {
+        if (coins >= world.pads.osUpdate.cost) {
+            coins -= world.pads.osUpdate.cost;
+            world.pads.osUpdate.level++;
+            osVersion = (1.0 + (world.pads.osUpdate.level - 1) * 0.5).toFixed(1);
+            castleMaxHp += 20;
+            castleHp += 20;
+            world.pads.osUpdate.cost = Math.floor(world.pads.osUpdate.cost * 1.8);
+            playBeep(1300, 'triangle', 0.25);
+            addParticles(world.pads.osUpdate.x, world.pads.osUpdate.y, '#e84393', 20);
+        }
+    });
+
+    // NEW: Employee Training Station Purchase
+    checkPad(world.pads.training, () => {
+        if (coins >= world.pads.training.cost) {
+            coins -= world.pads.training.cost;
+            world.pads.training.level++;
+            world.pads.training.cost = Math.floor(world.pads.training.cost * 1.65);
+            playBeep(1150, 'sine', 0.18);
+            addParticles(world.pads.training.x, world.pads.training.y, '#fdcb6e', 20);
+        }
+    });
+
+    // Particle decay
+    particles.forEach((p, index) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.04;
+        if (p.life <= 0) particles.splice(index, 1);
+    });
+
+    castleDebris.forEach((d, index) => {
+        d.x += d.vx;
+        d.y += d.vy;
+        d.vy += 0.3;
+        d.life -= 0.03;
+        if (d.life <= 0) castleDebris.splice(index, 1);
+    });
+
+    if (screenShake > 0) screenShake *= 0.85;
+
+    // HUD Text Updates
+    document.getElementById('coinText').innerText = coins;
+    document.getElementById('castleHeightText').innerText = `${castleHeightLevel * 10}m (Lv.${castleHeightLevel})`;
+    document.getElementById('trainLvText').innerText = world.pads.training.level;
+    document.getElementById('osLvText').innerText = osVersion;
+    document.getElementById('codeText').innerText = `${player.carryingCode}/${player.maxCapacity}`;
+}
+
+function checkPad(pad, callback) {
+    const dist = Math.hypot(player.x - pad.x, player.y - pad.y);
+    if (dist < pad.r) {
+        pad.stepTimer = (pad.stepTimer || 0) + 1;
+        if (pad.stepTimer > 14) {
+            pad.stepTimer = 0;
+            callback();
+        }
+    } else {
+        pad.stepTimer = 0;
+    }
+}
+
+function draw() {
+    ctx.save();
+
+    if (screenShake > 0.5) {
+        ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
+    }
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Background Grid
+    ctx.fillStyle = '#151022';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = '#221a36';
+    ctx.lineWidth = 1.5;
+    for (let x = 0; x < canvas.width; x += 35) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+    }
+    for (let y = 0; y < canvas.height; y += 35) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+    }
+
+    // Antivirus Pulse Waves
+    pulseWaves.forEach(pw => {
+        ctx.strokeStyle = 'rgba(0, 206, 201, 0.6)';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(pw.x, pw.y, pw.r, 0, Math.PI * 2);
+        ctx.stroke();
+    });
+
+    // SCP Pipeline Rail
+    const term = world.devTerminal;
+    const castle = world.castle;
+    ctx.strokeStyle = '#74b9ff';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(term.x, term.y);
+    ctx.lineTo(term.x, castle.y + 20);
+    ctx.lineTo(castle.x, castle.y + 20);
+    ctx.stroke();
+
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // SCP Capsules
+    scpPackages.forEach(p => {
+        let px, py;
+        if (p.progress < 0.65) {
+            px = term.x;
+            py = term.y - (p.progress / 0.65) * (term.y - (castle.y + 20));
+        } else {
+            px = term.x + ((p.progress - 0.65) / 0.35) * (castle.x - term.x);
+            py = castle.y + 20;
+        }
+        ctx.fillStyle = '#ffeaa7';
+        ctx.beginPath();
+        ctx.arc(px, py, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#fdcb6e';
+        ctx.stroke();
+    });
+
+    // Developer Terminal
+    ctx.fillStyle = '#0984e3';
+    ctx.fillRect(term.x - term.w/2, term.y - term.h/2, term.w, term.h);
+    ctx.strokeStyle = '#74b9ff';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(term.x - term.w/2, term.y - term.h/2, term.w, term.h);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('💻 開発端末', term.x, term.y - 8);
+
+    ctx.fillStyle = '#2d3436';
+    ctx.fillRect(term.x - 28, term.y + 8, 56, 7);
+    ctx.fillStyle = '#00cec9';
+    ctx.fillRect(term.x - 28, term.y + 8, 56 * (term.progress / 100), 7);
+
+    // Upgrade Stations
+    drawPad(world.pads.castleRepair, '#ffb7c5', `建設 [${castleCodeStored}/${world.pads.castleRepair.codeRequired}]`);
+    drawPad(world.pads.firewall, '#ff7f50', `FW Lv.${world.pads.firewall.level} (${world.pads.firewall.cost}₡)`);
+    drawPad(world.pads.aiStaff, '#a55eea', `AI ${world.pads.aiStaff.count}体 (${world.pads.aiStaff.cost}₡)`);
+    drawPad(world.pads.scpSpeed, '#74b9ff', `SCP Lv.${world.pads.scpSpeed.level} (${world.pads.scpSpeed.cost}₡)`);
+    drawPad(world.pads.playerPower, '#ffeaa7', `攻撃 Lv.${world.pads.playerPower.level} (${world.pads.playerPower.cost}₡)`);
+    drawPad(world.pads.antivirus, '#00cec9', `ワクチン Lv.${world.pads.antivirus.level} (${world.pads.antivirus.cost}₡)`);
+    drawPad(world.pads.osUpdate, '#e84393', `OS Lv.${world.pads.osUpdate.level} (${world.pads.osUpdate.cost}₡)`);
+    drawPad(world.pads.training, '#fdcb6e', `🎓教育 Lv.${world.pads.training.level} (${world.pads.training.cost}₡)`);
+
+    // Draw Studying Employee Icons around Training Station
+    if (world.pads.training.level > 0) {
+        for (let i = 0; i < Math.min(6, world.pads.training.level); i++) {
+            const ang = (i / 6) * Math.PI * 2 + (gameTime * 0.02);
+            const ex = world.pads.training.x + Math.cos(ang) * 36;
+            const ey = world.pads.training.y + Math.sin(ang) * 20;
+            ctx.font = '10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('✏️', ex, ey);
+        }
+    }
+
+    // Firewall Beam
+    if (world.pads.firewall.level > 0) {
+        ctx.fillStyle = 'rgba(255, 127, 80, 0.35)';
+        ctx.fillRect(screenWidth * 0.1, screenHeight * 0.54 - 5, screenWidth * 0.8, 10);
+        ctx.strokeStyle = '#ff7f50';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(screenWidth * 0.1, screenHeight * 0.54 - 5, screenWidth * 0.8, 10);
+    }
+
+    // 🏰 INFINITE STACKABLE CASTLE
+    drawInfiniteCastle(castle.x, castle.y, castleHeightLevel);
+
+    // 🤖 AI Guards
+    aiUnits.forEach(ai => {
+        ctx.fillStyle = '#a55eea';
+        ctx.beginPath();
+        ctx.arc(ai.x, ai.y, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🤖', ai.x, ai.y + 4);
+    });
+
+    // 👾 Viruses
+    viruses.forEach(v => {
+        ctx.fillStyle = v.slowTimer > 0 ? '#00cec9' : v.color;
+        ctx.beginPath();
+        ctx.arc(v.x, v.y, v.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(v.x - 3, v.y - 2, 2.5, 0, Math.PI * 2);
+        ctx.arc(v.x + 3, v.y - 2, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#2d3436';
+        ctx.fillRect(v.x - 12, v.y - v.size - 8, 24, 4);
+        ctx.fillStyle = '#ff7675';
+        ctx.fillRect(v.x - 12, v.y - v.size - 8, 24 * (v.hp / v.maxHp), 4);
+    });
+
+    // 🏃 Player Engineer
+    ctx.fillStyle = '#ff7597';
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(player.x - 4, player.y - 2, 3, 0, Math.PI * 2);
+    ctx.arc(player.x + 4, player.y - 2, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(255, 234, 167, 0.2)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.attackRange, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Stacked Code Cubes
+    for (let i = 0; i < player.carryingCode; i++) {
+        ctx.fillStyle = '#70a1ff';
+        ctx.fillRect(player.x - 8, player.y - 22 - (i * 8), 16, 6);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(player.x - 8, player.y - 22 - (i * 8), 16, 6);
+    }
+
+    // Particles & Debris
+    particles.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.life;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+    });
+    castleDebris.forEach(d => {
+        ctx.fillStyle = d.color;
+        ctx.globalAlpha = d.life;
+        ctx.fillRect(d.x, d.y, d.size, d.size);
+    });
+    ctx.globalAlpha = 1.0;
+
+    // Mobile Virtual Joystick Overlay
+    if (touchStartPos && touchCurrentPos) {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(touchStartPos.x, touchStartPos.y, 35, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = 'rgba(255, 158, 187, 0.65)';
+        ctx.beginPath();
+        ctx.arc(touchCurrentPos.x, touchCurrentPos.y, 16, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    ctx.restore();
+}
+
+function drawInfiniteCastle(x, y, heightLv) {
+    ctx.save();
+    ctx.translate(x, y);
+
+    // Castle Base
+    ctx.fillStyle = '#ffb7c5';
+    ctx.fillRect(-45, -10, 90, 30);
+
+    // Infinite Vertical Tier Stacking!
+    const numTiers = Math.min(12, heightLv); // Visual cap on screen tiers, but scales upward
+    const tierColors = ['#ffeaa7', '#74b9ff', '#ff9ff3', '#feca57', '#55efc4', '#a29bfe'];
+
+    for (let i = 0; i < numTiers; i++) {
+        const hOffset = -10 - (i * 18);
+        const width = Math.max(30, 80 - (i * 4));
+        ctx.fillStyle = tierColors[i % tierColors.length];
+        ctx.fillRect(-width/2, hOffset - 18, width, 18);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(-width/2, hOffset - 18, width, 18);
+    }
+
+    // Roof Cone on Top Tier
+    const topH = -10 - (numTiers * 18);
+    ctx.fillStyle = '#ff6b6b';
+    ctx.beginPath();
+    ctx.moveTo(-25, topH);
+    ctx.lineTo(0, topH - 25);
+    ctx.lineTo(25, topH);
+    ctx.closePath();
+    ctx.fill();
+
+    // Crown / Floating Stars on High Castles
+    if (heightLv >= 5) {
+        ctx.font = '16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('👑', 0, topH - 30);
+    }
+
+    // Door
+    ctx.fillStyle = '#6c5ce7';
+    ctx.fillRect(-10, 5, 20, 15);
+
+    // Castle HP Gauge
+    ctx.fillStyle = '#2d3436';
+    ctx.fillRect(-40, 25, 80, 7);
+    ctx.fillStyle = '#55efc4';
+    ctx.fillRect(-40, 25, 80 * (castleHp / castleMaxHp), 7);
+
+    ctx.restore();
+}
+
+function drawPad(pad, color, label) {
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.22;
+    ctx.beginPath();
+    ctx.arc(pad.x, pad.y, pad.r, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.globalAlpha = 0.85;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    if (pad.stepTimer > 0) {
+        ctx.beginPath();
+        ctx.arc(pad.x, pad.y, pad.r, 0, (Math.PI * 2) * (pad.stepTimer / 14));
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+    }
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 9px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, pad.x, pad.y + 3);
+    ctx.restore();
+}
+
+window.onload = function() {
+    resizeCanvas();
+    function gameLoop() {
+        update();
+        draw();
+        requestAnimationFrame(gameLoop);
+    }
+    gameLoop();
+};
+</script>
+</body>
+</html>
