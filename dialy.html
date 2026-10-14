@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>ランダム日記補助ツール</title>
+  <meta name="robots" content="noindex, nofollow">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --c: #ff6584;
+      --m: #e040fb;
+      --y: #ffd54f;
+      --g: #26a69a;
+      --r: #ef5350;
+      --bg: #2d1320;
+      --tx: #fff0f3;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100vh;
+      color: var(--tx);
+      font-family: "Hiragino Sans", "Meiryo", system-ui, sans-serif;
+      overflow-x: hidden;
+    }
+    body {
+      background: radial-gradient(circle at 15% 20%, rgba(255, 154, 182, 0.45) 0px, transparent 60px),
+                  radial-gradient(circle at 85% 15%, rgba(255, 209, 220, 0.5) 0px, transparent 80px),
+                  radial-gradient(circle at 75% 75%, rgba(214, 90, 137, 0.4) 0px, transparent 90px),
+                  radial-gradient(circle at 25% 85%, rgba(255, 228, 235, 0.4) 0px, transparent 70px),
+                  linear-gradient(135deg, #3d1525 0%, #5e263d 35%, #47192c 70%, #290e1a 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: env(safe-area-inset-top, 16px) env(safe-area-inset-right, 16px) env(safe-area-inset-bottom, 16px) env(safe-area-inset-left, 16px);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background: linear-gradient(rgba(255, 182, 193, 0.08) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(255, 182, 193, 0.08) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.1) 0 1px, transparent 1px 3px);
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 580px;
+      padding: 12px;
+    }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 14px;
+      padding: 24px 20px;
+      background: rgba(50, 18, 32, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 154, 182, 0.5);
+      box-shadow: 0 0 30px rgba(214, 90, 137, 0.25), inset 0 0 25px rgba(255, 182, 193, 0.1);
+      clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px);
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--c), var(--m), var(--y), transparent);
+      animation: sweep 3s linear infinite;
+    }
+    @keyframes sweep {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    h1 {
+      font-size: 22px;
+      text-align: center;
+      margin: 8px 0 6px;
+      letter-spacing: 0.08em;
+      color: #fff;
+      text-shadow: 0 0 12px var(--c), 0 0 25px var(--m);
+      font-family: serif;
+    }
+
+    .sub {
+      text-align: center;
+      color: #ffccd5;
+      font-size: 12px;
+      margin-bottom: 16px;
+      letter-spacing: 0.05em;
+    }
+
+    /* テキストエリアの修正 */
+    textarea {
+      width: 100%;
+      height: 140px;
+      padding: 14px;
+      font-size: 15px;
+      line-height: 1.7;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 154, 182, 0.4);
+      background-color: #ffffff !important;
+      color: #000000 !important;
+      outline: none;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.1);
+      resize: vertical;
+      transition: all 0.2s;
+      -webkit-appearance: none;
+    }
+    textarea:focus {
+      border-color: var(--c);
+      box-shadow: 0 0 12px rgba(255, 101, 132, 0.5), inset 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      margin-top: 10px;
+      padding: 12px 14px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #fff;
+      cursor: pointer;
+      border: 0;
+      background: linear-gradient(90deg, #d8436f, #b32e56);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3), 0 4px 12px rgba(179, 46, 86, 0.4);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+      transition: all 0.15s ease;
+      font-family: inherit;
+      -webkit-appearance: none;
+    }
+    .btn:hover {
+      background: linear-gradient(90deg, #e6527d, #c43863);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5), 0 0 18px rgba(255, 154, 182, 0.6);
+      transform: translateY(-2px);
+    }
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .btn-group .btn.all-btn {
+      grid-column: span 2;
+    }
+
+    .mode-container {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .mode-label {
+      font-size: 11px;
+      font-weight: bold;
+      color: #ffccd5;
+      letter-spacing: 0.05em;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      cursor: pointer;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      inset: 0;
+      background-color: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 154, 182, 0.6);
+      border-radius: 24px;
+      transition: 0.3s;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      transition: 0.3s;
+    }
+    input:checked + .slider {
+      background-color: #d8436f;
+      border-color: var(--c);
+      box-shadow: 0 0 10px var(--m);
+    }
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+
+    .badge-container {
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #fff0f3;
+      background: rgba(216, 67, 111, 0.4);
+      border: 1px solid rgba(255, 154, 182, 0.5);
+      border-radius: 20px;
+      margin-bottom: 8px;
+      box-shadow: 0 0 10px rgba(255, 154, 182, 0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+    <div class="card">
+      
+      <div class="mode-container">
+        <span class="mode-label">平日</span>
+        <label class="switch">
+          <input type="checkbox" id="mode-switch">
+          <span class="slider"></span>
+        </label>
+        <span class="mode-label">週末明け</span>
+      </div>
+
+      <div class="badge-container">
+        <span class="badge">💎 Ruby & Diamond Garden Diary</span>
+      </div>
+      <h1>ランダム日記表示</h1>
+      <div class="sub">ボタンを押すと、日記がランダムに表示されます。</div>
+
+      <div style="margin-bottom: 12px;">
+        <textarea id="output" readonly></textarea>
+      </div>
+
+      <div class="btn-group">
+        <button id="shuffle" class="btn">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          再表示
+        </button>
+        <button id="copy" class="btn">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+          コピー
+        </button>
+        <button id="all" class="btn all-btn">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          全件表示
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const entries = [
+      "連絡ありがとうございます。今日はご飯を残さずたくさん食べ、大好きな歌をご機嫌に歌ったあと、絵本を読んでもらって満足した様子でぐっすりと眠につきました★",
+      "連絡ありがとうございます。しっかりとご飯を食べ終えたあと、ノリノリで楽しそうに歌を歌い、一番のお気に入りの絵本を読んでから静かに眠りました♪",
+      "連絡ありがとうございます。お腹いっぱいになるまでご飯を食べ、大切なお人形と一緒に歌を歌ったあと、自分で絵本をめくりながら満足そうにして静かに眠りにつきました★",
+      "連絡ありがとうございます。集中して黙々とご飯を食べ、お風呂の中では歌を歌い、お布団に入ってから絵本を読んでもらって幸せそうな表情で眠りにつきました♪",
+      "連絡ありがとうございます。最近は自分の気持ちをしっかり意思表示できるようになり、話せる言葉のレパートリーも増えてきて、日々着実な成長を実感しています★",
+      "連絡ありがとうございます。おままごと遊びの中でしっかり「ママ役」になりきり、少しお姉さんぶった口調で優しくご飯を食べさせてあげていました♪",
+      "連絡ありがとうございます。「もう一回読んで！」と何度もねだられ、結局まったく同じ絵本を連続で5回もリクエストされました★",
+      "連絡ありがとうございます。お風呂に入った際、象さんの形をしたジョウロを使って、何回も楽しそうに水をかけながら夢中で遊んでいました♪",
+      "連絡ありがとうございます。赤ちゃんの頃からずっとTシャツのタグがお気に入りで、今夜も寝る前にタグをじっと見つめて集中していました★",
+      "連絡ありがとうございます。テレビから流れるお気に入りのアニメのキャラクターの名前を、テレビに向かって大きな声で一生懸命呼んでいたりしました♪",
+      "連絡ありがとうございます。楽しくおしゃべりをしながらご飯を食べ、ノリノリで歌を歌ったあと、絵本をお人形でトントンと撫でながら一緒に眠りにつきました★",
+      "連絡ありがとうございます。大きなお口をあーんと開けてしっかりご飯を食べ、自分だけのオリジナルのかわいい歌を歌い、お布団の中で絵本のお話を聞きながら心地よさそうに眠りました♪",
+      "連絡ありがとうございます。一日中元気いっぱいに遊んで過ごしていました。ご飯の時に少し食べ物で遊んでしまう場面もありましたが、きちんと注意すると素直に話を聞いてくれました★",
+      "連絡ありがとうございます。お出かけ用の靴を自分で左右反対に履いてしまい、「あれ？」と首をかしげながら不思議そうにしていました♪",
+      "連絡ありがとうございます。ご飯をきれいに食べ終わったあとに、「ごちそうさまでした！」と気持ちのよい元気な声で挨拶をしてくれました★",
+      "連絡ありがとうございます。パズルやブロックで遊ぶのがとても好きなようで、黙々とピースやブロックを積んでいるときはものすごい集中力を発揮しています♪",
+      "連絡ありがとうございます。積み木を高く積み上げたあとに、わざと豪快にガシャンと崩しては、その音を楽しそうにキャッキャと笑っていました★",
+      "連絡ありがとうございます。パズルのピースが隙間なくピタッとはまる感覚が心地よいようで、何度もせっかく作ったものを崩しては集中して組み立て直していました♪",
+      "連絡ありがとうございます。自宅ではいつも階段を使って上り下りしていますが、その毎日の積み重ねのせいか、最近足腰にしっかりとした筋肉がついてきたように感じます★",
+      "連絡ありがとうございます。お風呂上がりに体をタオルで拭いてもらっているとき、とても嬉しそうにニコニコとした満面の笑顔を見せてくれました♪",
+      "連絡ありがとうございます。苦手なお野菜も頑張って一口食べることができ、親がすかさず褒めると嬉しそうにもう少し食べて頑張ろうとしていました★",
+      "連絡ありがとうございます。お布団の中で、「今日楽しかったことなあに？」と聞くと、園の遊びのことをたくさん教えてくれました♪",
+      "連絡ありがとうございます。車に乗っているとき、袋を取る作業を毎回「自分でやりたい！」と主張してくるのがとても面白く、なんでも自分でやりたがる微笑ましいお年頃なのだと感じます★",
+      "連絡ありがとうございます。今日一日たくさん体を動かして疲れたためか、お布団に入った瞬間にふっと一呼吸置いただけで、あっという間に深い眠りに落ちていきました♪",
+      "連絡ありがとうございます。強い眠気に襲われながらも必死に耐えようとして、目がトロンとしてしまっている姿がとても愛らしかったです★",
+      "連絡ありがとうございます。お風呂上がりのドライヤーの心地よい風が楽しかったようで、髪を乾かされながらキャッキャと嬉しそうに声をあげて笑っていました♪",
+      "連絡ありがとうございます。台所から聞こえる夕食作りのトントンという音を聞きながら、自分の部屋で大切なお気に入りのぬいぐるみのお世話を楽しそうにしていました★",
+      "連絡ありがとうございます。お部屋の中でカーテンでかくれんぼうをしていました♪",
+      "連絡ありがとうございます。お風呂のお湯の中で足でバタバタと水飛沫を立てながら、自分で作った歌を大きな声で歌ってご機嫌でした★",
+      "連絡ありがとうございます。NHKのテレビ番組から流れる音楽に合わせて、体全体を使って本当に楽しそうにリズムを取りながら踊っていました♪",
+      "連絡ありがとうございます。新しいシールブックを買ってもらったとき、どこに貼ろうかじっくり考えて一枚ずつ丁寧に貼っていました★",
+      "連絡ありがとうございます。ベッドに入る直前まで元気いっぱいに走り回っていましたが、ベッドではすっと静かになりました♪",
+      "連絡ありがとうございます。ご飯をモリモリ食べたあと、「お腹ポンポコリンだね」とお腹を優しくなでなでしていました★",
+      "連絡ありがとうございます。「これなあに？」とあちこち指をさしながら、自分の周りにある目に入るものすべてに興味津々な様子を見せていました♪",
+      "連絡ありがとうございます。ブロックを倒れないように高く積み上げては、「みてみて！」と誇らしげな表情でニコニコしながら見せてくれました★",
+      "連絡ありがとうございます。夕方の絵本を読んでもらう時間をとても楽しみにしているようで、自分で読みたい絵本を何冊も集めて山のように積み上げていました♪",
+      "連絡ありがとうございます。お絵描き帳にペンを握りしめてぐるぐると力強い線を走らせ、「これ、きりんさんだよ」と嬉しそうに教えてくれました★",
+      "連絡ありがとうございます。寝る前の歯磨きの時間になると、「あーん」と大きな口を一生懸命開けて頑張って協力してくれました♪",
+      "連絡ありがとうございます。絵本を読んでもらう間中、すっかり物語の世界に入り込んでしまったようで、目を輝かせながらじっと見つめていました★",
+      "連絡ありがとうございます。朝起きる時間になってもなかなか起き上がろうとしませんが、足の裏を少し刺激するように押してあげると割とすんなり起き上がってくれます♪",
+      "連絡ありがとうございます。お外から聞こえてきた救急車のピーポーというサイレンの音に、じっと耳を研ぎ澄ませて集中して聞き入っていました★",
+      "連絡ありがとうございます。「これ、はんぶんこね」と言いながら、自分が大切にしているお気に入りのお菓子を優しく分けてくれようとしました♪",
+      "連絡ありがとうございます。夕方の時間帯に少し機嫌を損ねてぐずってしまいましたが、大好きな歌を歌ってあげるとすぐに機嫌が直って笑顔を取り戻してくれました★",
+      "連絡ありがとうございます。すっかり眠りについた後、すーすーといびきをかきながら、時折小さく可愛らしい寝言を言ったりしていました♪",
+      "連絡ありがとうございます。お風呂上がりに冷たいお水を美味しそうにゴクゴクと飲み干し、「ぷはーっ」と可愛い声を出していました★",
+      "連絡ありがとうございます. ご飯のときに苦手な食べ物を端っこに避けつつ、しっかりモリモリ自分で食べきることができました♪",
+      "連絡ありがとうございます。おもちゃを片付けようと声をかけたとき、いろいろ言いながらも最後は全部綺麗に箱に収めてくれました★",
+      "連絡ありがとうございます. 夜寝る前のベッドの中で、今日あった楽しかった出来事を思い出しながらニコニコとおしゃべりしていました♪"
+    ];
+
+    const weekendEntries = [
+      "ご連絡ありがとうございます。今週末は予定を詰め込まず、家族みんなでゆっくりと過ごす時間がいつもより多く取れたので、とても心穏やかな休日になりました★",
+      "ご連絡ありがとうございます。週末は家族そろって近くのショッピングセンターへ出かけ、日用品や必要なものをまとめ買いするなど、賑やかで充実した時間を過ごしました♪",
+      "ご連絡ありがとうございます。週末はお天気に恵まれてとても心地よかったので、のんびりと外を歩いて散歩をし、日頃の忙しさを忘れて良い気分転換ができました★",
+      "ご連絡ありがとうございます。週末はまとまった時間が取れたので、自宅の掃除や気になっていた場所の片付けを徹底的に行い、部屋も気分もすっきりとリフレッシュできました♪",
+      "ご連絡ありがとうございます。週末は近くのスーパーへ足を運び、今週分の食材や作り置き用の買い出しをゆっくりと済ませて、落ち着いた休日を過ごしました★",
+      "ご連絡ありがとうございます。週末はのんびりと近所を散歩しながら、道中で草花の様子や空気感など、季節の移り変わりをゆっくりと楽しむことができました♪",
+      "ご連絡ありがとうございます。週末は少し車を走らせて普段より遠くの場所までドライブに出かけ、きれいな景色を見ながら良い気分転換をしてリフレッシュできました★",
+      "ご連絡ありがとうございます。週末は無理に外出せず自宅でゆっくりと過ごし、家族みんなでこれまでの疲れをしっかりと癒やしてエネルギーを充電することができました♪",
+      "ご連絡ありがとうございます。週末は普段と少し気分を変えてお店で外食を楽しみ、美味しい料理を味わいながらリラックスした時間を過ごすことができました★",
+      "ご連絡ありがとうございます。週末はしっかりと散歩をして適度に体を動かしたおかげで、心身ともにすっきりと軽くなり、とても気持ちの良い休日を過ごせました♪",
+      "ご連絡ありがとうございます。週末は外に出て新鮮な空気をたっぷりと吸い込みながらのんびり散歩をし、日々の疲れやストレスを上手に発散して気分転換できました★",
+      "ご連絡ありがとうございます。週末は家族でのんびりと過ごし、たっぷりとエネルギーを充電して元気に週のスタートを迎えることができました♪",
+      "ご連絡ありがとうございます。週末は録画していたお気に入りの番組やアニメを一緒に観ながら、のんびりと穏やかな時間を過ごしました★",
+      "ご連絡ありがとうございます。週末は近所のスーパーやお店にお買い物へ出かけ、自分で選んだおやつを嬉しそうにカゴに入れてくれました♪",
+      "ご連絡ありがとうございます。週末は家族みんなで美味しいご飯を囲みながら、たくさんおしゃべりをして笑顔の絶えない時間を過ごしました★",
+      "ご連絡ありがとうございます。週末はパズルやブロックをいつもより時間をかけて組み立て、最後まで完成させたときに大きな達成感を味わっていました♪",
+      "ご連絡ありがとうございます。週末は自分の洋服や靴を自分で選んでコーディネートしようとするなど、少しお姉さんな一面を見せてくれました★",
+      "ご連絡ありがとうございます。週末はたくさん体を動かして遊んだ疲れからか、夜は絵本を読んでいる途中でうっとりと気持ちよさそうに眠りにつきました♪",
+      "ご連絡ありがとうございます。週末はのんびりとしたペースで過ごすことができ、心も体もリラックスして穏やかな休日を過ごすことができました★",
+      "ご連絡ありがとうございます。週末はおもちゃや絵本に夢中になり、じっくりと集中して遊ぶ姿に成長の頼もしさを感じました♪",
+      "ご連絡ありがとうございます。週末は夕方に少しお昼寝が長引いてしまったものの、夜はいつも通りすんなりと生活リズムを戻すことができました♪",
+      "ご連絡ありがとうございます。週末は自宅で大好きなお人形やぬいぐるみを並べ、お世話ごっこをしながら楽しそうに世界に入り込んでいました♪",
+      "ご連絡ありがとうございます。週末は家族みんなでお散歩がてら近くの図書館へ行き、自分で選んだ絵本を嬉しそうに見ていました★",
+      "ご連絡ありがとうございます。週末は少し苦手な食べ物にも「一口だけ挑戦してみようか」と声をかけると、頑張って口に入れてくれました♪"
+    ];
+
+    const output = document.getElementById('output');
+    const shuffleBtn = document.getElementById('shuffle');
+    const copyBtn = document.getElementById('copy');
+    const allBtn = document.getElementById('all');
+    const modeSwitch = document.getElementById('mode-switch');
+
+    function showRandom() {
+      const targetEntries = modeSwitch.checked ? weekendEntries : entries;
+      const i = Math.floor(Math.random() * targetEntries.length);
+      output.value = targetEntries[i];
+    }
+
+    function showAll() {
+      const targetEntries = modeSwitch.checked ? weekendEntries : entries;
+      output.value = targetEntries.map((e, idx) => (idx + 1) + ". " + e).join("\n\n");
+    }
+
+    shuffleBtn.addEventListener('click', showRandom);
+    allBtn.addEventListener('click', showAll);
+
+    modeSwitch.addEventListener('change', () => {
+      showRandom();
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(output.value);
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>コピーしました';
+        setTimeout(() => copyBtn.innerHTML = originalText, 1400);
+      } catch (err) {
+        output.select();
+        document.execCommand('copy');
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>コピーしました';
+        setTimeout(() => copyBtn.innerHTML = originalText, 1400);
+      }
+    });
+
+    showRandom();
+  </script>
+</body>
+</html>
