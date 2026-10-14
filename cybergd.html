@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>✨ サイバーキャッスル防衛 - Cute Security Idler ✨</title>
+<meta name="description" content="沖縄県民向けセキュリティ啓発ゲーム「サイバーキャッスル防衛」">
+<meta name="theme-color" content="#161224">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏰%3C/text%3E%3C/svg%3E">
+<style>
+*{box-sizing:border-box;user-select:none;-webkit-user-select:none;touch-action:none;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background-color:#161224;color:#fff;font-family:'Hiragino Kaku Gothic ProN','Meiryo',system-ui,sans-serif}
+#game-container{position:relative;width:100vw;height:100vh;overflow:hidden;background:#151022}
+canvas{display:block;width:100vw;height:100vh}
+.ui-badge{background:rgba(22,16,36,.88);border:1.5px solid #ffb7c5;border-radius:9999px;padding:5px 12px;font-size:14px;font-weight:bold;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.5);backdrop-filter:blur(6px);display:flex;align-items:center;gap:4px;white-space:nowrap}
+.ui-badge span{color:#ffd166;font-size:15px}
+
+#ticker{position:absolute;top:0;left:0;right:0;height:32px;background:linear-gradient(90deg,#3a1d5c,#5b2a86);border-bottom:2px solid #ffb7c5;z-index:20;display:flex;align-items:center;pointer-events:none;overflow:hidden}
+#ticker .lbl{flex:none;background:#ffb7c5;color:#3a1d5c;font-weight:bold;font-size:14px;padding:0 8px;height:100%;display:flex;align-items:center;z-index:2}
+#tickWrap{flex:1;overflow:hidden;white-space:nowrap}
+#tickText{display:inline-block;padding-left:100%;font-size:15px;color:#fff;animation:tick linear infinite}
+@keyframes tick{to{transform:translateX(-100%)}}
+#toast{position:absolute;left:10px;right:10px;bottom:34px;z-index:15;text-align:center;font-size:15px;font-weight:bold;color:#3a2a4e;background:#fff8fb;border:2px solid #ffb7c5;border-radius:16px;padding:8px 12px;opacity:0;transition:opacity .4s;pointer-events:none}
+#banner{position:absolute;left:10px;right:10px;top:92px;z-index:15;text-align:center;font-size:17px;font-weight:bold;color:#fff;background:rgba(91,42,134,.92);border:2px solid #ffd166;border-radius:18px;padding:8px;opacity:0;transform:translateY(-10px);transition:all .4s;pointer-events:none}
+#quiz,#lec,#go,#end,#start,#lib{position:absolute;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:rgba(10,6,24,.72);padding:16px}
+#quiz .card,#lec .card,#go .card,#end .card,#start .card,#lib .card{background:#fff8fb;color:#3a2a4e;border:3px solid #ffb7c5;border-radius:22px;max-width:420px;width:100%;padding:16px;box-shadow:0 10px 40px rgba(0,0,0,.6);max-height:92vh;overflow:auto}
+.opt{display:block;width:100%;margin-top:8px;padding:10px;border-radius:14px;border:2px solid #d6a8ff;background:#fff;color:#3a2a4e;font-weight:bold;font-size:17px;text-align:left}
+.opt.ok{background:#c8f7d6;border-color:#2ecc71}.opt.ng{background:#ffd6dc;border-color:#ff6b81}
+#qExp{display:none;margin-top:10px;font-size:15px;line-height:1.5;background:#fff0c9;border-radius:12px;padding:8px}
+#qNext{display:none;width:100%;margin-top:10px;padding:10px;border-radius:14px;background:#ff7597;color:#fff;font-weight:bold}
+#lecBody p{margin-top:8px;font-size:15px;line-height:1.7}#lecBody ul,#endBody ol{margin:6px 0 0 18px;font-size:15px;line-height:1.7}#lecBody b,#endBody b{color:#d63a6a}.pt{background:#fff0c9;border-radius:12px;padding:8px;margin-top:10px;font-size:15px;line-height:1.6}
+#start{display:flex}
+.edge{position:absolute;bottom:110px;z-index:25;border-radius:9999px;padding:7px 14px;font-size:13px;font-weight:bold;color:#fff;background:rgba(22,16,36,.9);border:1.5px solid #ffb7c5}
+#upg{left:8px;display:none;background:#ff7597;animation:pl 1s infinite alternate}
+@keyframes pl{to{transform:scale(1.08)}}
+.xbtn{position:sticky;top:0;float:right;z-index:5;margin:-6px -6px 6px 8px;padding:6px 12px;border-radius:9999px;background:#ff7597;color:#fff;font-weight:bold;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+#game-container,canvas{height:100dvh}
+#quiz .card,#lec .card,#go .card,#end .card,#start .card,#lib .card{max-height:84dvh}
+.card,.card *{touch-action:pan-y}
+.card{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+body{line-height:1.5}
+button{font:inherit;border:0;cursor:pointer;background:none;color:inherit}
+ul{list-style:disc}ol{list-style:decimal}
+.hud{position:absolute;top:38px;left:8px;right:8px;z-index:10;display:flex;justify-content:space-between;align-items:center;gap:4px;flex-wrap:wrap;pointer-events:none}
+.hint{position:absolute;bottom:8px;left:0;right:0;z-index:10;text-align:center;pointer-events:none;font-size:13px;font-weight:bold;color:rgba(251,207,232,.95);text-shadow:0 1px 2px rgba(0,0,0,.6)}
+@media(min-width:640px){.hud{flex-wrap:nowrap}.hint{font-size:15px}}
+.card div[style*="font-size:12px"]{font-size:14px!important}
+.card div[style*="font-size:13px"],.card p[style*="font-size:13px"]{font-size:15px!important}
+.card div[style*="font-size:15px"]{font-size:18px!important}
+.card div[style*="font-size:17px"]{font-size:20px!important}
+.card div[style*="font-size:18px"]{font-size:21px!important}
+@media(min-width:900px){
+ .ui-badge{font-size:16px}.ui-badge span{font-size:17px}
+ #ticker{height:36px}#ticker .lbl{font-size:16px}#tickText{font-size:17px}.hud{top:42px}
+ #toast{font-size:18px}#banner{font-size:20px;top:100px}.hint{font-size:17px}
+ #quiz .card,#lec .card,#go .card,#end .card,#start .card,#lib .card{max-width:680px}
+ #lecBody p,#lecBody ul,#endBody ol,#qExp,.pt{font-size:18px}.opt{font-size:19px}
+ .edge{font-size:15px}.xbtn{font-size:16px}
+}
+/* ---- ボタンが画面外・端末の枠に隠れないための配慮 ---- */
+.edge{bottom:calc(110px + env(safe-area-inset-bottom,0px));min-height:40px}
+#upg{left:calc(8px + env(safe-area-inset-left,0px));bottom:calc(158px + env(safe-area-inset-bottom,0px))}
+#helpBtn{left:calc(8px + env(safe-area-inset-left,0px))}
+#rst{right:calc(8px + env(safe-area-inset-right,0px))}
+#libBtn{right:calc(8px + env(safe-area-inset-right,0px));bottom:calc(158px + env(safe-area-inset-bottom,0px))}
+.hud{left:calc(8px + env(safe-area-inset-left,0px));right:calc(8px + env(safe-area-inset-right,0px))}
+@media(max-height:520px){.edge{bottom:calc(56px + env(safe-area-inset-bottom,0px))}#upg{bottom:calc(104px + env(safe-area-inset-bottom,0px))}#libBtn{bottom:calc(104px + env(safe-area-inset-bottom,0px))}}
+#lecNext,#qNext,#startBtn,#endReset,#goReset{position:sticky;bottom:0;z-index:3;box-shadow:0 -12px 0 4px #fff8fb}
+#endGo,#goRetry{position:sticky;bottom:62px;z-index:3;box-shadow:0 -12px 0 4px #fff8fb}
+#quiz,#lec,#go,#end,#start,#lib{padding:calc(12px + env(safe-area-inset-top,0px)) calc(12px + env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) calc(12px + env(safe-area-inset-left,0px))}
+input{user-select:text;-webkit-user-select:text;touch-action:auto}
+#cert{position:absolute;inset:0;z-index:35;display:none;align-items:center;justify-content:center;background:rgba(10,6,24,.72);padding:16px}
+#cert .card{background:#fff8fb;color:#3a2a4e;border:3px solid #ffb7c5;border-radius:22px;max-width:420px;width:100%;padding:16px;box-shadow:0 10px 40px rgba(0,0,0,.6);max-height:84dvh}
+#certName{width:100%;margin-top:10px;padding:10px;border-radius:14px;border:2px solid #d6a8ff;font-size:18px;text-align:center;color:#3a2a4e;background:#fff}
+</style>
+<noscript><p style="color:#fff;padding:16px">このゲームはJavaScriptを有効にして遊んでください。</p></noscript>
+</head>
+<body>
+<div id="game-container">
+<canvas id="gameCanvas"></canvas>
+<div id="ticker"><div class="lbl">🛡️ 豆知識</div><div id="tickWrap"><span id="tickText"></span></div></div>
+<div id="banner"></div><div id="toast"></div>
+<div id="lib"><div class="card"><button id="libX" class="xbtn">✕ 閉じる</button><div style="font-weight:bold;font-size:17px">📚 セキュリティ教室</div><div style="font-size:12px;margin-top:4px">読みたい授業を選んでください。何度でも読めます。</div><div id="libBody"></div></div></div>
+<div id="lec"><div class="card"><button id="lecX" class="xbtn">✕ 閉じる</button><div id="lecStage" style="font-weight:bold;color:#ff7597;font-size:12px"></div><div id="lecTitle" style="font-weight:bold;font-size:17px;margin-top:2px"></div><div id="lecBody"></div><button id="lecNext" style="width:100%;margin-top:12px;padding:10px;border-radius:14px;background:#ff7597;color:#fff;font-weight:bold">つぎへ ▶</button></div></div>
+<div id="go"><div class="card" style="text-align:center"><div style="font-size:40px">😢</div><div style="font-weight:bold;font-size:18px;margin-top:4px">ゲームオーバー</div><div id="goText" style="font-size:13px;line-height:1.7;margin-top:8px"></div><button class="opt" id="goRetry" style="text-align:center;background:#ffe3ec">🔁 このステージからやり直す</button><button class="opt" id="goReset" style="text-align:center">🌱 さいしょから</button></div></div>
+<div id="end"><div class="card"><div id="endBody"></div><button class="opt" id="endGo" style="text-align:center;background:#ffe3ec">♾️ エンドレスで続ける</button><button class="opt" id="endReset" style="text-align:center">🌱 最初から遊ぶ</button></div></div>
+<div id="quiz"><div class="card"><div id="qTitle" style="font-weight:bold;color:#ff7597;font-size:13px"></div><div id="qText" style="margin-top:6px;font-weight:bold;font-size:15px;line-height:1.5"></div><div id="qOpts"></div><div id="qExp"></div><button id="qNext">つぎへ ▶</button></div></div>
+<div id="start"><div class="card" style="text-align:center"><button id="startX" class="xbtn">✕ 閉じる</button><div style="font-size:34px">🏰🌺</div><div style="font-weight:bold;font-size:18px;margin-top:2px">サイバーキャッスル防衛</div><div style="text-align:left;font-size:13px;line-height:1.75;margin-top:8px"><b style="color:#d63a6a">🎯 目的</b><br>攻撃(ウイルスたち)から<b>🤝信頼</b>を守り、全8ステージを突破してシステムの安全を守ろう!<br><b style="color:#d63a6a">🕹️ あそびかた</b><br>・移動:スマホは画面をなぞる/PCはWASD・矢印キー、またはマウスで主人公をつかんでドラッグ<br>・💻開発端末のそばでコードを集め、お城に運ぶと資金UP<br>・床の丸い場所に立つと強化(ファイアウォール・ウイルス対策ソフト・セキュリティ対策要員など)<br>・近づいた敵は自動で攻撃。🎁を拾い、🧠クイズに答えると資金とコードがもらえる<br>・コードがたまったら🤝信頼の丸に立ってレベルアップ。ステージが進むと授業が始まるよ<br>・最終ステージでは、1回だけ使える⚙️システムアップグレードが登場!<br><b style="color:#d63a6a">📝 授業とクイズ</b><br>授業のあとは、その授業の内容からクイズが出るよ。ボスは面ごとに動きが違う(クネクネ・ジャンプ・にげ足・壁こわしビーム)!<br><b style="color:#d63a6a">🎓 賞状プレゼント</b><br>クイズに<b>95%正解</b>(📚知識メーターが95%)した人には、<b>「セキュリティ伝道師」のPDF賞状</b>をプレゼント!お名前を入力して発行できます。</div><div id="achInfo" style="font-size:12px;margin-top:8px;color:#d63a6a;font-weight:bold"></div><div id="dailyInfo" style="font-size:12px;margin-top:6px;color:#3a2a4e;font-weight:bold"></div><button class="opt" id="certBtn" style="text-align:center;font-size:12px"></button><button class="opt" id="skinBtn" style="text-align:center;font-size:12px"></button><button class="opt" id="hardBtn" style="text-align:center;font-size:12px"></button><button class="opt" id="startBtn" style="text-align:center;background:#ff7597;color:#fff;font-size:16px">▶ ゲームスタート</button></div></div>
+<div id="cert"><div class="card" style="text-align:center"><button id="certX" class="xbtn">✕ 閉じる</button><div style="font-size:34px">🎓📜</div><div style="font-weight:bold;font-size:18px">セキュリティ伝道師の賞状</div><p style="font-size:13px;line-height:1.7;margin-top:6px">クイズ95%クリア、おめでとう!賞状に載せるお名前を入力してね。</p><input id="certName" maxlength="20" placeholder="お名前" autocomplete="off"><button class="opt" id="certMk" style="text-align:center;background:#ff7597;color:#fff">📄 PDFの賞状をダウンロード</button></div></div>
+<button id="upg" class="edge">⚙️ アップグレード(1回)</button><button id="helpBtn" class="edge">❓ 遊び方</button><button id="libBtn" class="edge">📚 授業</button><button id="rst" class="edge">🌱 最初から</button>
+<div class="hud">
+<div class="ui-badge">🪙 資金: <span id="coinText">80</span></div>
+<div class="ui-badge">🤝 信頼: <span id="castleHeightText">Lv.1</span></div>
+<div class="ui-badge">🎓 社員教育: Lv.<span id="trainLvText">0</span></div>
+<div class="ui-badge">🔄 OS v<span id="osLvText">1.0</span></div>
+<div class="ui-badge">📦 <span id="codeText">0/10</span></div>
+<div class="ui-badge">📚 知識 <span id="kText">0/0</span></div>
+<div class="ui-badge">🌊 <span id="waveText">W1</span></div>
+</div>
+<div class="hint">
+📱 タッチ移動 ｜ 🎁を拾おう ｜ 🧠クイズに答えて知識UP ｜ 🤝信頼は攻撃されると下がる!
+</div>
+</div>
+
+<script>
+let audioCtx = null;
+function playBeep(freq, type = 'sine', duration = 0.08) {const _n=performance.now();if(_n-(playBeep.t||0)<30)return;playBeep.t=_n;
+    try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
+    } catch(e){}
+}
+
+// ===== 沖縄ステージ背景モジュール =====
+// 0:そびえる城風 / 1:国際通り風 / 2:ジンベエ水槽風 / 3:残波岬風
+const STAGE_NAMES = ['🏯 沖縄にそびえる城', '🌃 国際通り', '🐋 ジンベエの泳ぐ水槽', '🌅 残波岬', '🌉 古宇利大橋', '🌴 万座毛の断崖', '🌺 赤瓦の島', '🌌 星降る最終決戦'];
+const LEVELS_PER_STAGE = 2;
+
+let bgStage = 0, bgPrevStage = 0, bgFade = 1;
+
+function stageOf(level) {
+    return Math.min(7, Math.floor((level - 1) / LEVELS_PER_STAGE));
+}
+
+function drawBackground(ctx, w, h, level, t) {
+    const s = stageOf(level);
+    if (s !== bgStage) { bgPrevStage = bgStage; bgStage = s; bgFade = 0; }
+    if (bgFade < 1) {
+        bgFade = Math.min(1, bgFade + 0.02);
+        drawStage(ctx, w, h, bgPrevStage, t);
+        ctx.globalAlpha = bgFade;
+        drawStage(ctx, w, h, bgStage, t);
+        ctx.globalAlpha = 1;
+    } else {
+        drawStage(ctx, w, h, bgStage, t);
+    }
+    // ゲーム要素を見やすくする薄い暗幕
+    ctx.fillStyle = 'rgba(15,10,30,0.28)';
+    ctx.fillRect(0, 0, w, h);
+}
+
+function grad(ctx, w, h, stops) {
+    const g = ctx.createLinearGradient(0, 0, 0, h);
+    stops.forEach(([p, c]) => g.addColorStop(p, c));
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+}
+
+function cloud(ctx, x, y, r, a) {
+    ctx.fillStyle = `rgba(255,255,255,${a})`;
+    [[0, 0, 1], [r * 0.9, r * 0.2, 0.8], [-r * 0.9, r * 0.2, 0.7]].forEach(([dx, dy, k]) => {
+        ctx.beginPath(); ctx.arc(x + dx, y + dy, r * k, 0, 7); ctx.fill();
+    });
+}
+
+function drawStage(ctx, w, h, s, t) {
+    ctx.save();
+    if (s === 0) shuri(ctx, w, h, t);
+    else if (s === 1) kokusai(ctx, w, h, t);
+    else if (s === 2) churaumi(ctx, w, h, t);
+    else if (s === 3) zanpa(ctx, w, h, t);
+    else if (s === 4) koori(ctx, w, h, t);
+    else [manza, akagawara, hoshi][s - 5](ctx, w, h, t);
+    ctx.restore();
+}
+
+// --- そびえる城風:朝焼けの空と朱色の正殿 ---
+function shuri(ctx, w, h, t) {
+    grad(ctx, w, h, [[0, '#ff9ecb'], [0.5, '#ffcba4'], [1, '#ffe9a8']]);
+    for (let i = 0; i < 4; i++) cloud(ctx, ((t * 0.15 + i * w / 3) % (w + 200)) - 100, h * (0.1 + i * 0.07), 22 + i * 4, 0.7);
+    // 丘
+    ctx.fillStyle = '#7bc47f';
+    ctx.beginPath(); ctx.moveTo(0, h); ctx.lineTo(0, h * 0.75);
+    ctx.quadraticCurveTo(w * 0.5, h * 0.55, w, h * 0.75); ctx.lineTo(w, h); ctx.fill();
+    // 石垣
+    ctx.fillStyle = '#d9d2c3';
+    ctx.fillRect(w * 0.12, h * 0.7, w * 0.76, h * 0.06);
+    ctx.strokeStyle = '#b8b09f'; ctx.lineWidth = 1;
+    for (let x = w * 0.12; x < w * 0.88; x += 24) { ctx.beginPath(); ctx.moveTo(x, h * 0.7); ctx.lineTo(x, h * 0.76); ctx.stroke(); }
+    // 正殿(二層)
+    const cx = w / 2, by = h * 0.7;
+    ctx.fillStyle = '#e8383d'; ctx.fillRect(cx - 70, by - 38, 140, 38);
+    ctx.fillStyle = '#c0282e'; ctx.fillRect(cx - 52, by - 70, 104, 32);
+    ctx.fillStyle = '#b5322f';
+    ctx.beginPath(); ctx.moveTo(cx - 90, by - 38); ctx.lineTo(cx + 90, by - 38); ctx.lineTo(cx + 60, by - 52); ctx.lineTo(cx - 60, by - 52); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx - 68, by - 70); ctx.lineTo(cx + 68, by - 70); ctx.lineTo(cx + 40, by - 90); ctx.lineTo(cx - 40, by - 90); ctx.fill();
+    ctx.fillStyle = '#ffd166'; ctx.fillRect(cx - 12, by - 28, 24, 28);
+    for (let i = -2; i <= 2; i++) ctx.fillRect(cx + i * 24 - 3, by - 62, 6, 14);
+    // 龍の飾り
+    ctx.fillRect(cx - 4, by - 98, 8, 8);
+}
+
+// --- 国際通り風:夕暮れのネオン街 ---
+function kokusai(ctx, w, h, t) {
+    grad(ctx, w, h, [[0, '#2b1055'], [0.55, '#7b3fa0'], [1, '#ff8fb1']]);
+    const cols = ['#ff6b81', '#ffd166', '#70a1ff', '#7bed9f', '#ff9ff3'];
+    const bw = Math.max(46, w / 7);
+    for (let i = 0; i * bw < w + bw; i++) {
+        const bh = h * (0.28 + ((i * 37) % 17) / 70);
+        const x = i * bw, y = h * 0.82 - bh;
+        ctx.fillStyle = i % 2 ? '#3a2a5e' : '#4a3472';
+        ctx.fillRect(x, y, bw - 4, bh);
+        // 窓
+        for (let r = 0; r < 5; r++) for (let c = 0; c < 3; c++) {
+            const on = ((i * 7 + r * 3 + c + Math.floor(t / 90)) % 4) !== 0;
+            ctx.fillStyle = on ? '#ffeaa7' : '#2d2150';
+            ctx.fillRect(x + 6 + c * (bw / 3.4), y + 10 + r * 20, 9, 11);
+        }
+        // ネオン看板
+        const c = cols[i % cols.length];
+        ctx.shadowColor = c; ctx.shadowBlur = 12 + 4 * Math.sin(t / 20 + i);
+        ctx.fillStyle = c; ctx.fillRect(x + 6, y + bh * 0.62, bw - 16, 8);
+        ctx.shadowBlur = 0;
+    }
+    // 道路
+    ctx.fillStyle = '#2a2140'; ctx.fillRect(0, h * 0.82, w, h * 0.18);
+    // 提灯(ちょうちん)
+    for (let x = 20; x < w; x += 56) {
+        const sway = Math.sin(t / 40 + x) * 3;
+        ctx.strokeStyle = '#ffd166'; ctx.beginPath(); ctx.moveTo(x, h * 0.78); ctx.lineTo(x + sway, h * 0.82); ctx.stroke();
+        ctx.fillStyle = '#ff4757'; ctx.beginPath(); ctx.ellipse(x + sway, h * 0.835, 5, 7, 0, 0, 7); ctx.fill();
+    }
+}
+
+// --- ジンベエ水槽風:大水槽とジンベエザメ ---
+function churaumi(ctx, w, h, t) {
+    grad(ctx, w, h, [[0, '#2fd0e8'], [0.5, '#1479c2'], [1, '#07224f']]);
+    // 光のカーテン
+    for (let i = 0; i < 5; i++) {
+        const x = w * (0.1 + i * 0.2) + Math.sin(t / 80 + i) * 20;
+        const g = ctx.createLinearGradient(x, 0, x + 60, h * 0.8);
+        g.addColorStop(0, 'rgba(255,255,255,0.22)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + 40, 0); ctx.lineTo(x + 110, h * 0.8); ctx.lineTo(x - 30, h * 0.8); ctx.fill();
+    }
+    // ジンベエザメ
+    const sx = ((t * 0.5) % (w + 400)) - 200, sy = h * 0.5 + Math.sin(t / 60) * 14;
+    ctx.fillStyle = '#4b6584';
+    ctx.beginPath(); ctx.ellipse(sx, sy, 90, 26, 0, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(sx - 80, sy); ctx.lineTo(sx - 125, sy - 28 + Math.sin(t / 10) * 6); ctx.lineTo(sx - 120, sy + 26); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(sx - 5, sy - 22); ctx.lineTo(sx + 12, sy - 46); ctx.lineTo(sx + 22, sy - 20); ctx.fill();
+    ctx.fillStyle = '#dff9fb';
+    for (let i = 0; i < 9; i++) { ctx.beginPath(); ctx.arc(sx - 55 + i * 14, sy - 10 + (i % 3) * 9, 2.6, 0, 7); ctx.fill(); }
+    ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(sx + 62, sy - 6, 3, 0, 7); ctx.fill();
+    // 小魚の群れ
+    for (let i = 0; i < 14; i++) {
+        const fx = ((t * (0.8 + (i % 3) * 0.3) + i * 90) % (w + 60)) - 30;
+        const fy = h * (0.2 + (i % 7) * 0.09) + Math.sin(t / 30 + i) * 8;
+        ctx.fillStyle = i % 2 ? '#ffd166' : '#ff9ff3';
+        ctx.beginPath(); ctx.ellipse(fx, fy, 7, 3.5, 0, 0, 7); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(fx - 6, fy); ctx.lineTo(fx - 12, fy - 4); ctx.lineTo(fx - 12, fy + 4); ctx.fill();
+    }
+    // 泡
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    for (let i = 0; i < 12; i++) {
+        const bx = (i * 83) % w, by = h - ((t * (0.6 + i % 3 * 0.3) + i * 60) % h);
+        ctx.beginPath(); ctx.arc(bx + Math.sin(t / 25 + i) * 6, by, 3 + i % 3, 0, 7); ctx.stroke();
+    }
+    // 砂地
+    ctx.fillStyle = '#e8d9a8'; ctx.fillRect(0, h * 0.94, w, h * 0.06);
+}
+
+// --- 残波岬風:夕日・断崖・白い灯台 ---
+function zanpa(ctx, w, h, t) {
+    grad(ctx, w, h, [[0, '#4a2c82'], [0.35, '#ff6b81'], [0.6, '#ffb36b'], [0.6, '#1e6fa8'], [1, '#0a3b66']]);
+    // 夕日と反射
+    ctx.fillStyle = '#fff3b0';
+    ctx.beginPath(); ctx.arc(w * 0.68, h * 0.55, 34, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = 'rgba(255,230,150,0.35)';
+    for (let i = 0; i < 6; i++) ctx.fillRect(w * 0.68 - 30 + Math.sin(t / 20 + i) * 6, h * 0.62 + i * 14, 60 - i * 7, 4);
+    cloud(ctx, ((t * 0.1) % (w + 200)) - 100, h * 0.15, 26, 0.5);
+    // 波
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 2;
+    for (let r = 0; r < 5; r++) {
+        ctx.beginPath();
+        for (let x = 0; x <= w; x += 10) {
+            const y = h * (0.68 + r * 0.06) + Math.sin(x / 30 + t / 25 + r) * 3;
+            x ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+        }
+        ctx.stroke();
+    }
+    // 断崖
+    ctx.fillStyle = '#3b2f3a';
+    ctx.beginPath(); ctx.moveTo(0, h); ctx.lineTo(0, h * 0.62);
+    ctx.lineTo(w * 0.22, h * 0.6); ctx.lineTo(w * 0.34, h * 0.7); ctx.lineTo(w * 0.3, h); ctx.fill();
+    ctx.fillStyle = '#5ea05a'; ctx.fillRect(0, h * 0.6, w * 0.22, 6);
+    // 灯台
+    const lx = w * 0.1, ly = h * 0.6;
+    ctx.fillStyle = '#fff'; ctx.beginPath();
+    ctx.moveTo(lx - 10, ly); ctx.lineTo(lx - 6, ly - 70); ctx.lineTo(lx + 6, ly - 70); ctx.lineTo(lx + 10, ly); ctx.fill();
+    ctx.fillStyle = '#ff4757'; ctx.fillRect(lx - 8, ly - 45, 16, 7);
+    ctx.fillStyle = '#ffd166'; ctx.fillRect(lx - 6, ly - 82, 12, 12);
+    ctx.fillStyle = '#c0392b'; ctx.beginPath(); ctx.moveTo(lx - 9, ly - 82); ctx.lineTo(lx, ly - 94); ctx.lineTo(lx + 9, ly - 82); ctx.fill();
+    // 灯台の光
+    ctx.fillStyle = `rgba(255,240,150,${0.15 + 0.1 * Math.sin(t / 15)})`;
+    ctx.beginPath(); ctx.moveTo(lx, ly - 76); ctx.lineTo(lx + w * 0.5, ly - 110); ctx.lineTo(lx + w * 0.5, ly - 40); ctx.fill();
+}
+
+
+/* ===== 学習・イベント・ゆるふわキャラ ===== */
+const TIPS=['宅配業者を名乗るSMSのURLは開かない(スミッシング)。公式アプリで確認しよう','パスワードの使い回しはNG。1つ漏れると他も破られるよ','長いパスフレーズ(12文字以上)は短い複雑パスワードより強い','二段階認証・パスキーを使うと乗っ取り被害がぐっと減る','「ウイルス感染!電話して」の警告は偽物(サポート詐欺)。電話せず画面を閉じよう','OSやアプリの更新は穴(脆弱性)をふさぐ大事な作業','ランサムウェア対策の決め手は定期バックアップ(3-2-1ルール)','https:// と鍵マークは「通信が暗号化」されるだけ。サイトの安全保証ではないよ','知らない貼り紙のQRコードは読まない(クイッシング)','公衆Wi-Fiでの銀行・買い物は避けよう。モバイル回線が安心','生成AIに個人情報や社外秘を入力しない','SNSの写真は位置情報や背景から自宅や学校がバレることも','怪しいメールの添付ファイル(.exe .zip .docm)は開かず削除','極端な値引き・不自然な日本語・個人口座への振込は偽ショップのサイン','スマホは画面ロック+「探す」機能で紛失に備えよう','アプリは公式ストアからだけ入れよう。不要な権限は許可しない','詐欺かも?と思ったら警察相談専用電話 #9110、消費者ホットラインは188','メールの「至急!」「アカウント停止」は焦らせる手口。まず深呼吸','ログインの通知メールが来たら自分か確認。心当たりがなければ即パスワード変更','USBメモリは拾わない・差さない','短縮URLはリンク先が見えない。展開してから確認しよう','SNSのDMで「当選」「儲かる」は詐欺の入口','セキュリティ対策は多層防御。1つに頼らず重ねて守る','会社でも家でも、困ったら一人で抱えず相談が最強の対策','ウイルス対策ソフトは最新の状態に。更新を止めない','家族にも教えよう。高齢の家族ほど電話・SMS詐欺の標的に','個人情報は「必要最小限」だけ入力。安易に渡さない','パスワードは紙やパスワード管理アプリで安全に保管','知らない人からの友達申請・フォローはまず疑おう'];
+const KILL_TIPS={fast:'🎣 フィッシング:本物そっくりの偽サイトへ誘導。リンクは公式から開こう',normal:'🦠 マルウェア:怪しい添付・アプリは開かない・入れない',tank:'🔒 ランサム:データを人質に。バックアップがいちばんの備え',swarm:'🌊 DDoS:大量アクセスで業務をマヒさせる攻撃',split:'🧬 ワーム:自己増殖するマルウェア。広がる前に止めよう',stealth:'👻 標的型攻撃:潜伏されがち。ログ監視と早期発見が大切',healer:'📡 ボットネットは司令塔を断てば仲間も弱る'};
+const PAD_TIPS={'🔥FW防壁':'🔥ファイアウォール=通信の見張り番。不要な通信を止めて侵入を防ぐよ','🧑‍💻セキュリティ対策要員':'🧑‍💻対策要員=見張りと初動対応を担う専門の「人」。異変に最初に気づき、被害を小さくする。チームで連携しよう!','💼システム販売':'💼システムは納品して終わりじゃない。保守とセキュリティ対応までが信頼!','⚡攻撃強化':'⚡多層防御:対策は重ねるほど強くなる','🛡️ウイルス対策ソフト':'🛡️ウイルス対策ソフトは定義ファイルを最新に','🔄OSアプデ':'🔄OS更新は脆弱性の修正。攻撃の侵入口を壁のようにふさぐ!','🎓社員教育':'🎓人が最大の防御。訓練された人はフィッシングに強い!','🤝信頼':'🤝信頼は日々の小さな安全対応の積み重ね。守れなかった時の復旧力も信頼のうち'};
+const QUIZ=[
+{q:'「不在のため再配達」というSMSにURLが。どうする?',o:['URLは開かず、公式アプリ/サイトで確認','急いで開いて確認','返信して問い合わせる'],e:'偽の配送通知(スミッシング)は定番。SMS内のリンクは開かないのが鉄則。'},
+{q:'パスワードの使い回しが危険な理由は?',o:['1つ漏れると他のサービスにも不正ログインされる','覚えるのが大変だから','サービスが重くなるから'],e:'漏れたID/パスワードを他サイトで試す「リスト型攻撃」が多発中。'},
+{q:'画面に「ウイルス感染!今すぐ電話を」と警告が出た。',o:['電話せず、ブラウザを閉じる/再起動する','表示の番号に電話する','指示通りソフトを入れる'],e:'サポート詐欺。電話すると遠隔操作や金銭要求につながるよ。'},
+{q:'二要素認証/パスキーの良いところは?',o:['パスワードが漏れても乗っ取られにくい','パスワードが不要になりログが消える','ウイルスが消える'],e:'「知っていること」+「持っているもの」で守りが2倍に。'},
+{q:'カフェの無料Wi-Fiでネットバンキング。',o:['避けて、モバイル回線を使う','鍵マークがあれば絶対安全','Wi-Fi名が良さそうなら使う'],e:'偽アクセスポイントや盗み見のおそれ。重要な操作は避けよう。'},
+{q:'OSアップデートの主な意味は?',o:['見つかった脆弱性(穴)をふさぐ','見た目を変えるだけ','端末を遅くする'],e:'更新を放置すると、公開済みの穴を狙われやすい。'},
+{q:'ランサムウェア被害にいちばん効く備えは?',o:['オフライン含む定期バックアップ','ファイル名を長くする','デスクトップを整理する'],e:'3-2-1ルール:3つのコピー・2種類の媒体・1つは別の場所。'},
+{q:'https://と鍵マークのサイトは安全?',o:['通信が暗号化されるだけで、運営の安全は別','運営も100%安全','詐欺サイトは使えない'],e:'偽サイトもhttpsを使える。URLと運営元を確認しよう。'},
+{q:'街で見つけた貼り紙のQRコード。',o:['むやみに読み取らない','とりあえず読み取る','読み取って個人情報を入力する'],e:'QRを貼り替える手口(クイッシング)がある。'},
+{q:'強いパスワードはどれ?',o:['長くて推測されにくく、サービスごとに別','誕生日+名前','全サービス共通の短い単語'],e:'長さが最大の武器。管理アプリの活用もおすすめ。'},
+{q:'生成AIに入力してはいけないのは?',o:['個人情報や社外秘の情報','天気の質問','料理のレシピ相談'],e:'入力内容が意図せず保存・利用されるおそれがあるよ。'},
+{q:'旅行写真をSNSに投稿するとき注意することは?',o:['位置情報や背景から場所が特定されないか','フィルターの色','投稿時間帯'],e:'自宅や学校が割り出されたり、留守が知られるリスクがある。'},
+{q:'「詐欺かも?」と思った時の相談先は?',o:['警察相談専用電話 #9110','177','117'],e:'緊急は110。消費者ホットラインは188。ひとりで悩まないで。'},
+{q:'知らない差出人のメールに添付ファイルが。',o:['開かず削除し、必要なら別手段で確認','とりあえず開く','転送して友達に見せる'],e:'添付ファイルはマルウェアの入口。'},
+{q:'偽ショッピングサイトの特徴は?',o:['極端な値引き・不自然な日本語・個人口座への振込','商品写真がきれい','サイトが日本語表示'],e:'支払い方法が限られる場合は特に要注意。'},
+{q:'スマホを紛失したときの備えは?',o:['画面ロック+「探す」機能(遠隔ロック/消去)','何も設定しない','パスワードをメモして貼る'],e:'遠隔ロックと消去で情報漏えいを防ごう。'},
+{q:'ソフトやアプリはどこから入手する?',o:['公式ストア/公式サイト','広告のダウンロードボタン','知らない人が送ったリンク'],e:'偽アプリや改ざん版を避けられる。'}];
+const mk=(q,a,b,c,e)=>({q,o:[a,b,c],e});
+QUIZ.push(
+{q:'情報セキュリティの3要素にあてはまらないのは?',o:['娯楽性','機密性','可用性'],e:'3要素は「機密性・完全性・可用性」。'},
+{q:'「情報が改ざんされず正確であること」を表す要素は?',o:['完全性','機密性','可用性'],e:'完全性=改ざんされない。機密性=許可者だけが見られる。可用性=必要なときに使える。'},
+{q:'脆弱性とは?',o:['システムやソフトの弱点(セキュリティ上の欠陥)','攻撃者そのもの','ウイルスの別名'],e:'脆弱性を突かれると被害(リスク)になる。パッチで修正しよう。'},
+{q:'多要素認証の組み合わせとして正しいのは?',o:['パスワード+スマホの確認コード','パスワード+別のパスワード','ID+ユーザー名'],e:'「知っていること」「持っているもの」「自分自身」のうち、異なる種類を組み合わせる。'},
+{q:'1つの対策が破られても守れるよう、対策を重ねる考え方は?',o:['多層防御','単層防御','隠ぺい防御'],e:'入口・内部・人・検知を重ねて、被害を小さくする。'},
+{q:'公開鍵暗号で、暗号文を復号するのに使うのは?',o:['受信者の秘密鍵','受信者の公開鍵','送信者の公開鍵'],e:'公開鍵で暗号化し、本人だけが持つ秘密鍵で復号する。'},
+{q:'電子署名で確認できることは?',o:['作成者本人であることと、改ざんされていないこと','通信が速いこと','ウイルスがいないこと'],e:'署名は秘密鍵で行い、公開鍵で検証する。'},
+{q:'入力欄に不正なSQL文を混ぜてデータベースを操作する攻撃は?',o:['SQLインジェクション','DDoS攻撃','ブルートフォース攻撃'],e:'対策は、入力値を命令として扱わない実装(プレースホルダなど)。'},
+{q:'大量のアクセスでサービスを止める攻撃が狙うのは?',o:['可用性','機密性','完全性'],e:'DoS/DDoS攻撃は、サービスを使えなくする。'},
+{q:'他人のID・パスワードを無断で使ってログインすると?',o:['不正アクセス禁止法に違反するおそれがある','ログインできただけなので問題ない','家族なら必ず許される'],e:'無断で他人の認証情報を使う行為は禁止されている。'},
+{q:'インシデントに気づいた最初の対応として適切なのは?',o:['被害の拡大を防ぎ、担当者へすぐ報告・相談する','原因不明のまま操作を続ける','誰にも言わず自分で何とかする'],e:'初動(ネットワークから切り離す等)と、報告・相談が被害を小さくする。'},
+{q:'ログ(記録)を取る目的は?',o:['異常の検知や原因の調査に使うため','容量を増やすため','画面をきれいにするため'],e:'いつ・誰が・何をしたかが分かると、早期発見と追跡ができる。'},
+{q:'アクセス権の設定の基本は?',o:['業務に必要な最小限の権限だけ与える','全員に管理者権限を与える','パスワードを共有する'],e:'「最小権限の原則」。ミスや乗っ取りの被害を小さくできる。'},
+{q:'ゼロデイ攻撃とは?',o:['修正パッチが出る前の脆弱性を突く攻撃','毎日0時に行われる攻撃','無料で受けられる攻撃'],e:'対策が間に合わないため、多層防御と早期検知が大切。'},
+{q:'リスクへの対応で「保険に入る・外部に委託する」のはどれ?',o:['リスク移転','リスク回避','リスク受容'],e:'移転=被害や対応を他者に引き受けてもらう。回避=やめる、低減=対策する、受容=許容する。'},
+{q:'パスワードを保存するとき、サービス側が行うべき処理は?',o:['ハッシュ化(+ソルト)して保存する','そのまま平文で保存する','画面に表示して保存する'],e:'漏えいしても元のパスワードが分かりにくいよう、ハッシュ化して保存する。'},
+{q:'ビッシングとは?',o:['電話を使ってだます手口','SMSを使ってだます手口','QRコードを使ってだます手口'],e:'メール=フィッシング、SMS=スミッシング、電話=ビッシング、QR=クイッシング。'},
+{q:'トロイの木馬の特徴は?',o:['正体を隠して侵入し、裏で不正を行う','自分で増殖して広がる','ファイルに寄生して感染する'],e:'便利なソフトに見せかけて入り込むタイプ。自己増殖するのはワーム。'},
+{q:'不審な通信を検知して「遮断」までする仕組みは?',o:['IPS','IDS','NAS'],e:'IDSは検知、IPSは検知して遮断。ファイアウォールと組み合わせて使う。'},
+{q:'Wi-Fiの暗号化方式で、避けるべきなのは?',o:['WEP','WPA2','WPA3'],e:'WEPは古く、短時間で破られるおそれがある。WPA3(なければWPA2)を使う。'},
+{q:'HTTPSでサイトの運営者を確認するために使われるのは?',o:['電子証明書','パターンファイル','バックアップ'],e:'認証局が発行する電子証明書で、サイトの正当性を確認し、通信を暗号化する。'},
+{q:'ゼロトラストの考え方は?',o:['社内からのアクセスでも常に確認する','社内なら無条件で信頼する','外部からの通信だけ確認する'],e:'場所に関係なく、人・端末・通信を確認してから許可する。'},
+{q:'インシデント対応で、適切な順序は?',o:['検知→封じ込め→復旧→振り返り','復旧→放置→検知','隠ぺい→削除→忘れる'],e:'封じ込めで広がりを止め、復旧後は原因を振り返って再発を防ぐ。'},
+{q:'SMSの確認コードを「教えて」と言われたら?',o:['詐欺の可能性が高いので、絶対に教えない','本人確認のため教える','家族なら教える'],e:'コードを渡すと、アカウントの乗っ取りや不正送金につながる。'},
+{q:'WAFの役割は?',o:['Webアプリへの攻撃パターンを検知・遮断する','社内の電話を管理する','バックアップを自動で取る'],e:'SQLインジェクションやXSSなどの既知の攻撃を、入口で防ぐ。'},
+{q:'ショルダーハッキングとは?',o:['画面や手元をのぞき見て情報を盗む','大量アクセスでサービスを止める','ウイルスをメールで送る'],e:'電車やカフェでの画面ののぞき見に注意。覗き見防止フィルムも有効。'},
+{q:'覚えやすく強いパスワードの作り方は?',o:['長めのパスフレーズ(言葉の組み合わせ)にする','誕生日を使う','短くて記号だらけにする'],e:'長さが最大の武器。12文字以上を目安に、サービスごとに変える。'},
+{q:'SNSに写真を投稿するとき、特に注意したいのは?',o:['位置情報や背景から場所が特定されること','写真の明るさ','投稿する曜日'],e:'撮影場所や背景の景色、制服などから自宅や学校が分かってしまうことがある。'},
+{q:'一度ネットに広まった投稿が消えにくいことを何という?',o:['デジタルタトゥー','デジタルデトックス','デジタルツイン'],e:'削除しても、保存・転載されて残ることがある。投稿前に慎重に。'},
+{q:'スマホをなくしたとき、遠隔でできる対策は?',o:['「探す」機能で位置確認・遠隔ロック・消去','何もできない','パスワードを紙に書く'],e:'事前に「探す」機能をオンにしておくことが大切。'},
+{q:'「登録完了、料金を支払え」と表示された。正しい対応は?',o:['連絡せず無視し、不安なら相談窓口へ','表示の番号に電話する','すぐに振り込む'],e:'ワンクリック詐欺。連絡すると個人情報を知られ、被害が広がる。'},
+{q:'詐欺の共通点として、あてはまるのは?',o:['焦らせて、お金や個人情報を求め、他人に相談させない','ゆっくり説明してくれる','必ず直接会いに来る'],e:'「誰にも言わないで」は危険のサイン。#9110や188に相談を。'},
+{q:'SNSで知り合った人から「必ずもうかる投資」を勧められた。',o:['ロマンス・投資詐欺を疑い、送金しない','少額なら試す','友達にも紹介する'],e:'親しくなってから投資に誘導する典型的な手口。'},
+{q:'クラウドの共有リンクで、広すぎる設定は?',o:['リンクを知っている全員が見られる','特定の人だけに共有','閲覧のみ許可'],e:'リンクが広まると、誰でも見られてしまう。公開範囲を確認しよう。'},
+{q:'複数の人に一斉にメールを送るとき、アドレスの漏えいを防ぐには?',o:['宛先をBCCにする','全員をTOに入れる','件名に名前を書く'],e:'BCCなら、受信者同士のアドレスが見えない。送信前の確認も大切。'},
+{q:'家族を名乗る電話で「声が似ている」。送金を頼まれたら?',o:['いったん切って、別の連絡手段や合言葉で確認する','声が同じなので送金する','相手の番号に折り返す'],e:'AIで声を似せられる時代。必ず別の手段で確認する。'},
+{q:'生成AIの回答について、正しい考え方は?',o:['間違いが含まれることがあるので、重要な内容は確認する','常に100%正しい','出典は不要'],e:'もっともらしい誤り(ハルシネーション)に注意。'},
+{q:'テレワークで社外から社内システムに接続するときは?',o:['VPNなど、会社が定めた安全な方法を使う','公衆Wi-Fiのまま直接つなぐ','家族の端末を借りる'],e:'通信を暗号化して、盗み見や改ざんを防ぐ。'},
+{q:'電車の中で仕事の書類や画面を開くときの注意は?',o:['のぞき見される前提で、見られて困る情報は開かない','大きな画面で堂々と開く','写真を撮って共有する'],e:'ショルダーハッキング対策。覗き見防止フィルムも有効。'},
+{q:'メールを誤って別の人に送ってしまった。最初にすることは?',o:['すぐに上司や担当者へ報告する','黙っておく','相手に何もしないよう頼まず放置する'],e:'早い報告が被害拡大を防ぐ。報告は責められるためではなく、対処のため。'},
+{q:'フロンティアAIとは?',o:['現時点で最先端の、高い能力をもつ汎用AI','インターネット回線の名前','パソコンの部品の名前'],e:'能力が高いぶん、悪用への備えと安全対策が議論されている。'},
+{q:'AIの悪用で、特に懸念されているのは?',o:['自然な詐欺文面や偽音声・偽動画の高度化','パソコンの電源が切れること','画面の明るさが変わること'],e:'「日本語が不自然」などの手がかりが減り、見た目だけでは判断しにくくなる。'},
+{q:'アカウントの乗っ取りを防ぐ効果が大きいのは?',o:['多要素認証(特にパスキーやセキュリティキー)','パスワードを毎日変える','ブラウザの文字を大きくする'],e:'パスワードが漏れても、別の要素がないとログインできない。'},
+{q:'パスキーやセキュリティキーがフィッシングに強い理由は?',o:['偽サイトでは認証が成立しない仕組みだから','パスワードを短くできるから','広告が出なくなるから'],e:'認証が正規サイトのドメインと結び付いているため、偽サイトには使えない。'},
+{q:'家族を名乗る偽音声の電話。有効な対策は?',o:['いったん切り、別の手段や合言葉で確認する','声が似ていれば信じる','相手に番号を聞いて折り返す'],e:'声や映像は偽造できる。手続きで確認するのが確かな対策。'},
+{q:'プロンプトインジェクションとは?',o:['外部の文章に紛れた命令でAIを誤動作させる攻撃','AIの電源を切る方法','AIに礼儀正しく話しかけること'],e:'AIに読ませる文書やWebページの扱いを制限し、出力も検証する。'},
+{q:'企業のAI利用ルールで、まず決めておくべきことは?',o:['入力してよい情報と、いけない情報の区分','AIの名前','使う時間帯の天気'],e:'個人情報・社外秘・認証情報などを入力しないルールが基本。'},
+{q:'レッドチームとは?',o:['攻撃者の視点でシステムの弱点を探すチーム','ウイルスを作るチーム','広報を担当するチーム'],e:'導入前後に弱点を見つけ、被害が出る前に直す。'},
+{q:'AIの出力を業務で使うときの基本は?',o:['人が内容を確認し、最終判断は人が行う','AIの答えをそのまま使う','確認せずに社外へ送る'],e:'誤りや偏りが含まれることがある。重要な判断ほど人の目が必要。'},
+{q:'ビデオ会議で「社長」から至急の送金指示。正しい対応は?',o:['別の連絡手段で確認し、2人以上で承認する','急ぎなのですぐ送金する','誰にも言わずに処理する'],e:'偽映像による送金詐欺の事例がある。手続きを省かないことが守りになる。'},
+{q:'AIエージェントなどに与える権限の考え方は?',o:['必要最小限にし、重要な操作は人が承認する','管理者権限をすべて与える','パスワードを教えておく'],e:'最小権限の原則。誤動作や乗っ取りの被害を小さくできる。'},
+{q:'NIST AI RMFとは?',o:['AIのリスクを管理するための枠組み','AI専用のゲーム機','画像編集アプリの名前'],e:'AIの信頼性とリスク管理の考え方をまとめた、米国の枠組み。'},
+{q:'ディープフェイクの見分け方で、科学的に筋のよい考え方は?',o:['見た目に頼らず、別経路の確認など手続きで守る','よく見れば必ず分かる','画質が高ければ本物'],e:'人が偽物を見抜く力には限界がある。仕組みと手続きで守る。'},
+{q:'コンテンツ来歴(C2PAなど)の目的は?',o:['作成や編集の履歴を確認できるようにすること','画像を重くすること','写真を自動で加工すること'],e:'偽造や改ざんを見分ける助けになる技術として広がりつつある。'},
+{q:'真偽の分からない衝撃的な画像や動画を見かけたら?',o:['拡散せず、出典や別の報道を確認する','すぐに友達全員に送る','コメントで広める'],e:'誤情報の拡散を止めることも、身近な社会貢献になる。'},
+{q:'詐欺の被害にあってしまったら?',o:['恥ずかしがらず、すぐに#9110や188、警察に相談する','誰にも言わず我慢する','同じ相手に連絡を続ける'],e:'早い相談が被害の拡大を防ぐ。だまされるのは、誰にでも起こりうること。'},
+{q:'高齢の家族を詐欺から守る、いちばん身近な方法は?',o:['手口と確認の方法・合言葉を、家族で共有する','何も話さない','電話番号を教えない'],e:'身近な人への「ひと言」が、被害を減らす確かな力になる。'},
+mk('情報資産の取り扱いで、最初にすべきことは?','重要度に応じて分類し、扱い方を決める','全部同じ扱いにする','誰でも持ち出せるようにする','重要な情報ほど厳しく、軽い情報は柔軟にと、分類して管理する。'),
+mk('不要になった書類や記録媒体の処分は?','細断・データ消去など、復元できない方法で行う','そのまま燃えるごみに出す','引き出しに入れて放置する','ごみ箱から情報を探す手口(スキャビンジング)がある。'),
+mk('社外秘の資料を持ち出すとき、適切なのは?','許可を得て、暗号化・施錠など紛失対策をする','私物のUSBに自由に入れる','自宅の共有パソコンで開く','持ち出しは必要最小限に。紛失時は即報告。'),
+mk('社員を名乗る人が「ドアを一緒に通して」と頼んできた。','入館手続きを案内し、勝手に通さない','親切に通す','名前だけ聞いて通す','後ろからついて入る手口(共連れ)。確認を省かない。'),
+mk('銀行員を名乗る電話で暗証番号を聞かれた。','絶対に教えず、切って公式窓口にかけ直す','本人確認のため教える','暗証番号の一部だけ教える','金融機関が電話で暗証番号を聞くことはない。'),
+mk('電話を使うだましの手口の名前は?','ビッシング','フィッシング','スミッシング','メール=フィッシング、SMS=スミッシング、電話=ビッシング。'),
+mk('バックアップで大切な確認は?','実際に復元できるか、定期的に試す','取っただけで安心する','容量を増やす','復元テストをしないと、いざという時に使えないことがある。'),
+mk('3-2-1ルールの「1」は?','1つは別の場所に保管する','1日1回取る','1人だけが管理する','コピー3つ・媒体2種類・1つは別の場所(オフライン含む)。'),
+mk('復旧目標のRTOとは?','障害からどのくらいの時間で復旧するか','データを何世代残すか','どれだけ新しい時点に戻すか','RTO=復旧時間の目標、RPO=戻す時点の目標。'),
+mk('パッチ適用の優先順位を決める基準は?','悪用の有無・影響の大きさ・公開範囲などのリスク','ファイル名の順','担当者の好み','CVSSなどの深刻度に加え、実際に悪用されているかも重視する。'),
+mk('資産台帳を作る理由は?','どの機器に何が入っているかを把握し、更新漏れを防ぐ','見た目を整えるため','容量を節約するため','持っているものを知らなければ、守れない。'),
+mk('サポートが終了したOSを使い続けると?','修正パッチが出ず、弱点が放置される','動作が速くなる','安全性が上がる','サポート終了前に、更新・入れ替えを計画する。'),
+mk('退職者や異動者のアカウントは?','速やかに無効化・権限変更する','そのまま残す','後任に使わせる','放置アカウントは乗っ取りや不正利用の入口になる。'),
+mk('共有IDを使うリスクは?','誰が操作したか追跡できない','パスワードが長くなる','通信が遅くなる','個人ごとのIDにして、操作の責任を追えるようにする。'),
+mk('管理者(特権)アカウントの使い方は?','必要なときだけ使い、普段は一般権限で作業する','常に管理者で作業する','全員で共有する','特権は強力なぶん、使う場面と人を限定する。'),
+mk('Wi-Fiルーターを買ったら最初にすることは?','初期の管理者パスワードを変更する','そのまま使う','電源を切る','初期設定のままだと、乗っ取られるおそれがある。'),
+mk('来客に家のWi-Fiを使わせるとき、安全なのは?','ゲスト用ネットワークを分ける','家の主のパスワードを教える','パスワードなしにする','来客の端末と家の機器を分けると、被害が広がりにくい。'),
+mk('防犯カメラなどのIoT機器の基本対策は?','初期パスワード変更とファームウェア更新','設置したら放置する','外部に公開設定にする','IoT機器は攻撃の踏み台にされることがある。'),
+mk('APIキーやパスワードをソースコードに直接書くと?','公開リポジトリなどから漏れる危険がある','安全に管理できる','動作が速くなる','秘密情報は環境変数や専用の管理サービスで扱う。'),
+mk('依存ライブラリを更新しないと?','既知の脆弱性が残ったままになる','安全性が上がる','何も起きない','使っている部品の脆弱性にも責任がある。'),
+mk('SBOMとは?','ソフトウェアに含まれる部品の一覧','ウイルスの名前','サーバーの電源','部品を把握すると、脆弱性が出たとき影響範囲をすぐ調べられる。'),
+mk('SNSが乗っ取られたと気づいたら?','パスワード変更・ログイン端末の確認・友達へ連絡','何もしない','同じパスワードで様子を見る','友達へのなりすまし被害を防ぐため、周囲にも知らせる。'),
+mk('「友達」から突然届いた「このURL見て」のメッセージ。','別の手段で本人に確認するまで開かない','すぐ開く','そのまま転送する','乗っ取られた友達のアカウントから送られることがある。'),
+mk('SNSのログインにおすすめの設定は?','多要素認証やパスキーを有効にする','パスワードを共有する','公開設定にする','乗っ取り対策の基本。'),
+mk('ネットで知り合った人から会おうと誘われた。子どもは?','会わず、すぐに保護者や先生に相談する','一人で会いに行く','住所を教える','「秘密にしよう」と言われたら、危険のサイン。'),
+mk('子どもがネットで個人情報を載せるのを防ぐには?','家庭でルールを決め、フィルタリングを活用する','何もしない','全て自由にする','叱るより、一緒にルールを決めて話しやすい関係を作る。'),
+mk('自分や友達の写真を求められたとき、子どもは?','断って、おかしいと思ったらすぐ大人に相談する','求められたら送る','お金をもらえるなら送る','一度送った画像は広まるおそれがある。相談窓口もある。'),
+mk('「還付金があるのでATMへ」という電話。','詐欺。ATMでお金が戻ることはないので切る','指示通りATMに行く','銀行名を確認して従う','ATMは還付の手続きには使えない。家族にも相談を。'),
+mk('固定電話の詐欺対策として有効なのは?','留守番電話や迷惑電話対策機能を使う','すべて出る','電話番号を公開する','直接話さない仕組みで、被害に遭いにくくなる。'),
+mk('離れて暮らす家族を詐欺から守るには?','合言葉と連絡ルールを決めておく','何も話さない','電話に出ないよう言う','「お金の話はまず家族に」というルールが強い。'),
+mk('ランサムウェア感染に気づいたら?','ネットワークから切り離し、担当者や専門窓口へ連絡する','身代金を急いで払う','端末を使い続ける','広がりを止めるのが先。支払っても復旧の保証はない。'),
+mk('身代金を支払うべきでない理由は?','復旧の保証がなく、再び狙われるおそれがあるから','安いから','警察が禁止しているから','支払いは犯罪者の資金にもなる。警察や専門家に相談を。'),
+mk('感染後の復旧で、まず確認するのは?','感染前の安全なバックアップがあるか','ファイル名','画面の明るさ','オフラインのバックアップが復旧の鍵になる。'),
+mk('自分の個人情報が漏えいしたと知らされた。まず?','同じパスワードを使うサービスも含めて変更する','何もしない','返信して詳細を教える','二次被害のフィッシングにも注意する。'),
+mk('クレジットカード情報の漏えいが疑われたら?','カード会社に連絡し、利用停止・再発行をする','様子を見る','暗証番号を変える','不正利用の通知や明細を確認する。'),
+mk('漏えい後に届く「お詫びと確認」メールの扱いは?','リンクを開かず、公式サイトから確認する','すぐに入力する','全員に転送する','漏えいに便乗した偽メールが増える。'),
+mk('災害時のSNSで見かけた「大変!拡散して」の投稿。','公式情報で確認するまで拡散しない','すぐ拡散する','コメントで広める','善意の拡散でも、誤情報なら混乱を招く。'),
+mk('情報の真偽を確かめる基本は?','出典・日付・複数の信頼できる情報源を確認する','いいねの数','画像のきれいさ','公式の発表や報道機関の情報で裏を取る。'),
+mk('台風や地震のときの情報源として適切なのは?','気象庁や自治体など公式の発表','出所不明の動画','友達の友達の話','災害時は特に、公式情報を最優先に。'),
+mk('ネットバンキングの安全な使い方は?','公式アプリから入り、ワンタイムパスワードや通知を使う','メールのリンクから入る','暗証番号をメモしてスマホに貼る','利用通知や限度額の設定も有効。'),
+mk('決済の利用通知が届いた。覚えがない。','すぐにカード会社・決済事業者へ連絡する','放置する','通知を消す','早い連絡が被害を小さくする。'),
+mk('コード決済の利用で安全なのは?','画面ロックを設定し、公式アプリだけを使う','ロックなしで使う','知らない人にQRを見せる','紛失時の停止手順も確認しておく。'),
+mk('自宅ルーターの安全対策として正しいのは?','ファームウェアを更新し、不要な外部公開をしない','設定を一切触らない','管理画面を公開する','古い機器は攻撃されやすい。'),
+mk('Wi-Fiの暗号化で推奨されるのは?','WPA3(なければWPA2)','WEP','暗号化なし','暗号化なしや古い方式は盗み見されやすい。'),
+mk('家のネットワークにつながる機器が増えたら?','何がつながっているか把握し、不要なものは外す','気にしない','全て公開する','把握していない機器が、弱点になる。'),
+mk('フリマで「直接取引したい」と言われたら?','アプリ内の取引を使い、外部に誘導されても応じない','応じる','先に代金を送る','アプリの仕組みの外では、補償が受けられないことがある。'),
+mk('通販サイトの安全確認で役立つのは?','運営会社の所在地・連絡先・口コミを確認する','写真のきれいさだけ','値段の安さだけ','極端な安さや、振込先が個人口座は要注意。'),
+mk('支払い方法として、比較的安全なのは?','クレジットカードなど、補償や取り消しの仕組みがあるもの','銀行振込のみ','現金書留のみ','補償のある方法は、トラブル時に相談しやすい。'),
+mk('マイナンバーなどの重要な番号を求める電話・メールは?','詐欺を疑い、教えない','教える','写真を送る','公的機関が電話やメールで暗証番号を聞くことはない。'),
+mk('個人情報の入力で、基本となる考え方は?','必要最小限だけ、信頼できる相手にだけ','全部入力する','友達全員に教える','提供する前に、利用目的を確認する。'),
+mk('本人確認書類の画像を求められたとき?','提出先が正当か確認し、不要なら送らない','すぐに送る','SNSに載せる','悪用や転売のおそれがある。'),
+mk('なりすましメールの見分けに役立つのは?','送信元アドレスのドメインを確認する','表示名だけを見る','件名の絵文字','表示名は偽装できる。アドレス全体を見る。'),
+mk('SPF・DKIM・DMARCは何のための仕組み?','送信元のなりすましを見抜きやすくする','ウイルスを作る','写真を編集する','メールが正規のドメインから送られたかを確認する。'),
+mk('取引先を装い、振込先の変更を依頼するメールは?','別の連絡手段で確認する(ビジネスメール詐欺)','すぐ変更する','返信して口座を教える','電話などで、既知の連絡先に確認する。'),
+mk('インシデント報告に入れるべき情報は?','いつ・何が・どこで・どうなったか(時系列と証拠)','推測だけ','気持ちだけ','5W1Hと画面などの証拠を、事実のまま伝える。'),
+mk('不審なメールを開いてしまったときは?','隠さず、すぐに報告する','黙っておく','端末を初期化して忘れる','早い報告が被害を小さくする。'),
+mk('証拠を残す観点で適切なのは?','ログや画面のスクリーンショットを消さず保管する','ログを消す','端末をすぐ捨てる','あとで原因を調べる材料になる。'),
+mk('ヒヤリハットを共有する意味は?','事故になる前に、仕組みや手順を改善できる','責任者を探す','人を責める','失敗を責めず、学びに変える文化が守りを強くする。'),
+mk('標的型メール訓練について、近年の研究で言われていることは?','訓練だけでは限定的との報告もあり、仕組みとの併用が大切','訓練だけで完全に防げる','訓練は不要','技術的対策・報告しやすい文化・訓練を組み合わせる。'),
+mk('「おかしい」と言い出しやすい職場の効果は?','異変の早期発見につながる','何も変わらない','事故が増える','報告しやすいほど、被害が小さくなる。'),
+mk('セキュリティの「可用性」を損なう例は?','サーバーが止まって使えない','情報が盗み見される','データが改ざんされる','必要なときに使えることが可用性。'),
+mk('二段階認証の「二段階」とは?','パスワードに加え、別の確認を行うこと','2回ログインすること','パスワードを2つ作ること','知識・所持・生体など、別の種類を組み合わせる。'),
+mk('USBメモリを拾ったら?','差し込まず、管理者や警察に届ける','パソコンに差して持ち主を探す','中身を確認する','不正なプログラムが入っていることがある。'),
+mk('スマホのアプリ権限で適切なのは?','必要な権限だけを許可する','全部許可する','全部拒否してから使う','懐中電灯アプリが連絡先を求めたら怪しい。'),
+mk('公衆無線LANで安全に使うには?','VPNを使う、重要な操作は避ける','何でも入力する','パスワードを共有する','暗号化されていないWi-Fiは盗み見される。'),
+mk('パスワードの使い回しをやめるために役立つのは?','パスワード管理アプリ','付箋に書く','全て同じにする','サービスごとに別の長いパスワードを管理できる。'),
+mk('「アカウント停止」と書かれたメールが来た。','リンクは開かず、公式アプリやサイトで確認する','すぐログインする','返信する','焦らせる文面は、フィッシングの典型。'),
+mk('ソフトウェアの更新が通知されたら?','信頼できる方法で、早めに更新する','無視し続ける','知らないサイトから入れる','弱点を修正する更新は、攻撃を防ぐ。'),
+mk('マルウェア感染が疑われるとき、最初の対応は?','ネットワークから切り離し、相談する','動画を見て様子を見る','パスワードを共有する','被害の拡大を防ぐのが第一。'),
+mk('写真をSNSに載せる前に確認するのは?','写り込み・位置情報・他人の許可','フィルターの種類','投稿の時間','他人が写っている場合は、許可を取る。'),
+mk('ウイルス対策ソフトだけに頼ってはいけない理由は?','未知の攻撃は防げないことがあり、多層防御が必要','古いから','無料だから','更新・バックアップ・認証など、対策を重ねる。'),
+mk('ログインが「見知らぬ端末からあった」と通知が来た。','すぐパスワードを変更し、ログイン履歴を確認する','無視する','通知を消す','乗っ取りの早期発見のサイン。'),
+mk('生成AIに仕事の資料を貼る前に確認することは?','機密情報や個人情報が含まれていないか','文字数','フォント','会社のルールに従い、入力してよい情報かを確認する。'),
+mk('ネットでの誹謗中傷を見かけたら?','拡散せず、通報や相談窓口を利用する','一緒に書き込む','スクリーンショットを広める','被害者を守るためにも、通報や相談が有効。'),
+mk('ネット詐欺にあわないための基本の行動順は?','立ち止まる→公式で確かめる→相談する','急いで入力→後で考える','返信→電話→送金','焦らせる言葉に気づいたら、まず止まる。'),
+mk('「今だけ」「あなただけ」という言葉の狙いは?','冷静に考える時間を奪うこと','親切に説明するため','正確さを示すため','焦らせるのは詐欺の典型的な合図。'),
+mk('検索広告から開いたショップが極端に安い。','公式サイトや運営情報を別に調べて確かめる','広告に出ているので安全と判断する','すぐ購入する','広告は偽サイトにも悪用される。'),
+mk('偽ショップでカード情報を入力してしまったら?','すぐカード会社に連絡して停止・再発行する','様子を見る','パスワードだけ変える','早い連絡が被害を小さくする。'),
+mk('「元本保証で必ずもうかる」と勧められたら?','詐欺を疑う(元本保証の高収益は通常ない)','少額なら試す','友人にも勧める','うますぎる話ほど疑う。'),
+mk('投資の勧誘業者を確認する方法は?','金融庁の登録情報などで確認する','広告のレビューだけ見る','勧誘者の写真を見る','無登録業者は特に危険。'),
+mk('暗号資産を指定の口座へ送るよう求められたら?','送ってしまうと取り戻しにくい。送る前に相談する','すぐ全額送る','秘密にして送る','暗号資産の送金は、原則取り消せない。'),
+mk('サポート詐欺の警告画面が閉じられないとき?','ブラウザを強制終了し、電話はしない','画面の番号に電話する','指示のソフトを入れる','警告は脅し。電話すると遠隔操作や金銭要求につながる。'),
+mk('遠隔操作ソフトを入れさせられてしまったら?','ネットワークを切り、パスワード変更・金融機関へ連絡する','そのまま続ける','画面を撮影して終わる','被害拡大を止め、口座やカードを守る。'),
+mk('「コンビニでギフトカードを買って番号を教えて」と言われたら?','詐欺の典型。教えない','言われた通りにする','半分だけ教える','公的機関や企業が、ギフトカードでの支払いを求めることはない。'),
+mk('SNSの副業で「先に費用を払えば高収入」と言われたら?','詐欺を疑い、支払わない','払って試す','友達も誘う','先払いを求める副業勧誘は要注意。'),
+mk('メッセージアプリで友達から「ギフトカード買って」と来たら?','乗っ取りを疑い、電話など別の手段で確認する','すぐ買う','番号を送る','友達のアカウントが乗っ取られていることがある。'),
+mk('侵入後に権限を広げ、ほかの機器へ移ることを何という?','横展開','縦展開','外部展開','攻撃は段階的に広がる。各段階で止める。'),
+mk('攻撃手法を体系的にまとめた知識ベースは?','MITRE ATT&CK','ISO 9001','RGBカラー表','防御側が、攻撃の流れを整理・対策するために使う。'),
+mk('サプライチェーン攻撃とは?','取引先や委託先など、つながりの弱い所から侵入する攻撃','荷物を盗む犯罪','サーバーの電源を落とす攻撃','守りが固い企業も、取引先経由で狙われる。'),
+mk('委託先管理で重要なのは?','セキュリティ要件を契約に含め、定期的に確認する','価格だけで選ぶ','任せきりにする','委託先の事故は、自社の事故にもなる。'),
+mk('振込をしてしまった後に詐欺と気づいたら?','すぐ銀行へ連絡して組戻しを依頼し、警察にも相談する','様子を見る','相手に返信して確認するだけにする','時間との勝負。1分でも早く連絡する。'),
+mk('送金の承認で有効な仕組みは?','複数人での承認と、別経路での確認','1人で即決する','メールだけで確認する','ビジネスメール詐欺は、手続きの省略を狙う。'),
+mk('二重恐喝とは?','データを暗号化し、盗んだデータの公開も脅す','2回メールを送る','2人で脅す','バックアップだけでは防げない被害もある。'),
+mk('企業の入口対策で重要なのは?','VPN機器などの更新・多要素認証・不要な公開の停止','広告を増やす','パスワードを共有する','入口の弱点が、ランサムウェアの侵入口になる。'),
+mk('ランサムウェア対策で有効なバックアップは?','書き換えできない・オフラインの世代バックアップ','常時つなぎっぱなしの1つのコピー','バックアップなし','バックアップ自体を暗号化されないように守る。'),
+mk('不正のトライアングルの3要素は?','動機・機会・正当化','速度・容量・価格','色・形・大きさ','特に「機会」を減らす仕組みづくりが有効。'),
+mk('DLPの目的は?','重要情報の外部への持ち出し・漏えいを検知・防止する','画面を明るくする','メールを速くする','内部不正や誤送信への対策にも使われる。'),
+mk('退職者による情報持ち出しを防ぐには?','権限の削除とログ監視、持ち出しルールの徹底','何もしない','全員に管理者権限を与える','退職・異動時の手続きを、漏れなく実施する。'),
+mk('カード番号を偽サイトに入力してしまった。まず何をする?','カード会社に連絡して利用停止・再発行する','様子を見る','パスワードだけ変える','早い連絡が被害を小さくする。明細の確認も忘れずに。'),
+mk('だまされて振り込んだ後、まず連絡する先は?','銀行(組戻しの依頼)と警察','だました相手','どこにも連絡しない','組戻しは、早いほど成功の可能性が上がる。'),
+mk('URL「example.co.jp.evil.com」の、本当の運営者のドメインは?','evil.com(右側)','example.co.jp','co.jp','ドメインは右から読む。本物の名前を前に置いてだます手口がある。'),
+mk('短縮URLを受け取ったときの注意は?','リンク先が見えないので、展開して確認し、不明な送り主のものは開かない','必ず安全なので開く','開くと得をする','短縮URLはリンク先を隠せるため、詐欺に使われやすい。'),
+mk('「未払い料金があります」というSMSの正しい対応は?','リンクを開かず、公式アプリや窓口で確認する','急いで支払う','返信して確認する','「未払い」「停止」などで焦らせるのがスミッシングの定番。'),
+mk('税務署や警察を名乗る連絡が本物か確かめるには?','自分で調べた公式の番号にかけ直す','相手が教えた番号に電話する','SNSで質問する','連絡先は、相手が示したものを使わないのが鉄則。'),
+mk('ランサムウェア感染に気づいた企業の初動は?','ネットワークから切り離し、責任者や専門窓口へ連絡する','全社員のPCを再起動する','身代金をすぐ払う','電源は急いで切らず、調査のために状態を残して相談する。'),
+mk('個人情報の漏えいが疑われるとき、企業が確認するのは?','法令に基づく本人への通知や、監督機関への報告','隠して様子を見る','SNSで反論する','個人情報保護法に基づく報告が必要になる場合がある。'),
+mk('VPN機器の脆弱性対策で優先すべきは?','外部に公開された機器から、早くパッチを適用する','社内の機器だけ更新する','更新は年1回にする','外部に公開された機器は、真っ先に狙われる。'),
+mk('「悪用が確認された脆弱性」を優先して直す理由は?','すでに攻撃に使われていて、被害の危険が高いから','名前が目立つから','新しいから','深刻度に加え、実際に悪用されているかを重視する。'),
+mk('クラウドで最も危険な共有設定は?','「リンクを知っている全員が閲覧可」のまま公開','特定の人だけに共有','閲覧のみ許可','設定ミスによる情報漏えいが多い。公開範囲を定期的に確認する。'),
+mk('クラウドの責任共有モデルとは?','事業者と利用者で、守る範囲を分担する考え方','すべて事業者が守る','すべて利用者が守る','設定・権限・データの管理は、利用者側の責任。')
+);
+
+let qPool=[],certOK=false,certPend=0,wallBreak=0;try{certOK=localStorage.getItem('cyberCastle_cert')==='1';}catch(e){}
+let paused=true,incomeMul=1,goldenT=0,evT=900,lastEv='',gifts=[],toastAt=0,killTipAt=-999,mastered=new Set(),queue=[],c0=0;
+const $=id=>document.getElementById(id);
+const shuffle=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(p=>p[1]);
+function buildTicker(){const t=$('tickText'),s=shuffle(TIPS).join('　🌺　');t.textContent=s;t.style.animationDuration=Math.round((s.length*12+innerWidth)/55)+'s';}
+function toast(m,ms=4200){const t=$('toast');t.textContent=m;t.style.opacity=1;clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.opacity=0,ms);}
+function banner(m){const b=$('banner');b.textContent=m;b.style.opacity=1;b.style.transform='translateY(0)';clearTimeout(banner.h);banner.h=setTimeout(()=>{b.style.opacity=0;b.style.transform='translateY(-10px)';},3800);}
+function updK(){$('kText').textContent=mastered.size+'/'+QUIZ.length;if(!certOK&&mastered.size>=Math.ceil(QUIZ.length*.95)){certOK=true;certPend=1;try{localStorage.setItem('cyberCastle_cert','1');}catch(e){}banner('🎓 クイズ95%クリア!賞状がもらえるよ!');}refreshCert();}
+function nextQuiz(){if(qPool.length)return qPool.shift();
+ if(!queue.length)queue=shuffle(QUIZ.map((_,i)=>i).filter(i=>!mastered.has(i)));
+ if(!queue.length){mastered.clear();updK();queue=shuffle(QUIZ.map((_,i)=>i));banner('🎓 全問クリア!マスター2周目へ');}
+ return queue.shift();
+}
+function showQuiz(title){
+ const i=nextQuiz(),Q=QUIZ[i];paused=true;
+ const opts=shuffle(Q.o.map((t,k)=>({t,ok:k===0})));
+ $('qTitle').textContent=title;$('qText').textContent=Q.q;
+ const box=$('qOpts');box.innerHTML='';$('qExp').style.display='none';$('qNext').style.display='none';
+ opts.forEach(o=>{const b=document.createElement('button');b.className='opt';b.textContent=o.t;
+  b.onclick=()=>{[...box.children].forEach(x=>x.disabled=true);
+   if(o.ok){b.classList.add('ok');mastered.add(i);S.q++;dailyCheck();const g=60+castleHeightLevel*10;coins+=g;castleCodeStored+=3;playBeep(1200,'triangle',.2);$('qExp').textContent='⭕ 正解! +'+g+'🪙 +3📦　'+Q.e;updK();}
+   else{b.classList.add('ng');queue.splice(Math.min(2,queue.length),0,i);playBeep(200,'sawtooth',.2);$('qExp').textContent='❌ おしい! 正解は「'+Q.o[0]+'」　'+Q.e+'(あとでもう一度出るよ)';}
+   $('qExp').style.display='block';$('qNext').style.display='block';};
+  box.appendChild(b);});
+ $('quiz').style.display='flex';
+}
+$('qNext').onclick=()=>{$('quiz').style.display='none';paused=modalOpen();if(quizLeft>0){const k=quizN-quizLeft+1;quizLeft--;showQuiz(quizTitle+' ('+k+'/'+quizN+')');}else if(certPend){certPend=0;openCert();}};
+
+function eventTick(){
+ c0=coins;waveTick();if(gameTime%300===0)saveGame();
+ if(goldenT>0&&--goldenT===0){incomeMul=1;banner('🌈 ゴールデンタイム終了');}
+ for(let i=gifts.length-1;i>=0;i--){const g=gifts[i];
+  if(Math.hypot(player.x-g.x,player.y-g.y)<28){const r=(g.rare?200:40)+castleHeightLevel*15;coins+=r;if(g.rare)freezeAll();gifts.splice(i,1);playBeep(1400,'triangle',.2);addParticles(g.x,g.y,'#ffd166',20);toast('🎁 +'+r+'🪙 　'+TIPS[Math.floor(Math.random()*TIPS.length)]);}
+  else if(--g.t<=0)gifts.splice(i,1);}
+ if(gameTime%900===0&&Math.random()<.5){banner('💎 レアお宝が出現!とると敵が凍る!');gifts.push({x:screenWidth*(.12+Math.random()*.76),y:screenHeight*(.3+Math.random()*.5),t:600,rare:true});}
+ if(--evT>0)return;
+ evT=1800+Math.floor(Math.random()*900);
+ const ev=shuffle(['quiz','wave','golden','gift','boss'].filter(e=>e!==lastEv))[0];lastEv=ev;
+ if(ev==='quiz')quizSet(2,'🧠 ぬくぬくクイズタイム!');
+ else if(ev==='wave'){banner('🎣 フィッシング大行進!偽メールに注意!');for(let i=0;i<4+2*stageOf(castleHeightLevel);i++)spawnVirus(0);}
+ else if(ev==='golden'){goldenT=900;incomeMul=2;banner('🌈 ゴールデンタイム!15秒間 収入2倍!');}
+ else if(ev==='gift'){banner('🎁 ボーナスプレゼント出現!拾いに行こう!');for(let i=0;i<3;i++)gifts.push({x:screenWidth*(.12+Math.random()*.76),y:screenHeight*(.3+Math.random()*.5),t:720});}
+ else spawnBoss();
+}
+function applyIncome(){if(incomeMul>1&&coins>c0)coins+=Math.floor((coins-c0)*(incomeMul-1));}
+function onLevelUp(){
+ const L=castleHeightLevel;
+ if(Object.keys(SPECIAL).some(k=>SPECIAL[k]===L))toast('📚 特別講座が読めるようになったよ!右の「📚 授業」から',6000);
+ if(L>=FINAL_LV&&finalState===0){setTimeout(()=>showLec(8,startFinal),500);return;}
+ if(L>1&&L<FINAL_LV&&(L-1)%LEVELS_PER_STAGE===0){const st=(L-1)/LEVELS_PER_STAGE;banner('🌺 ステージ'+(st+1)+' 開始!'+(st>=5?'(難関ステージ)':''));fireworks();const ls=[st].concat(st>=2&&st<=6?[14+st]:[],[20+st],st>=2?[33+st]:[]);setTimeout(()=>seqLec(ls.slice(),()=>lecQuiz(ls,'📝 ステージ'+st+' 確認テスト',7)),1800);return;}
+ setTimeout(()=>{if(!paused){const mi=8+L/2;if(LEC[mi])seqLec([mi,27+L/2],()=>lecQuiz([mi,27+L/2],'🤝 信頼Lv.'+L+' 達成クイズ',4));else quizSet(2,'🤝 信頼Lv.'+L+' 達成クイズ');}},600);
+}
+function onKill(v){combo=gameTime-lastKill<100?combo+1:1;lastKill=gameTime;if(combo%10===0){const b=combo*3;coins+=b;banner('🔥 '+combo+'コンボ!ボーナス+'+b+'🪙');}kills++;S.k++;maxCombo=Math.max(maxCombo,combo);S.c=Math.max(S.c,combo);
+ if(combo%15===0&&fever<=0){fever=600;feverUsed=true;flash=1;banner('🌈 FEVER!10秒間 攻撃2倍!');playBeep(1500,'triangle',.3);}
+ if([50,100,200,500,1000,2000].includes(kills)){const mb=kills*2;coins+=mb;flash=1;fireworks();banner('🎉 '+kills+'体撃破!ボーナス+'+mb+'🪙');}
+ if(v.boss||v.size>=20){rings.push({x:v.x,y:v.y,r:8,l:1});pops.push({x:v.x,y:v.y,t:45,s:v.boss?'BREAK!!':'BREAK!'});screenShake=Math.max(screenShake,v.boss?18:8);}
+ setTimeout(()=>{achCheck();dailyCheck();},50);if(v.final&&!viruses.some(o=>o!==v&&o.final)){finalState=2;setTimeout(showEnding,1200);}if(v.boss){coins+=200;banner('🎉 ボス撃破!+200🪙');}
+ if(gameTime-killTipAt>600){killTipAt=gameTime;toast(KILL_TIPS[v.type]);}}
+function padTip(pad){if(PAD_TIPS[pad.label])toast(PAD_TIPS[pad.label]);}
+buildTicker();updK();$('tickText').addEventListener('animationiteration',buildTicker);
+
+/* ---- ウェーブ・壁・セーブ ---- */
+const ECOL={fast:'#ffb3d1',normal:'#ffc89b',tank:'#c9b3ff',swarm:'#ffd6a5',split:'#b8f2c9',stealth:'#d7d7ff',healer:'#fff0a0'};
+const EICON={fast:'🎣',normal:'🦠',tank:'🔒',swarm:'🌊',split:'🧬',stealth:'👻',healer:'📡'};
+const THEMES={normal:['⚔️ 通常攻撃',''],swarm:['🌊 DDoSぷに大群','DDoS=大量アクセスで業務をマヒさせる攻撃'],heavy:['🔒 ランサムくま行進','ランサム=データを人質に身代金要求。備えはバックアップ'],split:['🧬 ワームもち増殖','ワーム=自己増殖するマルウェア。倒すと分裂するよ'],stealth:['👻 ステルス潜入','標的型攻撃=気づかれないよう潜伏。ログ監視が大事'],healer:['📡 ボットマスター登場','ボットネットは司令塔を止めるのが先決。回復役から倒そう']};
+let wave={n:1,t:0,phase:'fight',theme:'normal',mul:1};
+function spawnBoss(){const hp=(550+stageOf(castleHeightLevel)*350)*(1+castleHeightLevel*.08)*(1+Math.min(gameTime/14400,.5));const bk=BKS[stageOf(castleHeightLevel)],bd=BKD[bk];viruses.push({bk,bi:bd[0],x:screenWidth/2,y:screenHeight+30,type:'tank',boss:true,speed:.55,hp,maxHp:hp,color:'#c9b3ff',size:32,eatTimer:0,slowTimer:0});banner(bd[1]);}
+function waveTick(){
+ const w=wave;w.t++;
+ if(finalState===1){w.phase='fight';w.theme='healer';w.mul=1.3;w.t=0;$('waveText').textContent='👑FINAL';return;}
+ if(w.phase==='fight'&&w.t>1500){w.phase='calm';w.t=0;banner('☕ ひと息タイム!今のうちに強化しよう');}
+ else if(w.phase==='calm'&&w.t>420){
+  w.phase='fight';w.t=0;w.n++;
+  const ks=Object.keys(THEMES).filter(k=>k!==w.theme&&stageOf(castleHeightLevel)>=({normal:0,swarm:0,split:2,stealth:3,heavy:4,healer:5})[k]);w.theme=ks[Math.floor(Math.random()*ks.length)];w.mul=.7+Math.random()*.8;
+  banner('🌊 Wave '+w.n+': '+THEMES[w.theme][0]);if(THEMES[w.theme][1])toast(THEMES[w.theme][1],6000);
+  if(w.n%(stageOf(castleHeightLevel)>=6?3:5)===0)spawnBoss();
+ }
+ $('waveText').textContent='W'+w.n+(w.phase==='calm'?'☕':'');
+}
+function wallEffect(v){
+ const P=world.pads;let m=1;
+ [[P.firewall.level,.88,.05,.5,.35],[P.osUpdate.level-1,.75,.06,.6,0]].forEach(([lv,fy,sl,base,dm],i)=>{
+  if(lv<=0||Math.abs(v.y-screenHeight*fy)>9)return;
+  m*=Math.max(.1,base-lv*sl);if(dm)v.hp-=lv*dm;if(i)v.weak=true;
+ });
+ return m;
+}
+function drawWalls(){
+ const P=world.pads;
+ [[P.firewall.level,.88,'255,127,80','🔥ファイアウォール'],[P.osUpdate.level-1,.75,'232,67,147','🔄OSパッチ壁']].forEach(([lv,fy,c,name])=>{
+  if(lv<=0)return;
+  const y=screenHeight*fy,g=wallBreak>0?(gameTime%8<4?.55:.03):.25+.1*Math.sin(gameTime/15);
+  ctx.fillStyle='rgba('+c+','+g+')';ctx.fillRect(0,y-8,screenWidth,16);
+  ctx.strokeStyle='rgba('+c+',.9)';ctx.lineWidth=2;ctx.strokeRect(-2,y-8,screenWidth+4,16);
+  ctx.lineWidth=1;for(let x=(gameTime*.3%22)-22;x<screenWidth;x+=22){ctx.beginPath();ctx.moveTo(x,y-8);ctx.lineTo(x,y+8);ctx.stroke();}
+  const fz=Math.round(12*UIs);ctx.font='bold '+fz+'px sans-serif';ctx.textAlign='left';ctx.lineJoin='round';ctx.lineWidth=Math.max(3,fz*.3);ctx.strokeStyle='rgba(20,10,40,.9)';ctx.fillStyle='#fff';ctx.strokeText(name+' Lv.'+lv,6,y-12);ctx.fillText(name+' Lv.'+lv,6,y-12);
+ });
+}
+const SAVE_KEY='cyberCastle_v4';
+function saveGame(){if(noSave)return;try{const P=world.pads,o={coins,lv:castleHeightLevel,hp:castleHp,mhp:castleMaxHp,cs:castleCodeStored,ct:castleCodeTarget,os:osVersion,gt:gameTime,m:[...mastered],fs:finalState,en:endless,u:upgradeUsed,lt:lastLvT,k:kills,mc:maxCombo,p:{}};for(const k in P){const q=P[k];o.p[k]={level:q.level,cost:q.cost,count:q.count};}localStorage.setItem(SAVE_KEY,JSON.stringify(o));}catch(e){}}
+function loadGame(){try{const o=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(!o||!Number.isFinite(o.coins)||!Number.isFinite(o.lv)||o.lv<1||!o.p)return;
+ coins=o.coins;castleHeightLevel=o.lv;castleHp=o.hp;castleMaxHp=o.mhp;castleCodeStored=o.cs;castleCodeTarget=o.ct;osVersion=o.os;gameTime=o.gt||0;mastered=new Set(o.m||[]);finalState=o.fs||0;endless=!!o.en;upgradeUsed=!!o.u;lastLvT=o.lt??gameTime;kills=o.k||0;maxCombo=o.mc||0;
+ const P=world.pads;for(const k in o.p)for(const f in o.p[k])if(o.p[k][f]!=null)P[k][f]=o.p[k][f];
+ P.castleRepair.codeRequired=castleCodeTarget;for(let i=0;i<(P.aiStaff.count||0);i++)aiUnits.push({x:world.castle.x,y:world.castle.y,angle:Math.random()*6.28});updK();
+ if(castleHeightLevel>=FINAL_LV&&finalState===0)setTimeout(startFinal,1500);
+ if(finalState===1){finalState=0;setTimeout(startFinal,1500);}}catch(e){}}
+window.addEventListener('pagehide',saveGame);
+
+/* ---- ステージ・ゲームオーバー・エンディング・授業 ---- */
+const FINAL_LV=16,SD=[{m:1.2,rate:.9,dmg:.9},{m:1.6,rate:1.1,dmg:1.15},{m:2,rate:1.4,dmg:1.5},{m:2.5,rate:1.8,dmg:1.9},{m:3.1,rate:2.2,dmg:2.3},{m:3.8,rate:2.7,dmg:2.8},{m:4.6,rate:3.2,dmg:3.4},{m:5.6,rate:3.8,dmg:4}];
+let finalState=0,endless=false,noSave=false,goFlag=false;
+const stageDiff=()=>{const d=SD[stageOf(castleHeightLevel)],h=hard?1.35:1;return{m:d.m*h,rate:d.rate*h,dmg:d.dmg*h};};
+const stageFloor=()=>stageOf(castleHeightLevel)*LEVELS_PER_STAGE+1;
+const modalOpen=()=>['go','end','lec','quiz','start','lib','cert'].some(id=>$(id).style.display==='flex');
+const LEC=[null,
+['ステージ1 クリア!(そびえる城編)','守るべきものを知ろう',`<p>最初の授業は<b>情報セキュリティの基本</b>です。守る対象(<b>情報資産</b>)について、次の3つの性質を保つことが基本とされています。</p><ul><li><b>機密性</b>:許可された人だけが情報を見られること</li><li><b>完全性</b>:情報が改ざんされず、正確であること</li><li><b>可用性</b>:必要なときに使えること</li></ul><p>攻撃者やウイルスなどの<b>脅威</b>が、システムの弱点(<b>脆弱性</b>)を突くと、被害が起きる可能性、つまり<b>リスク</b>が生まれます。</p><p><b>📘 ふかぼり:</b>情報資産には、顧客情報や設計書のような「情報そのもの」だけでなく、それを扱うパソコン・サーバー・ネットワーク・人も含まれます。対策では<b>リスク</b>(起きやすさ×被害の大きさ)を見積もり、優先順位をつけて進めます。リスクへの向き合い方には、<b>低減</b>(対策する)・<b>回避</b>(やめる)・<b>移転</b>(保険や委託)・<b>受容</b>(許容して様子を見る)の4つがあります。</p><ul><li>セキュリティは「技術・人・ルール」の3本柱</li><li>対策の基本サイクルは<b>計画→実行→確認→改善</b>(PDCA)</li></ul><div class="pt">📝 ポイント:脅威を完全になくすことは難しいので、弱点(脆弱性)を減らすことが対策の入口になります。</div>`],
+['ステージ2 クリア!(国際通り編)','人の心理を突く攻撃',`<p>第2回は<b>ソーシャルエンジニアリング</b>です。技術ではなく、人の心理や行動の隙を突いて情報をだまし取る手口の総称です。</p><p>代表例が<b>フィッシング</b>です。メールやSMSで本物そっくりの偽サイトに誘導し、ID・パスワードやカード情報を入力させます。「至急」「アカウント停止」など、焦らせる言葉がよく使われます。</p><ul><li>リンクは開かず、公式アプリやブックマークから確認する</li><li>差出人やURLを落ち着いて確認する</li><li><b>多要素認証</b>やパスキーを使い、パスワードだけに頼らない</li><li>パスワードは長く、サービスごとに別のものにする</li></ul><p><b>📘 ふかぼり:</b>手口は媒体ごとに名前があります。<b>フィッシング</b>(メール)・<b>スミッシング</b>(SMS)・<b>ビッシング</b>(電話)・<b>クイッシング</b>(QRコード)です。ほかに、肩越しにのぞき見る<b>ショルダーハッキング</b>、ごみ箱から情報を探す<b>スキャビンジング</b>、関係者になりすまして聞き出す手口もあります。</p><ul><li>「社長から至急」「銀行から停止」など、権威と緊急性で焦らせる</li><li>正規の窓口が、電話やメールで暗証番号やパスワードを聞くことはない</li><li>書類は<b>シュレッダー</b>で処分し、席を離れるときは画面をロックする</li></ul><div class="pt">📝 ポイント:攻撃者は「人」も狙います。立ち止まって確認する習慣が大きな防御になります。</div>`],
+['ステージ3 クリア!(ジンベエの水槽編)','マルウェアとランサムウェア',`<p>第3回は<b>マルウェア</b>(悪意のあるソフトウェアの総称)です。ウイルス、ワーム、ランサムウェアなどがあります。</p><p><b>ランサムウェア</b>は、データを暗号化して使えなくし、元に戻す代わりに金銭を要求します。主な侵入経路は、メールの添付ファイル、不正なWebサイト、そしてソフトウェアの<b>脆弱性</b>の悪用です。</p><ul><li>OSやソフトウェアを常に最新の状態にする</li><li>ウイルス対策ソフトを導入し、最新の状態に保つ</li><li>定期的に<b>バックアップ</b>を取る(3つのコピー・2種類の媒体・1つは別の場所、という「3-2-1ルール」が目安)</li><li>怪しい添付ファイルやリンクは開かない</li></ul><p><b>📘 ふかぼり:</b>マルウェアにはいくつか種類があります。<b>ウイルス</b>(ファイルに寄生して感染)、<b>ワーム</b>(自分で増えて広がる)、<b>トロイの木馬</b>(正体を隠して侵入)、<b>スパイウェア</b>(情報を盗む)、<b>ボット</b>(外部から操られ、攻撃の踏み台になる)などです。ウイルス対策ソフトは、既知の特徴(<b>パターンファイル</b>)と照合する方法に加え、怪しい<b>振る舞い</b>を見つける方法も使います。</p><ul><li>感染したら:ネットワークから切り離し(LANケーブルを抜く・Wi-Fiをオフ)、担当者に連絡する</li><li>バックアップは、本体につなぎっぱなしにしない(一緒に暗号化されることがある)</li></ul><div class="pt">📝 ポイント:感染を完全に防ぐのは難しいため、「やられても復旧できる」備えが重要です。</div>`],
+['ステージ4 クリア!(残波岬編)','多層防御と脆弱性対策',`<p>第4回は<b>多層防御</b>です。1つの対策が破られても次の対策で守れるように、防御を何層にも重ねる考え方です。ゲームの壁やウイルス対策ソフトを重ねてきたのと同じですね。</p><ul><li><b>入口</b>:ファイアウォールなどで不要な通信を遮断する</li><li><b>内部</b>:パッチ適用で脆弱性を修正、ウイルス対策、アクセス権を必要最小限に</li><li><b>人</b>:教育と訓練で、だまされにくくする</li><li><b>検知と対応</b>:ログを監視し、異常時の連絡手順を決めておく</li></ul><p>脆弱性の公表や修正パッチの提供前に行われる<b>ゼロデイ攻撃</b>のように、完全には防げない攻撃もあります。だからこそ「見つける・広げない・復旧する」準備が大切です。</p><p><b>📘 ふかぼり:</b><b>ファイアウォール</b>は通信の入口で許可・拒否を決める仕組み、<b>IDS/IPS</b>は不審な通信を検知(IDS)・遮断(IPS)する仕組みです。<b>パッチ管理</b>では、更新の適用漏れがないか台帳で確認します。<b>最小権限の原則</b>で、必要な人にだけ必要な権限を与えます。</p><ul><li><b>ゼロトラスト</b>:社内だから安全とは考えず、すべてのアクセスを確認する考え方</li><li>ログは「いつ・誰が・何を」したかを残し、定期的に見て異常に気づく</li></ul><div class="pt">📝 ポイント:セキュリティに100%はありません。被害を小さくする設計と、事故のときの手順を用意しましょう。</div>`],
+['最終ステージへ!','インシデント対応と相談先',`<p>最終回は<b>インシデント対応</b>です。どれだけ備えても、事故(インシデント)がゼロになるとは限りません。起きたときに被害を小さくする手順が大切です。</p><ul><li><b>検知</b>:いつもと違う動きに気づく</li><li><b>初動</b>:ネットワークから切り離すなど、被害の拡大を防ぐ</li><li><b>報告・相談</b>:自分で抱え込まず、会社や学校の担当者へ</li><li><b>復旧と再発防止</b>:バックアップから戻し、原因をふさぐ</li></ul><p>相談先は、警察相談専用電話 <b>#9110</b>(緊急は110)、消費者ホットライン <b>188</b>、情報セキュリティ安心相談窓口などです。</p><p>いよいよ最終決戦。まだ対策が存在しない弱点を突く<b>ゼロデイ大魔王</b>が現れます。これまでの壁・ウイルス対策ソフト・セキュリティ対策要員・教育のすべてを活かしましょう!</p><p><b>📘 ふかぼり:</b>組織では、事故に備えて<b>CSIRT</b>(インシデント対応チーム)や連絡体制を決めておきます。対応の流れは<b>準備→検知・分析→封じ込め→根絶→復旧→振り返り</b>です。証拠を残すため、ログや画面の記録は消さずに保全します。<b>事業継続計画(BCP)</b>を作って訓練しておくと、慌てずに動けます。</p><ul><li>個人でも:被害に気づいたら、パスワード変更・カード会社や銀行への連絡・警察への相談</li><li>不審な電話やメールは、同僚や家族に共有して被害の拡大を防ぐ</li></ul><div class="pt">📝 ポイント:異変に気づいたら、慌てて操作を重ねず、早めに相談しましょう。</div>`]];
+LEC[8]=LEC[5];
+LEC[5]=['ステージ5 クリア!(古宇利大橋編)','認証とパスワード管理',`<p>第5回は<b>認証</b>です。「本人であること」を確かめる仕組みで、<b>知っていること</b>(パスワード)・<b>持っているもの</b>(スマホなど)・<b>自分自身</b>(指紋・顔)の3種類があります。</p><ul><li><b>リスト型攻撃</b>:漏えいしたID・パスワードを別サービスで試す。使い回しが狙われる</li><li><b>ブルートフォース攻撃</b>:総当たりで試す。短いパスワードは破られやすい</li><li>対策:長く推測されにくい文字列、サービスごとに別、<b>多要素認証</b>・<b>パスキー</b></li></ul><p><b>📘 ふかぼり:</b>パスワードは、サービス側では元の文字列そのものではなく<b>ハッシュ値</b>(元に戻せない変換結果)で保存するのが基本です。さらに<b>ソルト</b>(ランダムな文字列)を加えると、一覧表を使った<b>レインボーテーブル攻撃</b>に強くなります。利用者側では、<b>パスワード管理アプリ</b>で長い文字列を使い分けるのが現実的です。</p><ul><li>パスキーは、秘密鍵を端末内に置き、公開鍵でログインを確認する仕組み。偽サイトでは使えないのでフィッシングに強い</li><li>SMSの確認コードは他人に教えない(「コードを教えて」は詐欺の合図)</li><li>初期パスワードは必ず変更し、退職者や不要なアカウントは削除する</li></ul><div class="pt">📝 ポイント:異なる種類の認証を組み合わせると、1つが漏れても守れます。</div>`];
+LEC[6]=['ステージ6 クリア!(万座毛編)','通信の安全と暗号化',`<p>第6回は<b>暗号化</b>です。第三者に読まれても意味が分からない形に変換して、<b>機密性</b>を守ります。Webの<b>HTTPS</b>は通信を暗号化しますが、サイト自体の信頼性を保証するわけではありません。</p><ul><li><b>共通鍵暗号</b>:暗号化と復号に同じ鍵を使う(高速)</li><li><b>公開鍵暗号</b>:公開鍵で暗号化し、秘密鍵で復号する。鍵の受け渡し問題を解決できる</li><li><b>電子署名</b>:秘密鍵で署名し、作成者と、改ざんされていないこと(<b>完全性</b>)を確認する</li><li>公衆Wi-Fiは盗み見や偽アクセスポイントに注意。重要な操作は避ける</li></ul><p><b>📘 ふかぼり:</b>HTTPSで使う<b>SSL/TLS</b>は、<b>電子証明書</b>でサイトの運営者を確認し、通信を暗号化します。証明書は信頼できる<b>認証局</b>が発行します。ハッシュ関数はデータの「指紋」のように使い、改ざんの検出に役立ちます。Wi-Fiでは<b>WPA3</b>(なければWPA2)を使い、古い方式のWEPは避けます。<b>VPN</b>は通信を暗号化したトンネルでつなぐ仕組みで、外出先から社内へ安全に接続できます。</p><ul><li>ブラウザの警告画面(証明書エラー)は無視しない</li><li>自宅ルーターの管理者パスワードと、ファームウェアの更新も忘れずに</li></ul><div class="pt">📝 ポイント:暗号化は「読まれない」、電子署名は「改ざんされていない」を守る技術です。</div>`];
+LEC[7]=['ステージ7 クリア!(赤瓦の島編)','Webへの攻撃と法律',`<p>第7回は、Webサイトやサービスへの攻撃です。</p><ul><li><b>SQLインジェクション</b>:入力欄に不正な命令を混ぜ、データベースを不正操作する。対策は入力値を命令として扱わない実装(プレースホルダ)</li><li><b>クロスサイトスクリプティング(XSS)</b>:不正なスクリプトを閲覧者の画面で実行させる。対策は出力時のエスケープ</li><li><b>DoS/DDoS攻撃</b>:大量のアクセスでサービスを止める。<b>可用性</b>を狙う</li></ul><p>他人のIDやパスワードを無断で使う行為は、<b>不正アクセス禁止法</b>で禁止されています。</p><p><b>📘 ふかぼり:</b>ほかにも、利用者になりすまして操作させる<b>CSRF</b>、盗んだセッション情報でログインする<b>セッションハイジャック</b>があります。開発側は<b>入力値の検証</b>・<b>出力のエスケープ</b>・<b>プレースホルダ</b>を徹底し、公開前に<b>脆弱性診断</b>を受けます。<b>WAF</b>(Webアプリケーションファイアウォール)で、既知の攻撃パターンを遮断する方法もあります。</p><p>法律では、<b>不正アクセス禁止法</b>に加え、不正なプログラムを作る・ばらまく行為も処罰の対象です。個人情報は<b>個人情報保護法</b>で守られ、漏えいしたときは本人や関係機関への報告が必要になる場合があります。</p><div class="pt">📝 ポイント:弱点を作らない開発と、法律・ルールの理解はセットです。</div>`];
+LEC[9]=['📖 ミニ授業(信頼Lv.2)','パスワードの作り方と守り方',`<p>パスワードは<b>長さ</b>が最大の武器です。短くて複雑な文字列より、<b>12文字以上</b>の覚えやすい<b>パスフレーズ</b>(好きな言葉をいくつか組み合わせる)のほうが破られにくくなります。</p><ul><li>サービスごとに<b>別のもの</b>を使う(使い回しはリスト型攻撃の入口)</li><li>覚えきれないときは<b>パスワード管理アプリ</b>を使う</li><li>誕生日・名前・123456・passwordは避ける</li><li>メモは人目につく場所に貼らない</li><li>漏えいしたかもしれないときは、すぐ変更して<b>多要素認証</b>をオンにする</li></ul><div class="pt">📝 ポイント:パスワードは「長く・別々に・管理アプリで」が基本です。</div>`];
+LEC[10]=['📖 ミニ授業(信頼Lv.4)','SNSとプライバシー',`<p>SNSの投稿は、思わぬ情報から<b>場所や身元</b>を特定されることがあります。写真には撮影場所などの<b>位置情報</b>が入っていることがあり、背景の景色・制服・ネームプレート・車のナンバーも手がかりになります。</p><ul><li>自宅や学校の近くで撮った写真は、投稿前に位置情報をオフにする</li><li>公開範囲を見直し、知らない人からの友達申請は承認しない</li><li>一度広まった投稿は消えにくい(<b>デジタルタトゥー</b>)</li><li>アカウントが乗っ取られたら、友達になりすまして詐欺に使われる</li><li>「これを第三者が見て困らないか」を投稿前に考える</li></ul><div class="pt">📝 ポイント:公開した情報は、見知らぬ人にも見られる前提で投稿しましょう。</div>`];
+LEC[11]=['📖 ミニ授業(信頼Lv.6)','スマホの安全設定',`<p>スマホは、財布・鍵・連絡先・写真が入った「持ち歩く情報のかたまり」です。基本の設定を見直すだけで、被害を大きく減らせます。</p><ul><li><b>画面ロック</b>(指紋・顔認証+PIN)を必ず設定する</li><li>OSとアプリの<b>自動更新</b>をオンにする</li><li>アプリは公式ストアからだけ入れ、不要な<b>権限</b>は許可しない</li><li>「探す」機能をオンにして、紛失時は<b>遠隔ロック・消去</b></li><li>ロック画面に通知の中身を表示しない</li><li>使っていないアプリは削除し、定期的にバックアップを取る</li></ul><div class="pt">📝 ポイント:ロック・更新・権限・探す機能の4点セットを覚えましょう。</div>`];
+LEC[12]=['📖 ミニ授業(信頼Lv.8)','だましの手口と相談先',`<p>詐欺の手口は次々に変わりますが、共通点があります。<b>焦らせる</b>・<b>お金や個人情報を求める</b>・<b>他人に相談させない</b>の3つです。</p><ul><li><b>サポート詐欺</b>:偽の警告画面で電話させ、遠隔操作や金銭を要求する</li><li><b>ワンクリック詐欺</b>:「登録完了」と表示して支払いを迫る。連絡せず無視する</li><li><b>投資・ロマンス詐欺</b>:SNSで親しくなり、投資や送金に誘導する</li><li><b>特殊詐欺</b>:家族や警察・銀行員を名乗り、還付金やキャッシュカードを求める</li></ul><p>困ったときは、警察相談専用電話 <b>#9110</b>、消費者ホットライン <b>188</b>(緊急は110)へ。</p><div class="pt">📝 ポイント:お金の話が出たら、一人で決めず、必ず誰かに相談しましょう。</div>`];
+LEC[13]=['📖 ミニ授業(信頼Lv.10)','クラウド・共有・メールの注意',`<p>便利なクラウドやメールも、設定や操作を誤ると情報漏えいにつながります。</p><ul><li>共有リンクは公開範囲を確認する(「リンクを知っている全員」は広すぎることがある)</li><li>メールは送る前に<b>宛先を再確認</b>。複数人への一斉送信は<b>BCC</b>を使う</li><li>添付ファイルのパスワードは、別の手段で伝える</li><li>クラウドのアカウントには<b>多要素認証</b>をかける</li><li>個人情報は「必要な人にだけ・必要な期間だけ」共有する</li><li>誤って送ってしまったら、すぐに担当者へ報告する</li></ul><div class="pt">📝 ポイント:送信ボタンを押す前の「ひと呼吸」が、誤送信を防ぎます。</div>`];
+LEC[14]=['📖 ミニ授業(信頼Lv.12)','テレワークと持ち出し',`<p>自宅やカフェで仕事をするときは、オフィスと違う危険があります。</p><ul><li>社外から社内に接続するときは<b>VPN</b>を使う</li><li>公共の場では、画面ののぞき見(<b>ショルダーハッキング</b>)に注意する</li><li>私物端末の業務利用(<b>BYOD</b>)は、会社のルールに従う</li><li>USBメモリは暗号化されたものを使い、紛失に備える</li><li>席を離れるときは<b>画面ロック</b>。家族にも画面を見せない</li><li>Web会議はパスワードや待機室を設定し、URLを無闇に共有しない</li><li>端末や書類をなくしたら、すぐに報告する</li></ul><div class="pt">📝 ポイント:オフィスの外でも、オフィスと同じ守り方を意識しましょう。</div>`];
+LEC[15]=['📖 ミニ授業(信頼Lv.14)','生成AI時代のセキュリティ',`<p>生成AIは便利ですが、使い方と向き合い方に注意が必要です。</p><ul><li>個人情報・社外秘・パスワードは入力しない</li><li>答えは間違うことがある(<b>ハルシネーション</b>)。重要な内容は必ず確認する</li><li>他人の著作物や顔・声を勝手に使わない</li><li><b>ディープフェイク</b>(偽の映像・音声)で、家族や上司になりすます詐欺がある</li><li>詐欺メールの日本語が自然になり、「文章の不自然さ」では見抜きにくい</li><li>お金の話は、別の連絡手段で本人に確認する。家族で<b>合言葉</b>を決めておく</li><li>仕事での利用は、会社のルールに従う</li></ul><div class="pt">📝 ポイント:AIの発展で、見た目や声だけで本人と判断できない時代になりました。</div>`];
+LEC[16]=['🛡️ AI時代の守り人講座①','フロンティアAIと、守る側のあなた',`<p><b>フロンティアAI</b>とは、現時点で最先端の、高い能力をもつ汎用AIのことです。文章・画像・音声・プログラムを作る力は、仕事や学びを大きく助けてくれます。</p><p>その一方で、同じ力が悪用されると、<b>自然な詐欺メールの大量作成</b>・<b>本物そっくりの偽音声や偽動画(ディープフェイク)</b>・<b>攻撃作業の効率化</b>につながるおそれがあります。各国や研究機関でも、能力の評価や安全対策が議論されています。</p><ul><li>大事なのは、怖がることではなく<b>仕組みを知って備える</b>こと</li><li>備えの基本は4つ。<b>知る・疑う・確かめる・伝える</b></li></ul><div class="pt">🔥 あなたは「守られる人」であると同時に、「守る人」でもあります。あなたが1回確かめるたびに、1人の被害が止まります。その積み重ねが、地域のセキュリティをつくります。</div>`];
+LEC[17]=['🛡️ AI時代の守り人講座②','個人の対応:効果が確かめられている守り方',`<p>AIが進んでも、<b>効果が確かめられている基本</b>は変わりません。むしろ、基本を徹底するほど強い守りになります。</p><ul><li><b>多要素認証</b>:大手事業者の分析では、アカウントへの不正ログインの大半を防げると報告されています</li><li><b>パスキー・セキュリティキー</b>:偽サイトでは認証が成立しない仕組み。従業員にキーを配った企業で、フィッシングによる乗っ取りがなくなったとの報告もあります</li><li><b>OSとアプリの更新</b>:公開された弱点を狙う攻撃を防ぐ</li><li><b>パスワード管理アプリ</b>:長く別々のパスワードを無理なく使える</li><li><b>別の手段での本人確認</b>:声や映像だけで判断しない。家族で合言葉を決める</li></ul><div class="pt">🔥 難しい技術は必要ありません。いますぐできる設定が、いちばん確かな盾になります。家族のスマホも、あなたが整えてあげてください。</div>`];
+LEC[18]=['🛡️ AI時代の守り人講座③','企業の対応:ルール・権限・検証・人の目',`<p>企業がAIを使うときは、便利さと安全を両立させる仕組みが必要です。</p><ul><li><b>利用ルール</b>:入力してよい情報と、いけない情報を分類して決める(個人情報・社外秘・認証情報)</li><li><b>最小権限</b>:AIや自動化ツールに与える権限は必要最小限にし、重要な操作は<b>人が承認</b>する</li><li><b>プロンプトインジェクション対策</b>:外部の文章に紛れた命令でAIが誤動作する攻撃。入力の扱いを制限し、出力は検証する(AI特有の脆弱性は、OWASPの一覧にもまとめられています)</li><li><b>レッドチーム</b>:攻撃者の視点で、導入前後に弱点を探す</li><li><b>ログと監視</b>、そして事故時の<b>報告体制</b></li><li>枠組みの例:<b>NIST AI RMF</b>、<b>ISO/IEC 42001</b>(AIマネジメントシステム)、国の<b>AI事業者ガイドライン</b></li></ul><div class="pt">🔥 組織を守るのは、規則より先に「おかしいと言える人」です。気づいた人が声をあげられる職場が、最強の防御になります。</div>`];
+LEC[19]=['🛡️ AI時代の守り人講座④','ディープフェイクには「手続き」で勝つ',`<p>研究では、人が高品質な偽音声や偽動画を見抜く力には<b>限界がある</b>ことが示されています。「よく見れば分かる」に頼らず、<b>手続きで守る</b>のが科学的に筋のよい対策です。</p><ul><li>お金・情報の依頼は、<b>別の連絡手段</b>(かけ直す・直接会う・社内チャット)で確認する</li><li>送金や重要な変更は<b>2人以上で承認</b>する(ダブルチェック)</li><li>「至急」「内密に」と言われたら、手続きを省かず、逆に立ち止まる</li><li>家族や職場で<b>合言葉</b>や確認ルールを決めておく</li><li>作成・編集の履歴を示す<b>コンテンツ来歴(C2PAなど)</b>の技術も広がりつつある</li></ul><p>2024年には、ビデオ会議で上司や同僚になりすました偽映像により、多額の送金被害が出た事例が報じられました。</p><div class="pt">🔥 だまされるのは、あなたが弱いからではありません。手口が巧妙なだけです。だからこそ、仕組みで守り、仲間と守ります。</div>`];
+LEC[20]=['🛡️ AI時代の守り人講座⑤','正義の味方になる:小さな勇気が社会を守る',`<p>最後の講座は、あなたの<b>行動</b>についてです。技術がどれだけ進んでも、被害を止めるのは、最後は人の勇気と思いやりです。</p><ul><li><b>相談する</b>:被害にあったら恥ずかしがらず、すぐ相談(警察相談専用電話 #9110、消費者ホットライン 188、緊急は110)。早い相談が被害の拡大を防ぐ</li><li><b>伝える</b>:家族・友人・地域、とくに高齢の人に、手口と確認の方法を伝える</li><li><b>広げない</b>:真偽が分からない情報や偽画像は、拡散せず、出典を確認する</li><li><b>誠実に使う</b>:AIで他人をだましたり、権利を侵したりしない</li><li><b>声をあげる</b>:おかしいと思ったことを、職場や学校で、勇気を出して共有する</li></ul><div class="pt">🔥 正義は、特別な人だけのものではありません。「確かめる」「伝える」「助ける」を選ぶあなたが、この国のサイバー空間の守り人です。さあ、続きの戦いへ!</div>`];
+function seqLec(l,d){if(!l.length)return d();const i=l.shift();showLec(i,()=>seqLec(l,d));}
+LEC[21]=['📚 ミニ講座','情報資産の分類と管理',`<p>守るべき情報は、すべて同じ重要度ではありません。<b>重要度に応じて分類</b>し、扱い方を決めると、守りに無駄がなくなります。</p><ul><li>例:<b>極秘・社外秘・公開</b>のように区分し、持ち出し・共有・保管の方法を決める</li><li>持ち出しは<b>必要最小限</b>。許可を得て、暗号化や施錠で紛失に備える</li><li>不要になった書類や媒体は、<b>細断や完全消去</b>で処分する(ごみ箱から情報を探す手口がある)</li></ul><div class="pt">📝 ポイント:守る対象を「知って・分けて・最後まで管理する」ことが出発点です。</div>`];
+LEC[22]=['📚 ミニ講座','電話・対面でのだまし',`<p>だましはメールだけではありません。電話や対面でも、<b>権威・親切・緊急</b>を使って近づきます。</p><ul><li><b>ビッシング</b>:銀行員や警察官を名乗る電話。暗証番号や認証コードは、正規の窓口でも電話で聞きません</li><li><b>共連れ(テイルゲーティング)</b>:社員の後ろについて入館を通過する。親切心につけ込まれる</li><li>なりすましの清掃員・業者:身分証と用件を確認し、1人で対応しない</li></ul><div class="pt">📝 ポイント:電話は一度切って、自分から公式の番号にかけ直しましょう。</div>`];
+LEC[23]=['📚 ミニ講座','バックアップの運用と復旧',`<p>バックアップは「取る」だけでは不十分です。<b>戻せること</b>が大切です。</p><ul><li><b>3-2-1ルール</b>:コピー3つ・媒体2種類・1つは別の場所</li><li>世代を分けて保存する(感染前の状態に戻せるように)</li><li><b>復元テスト</b>を定期的に行う</li><li><b>RTO</b>(どのくらいで復旧するか)と<b>RPO</b>(どの時点まで戻すか)の目標を決める</li></ul><div class="pt">📝 ポイント:ランサムウェア対策の決め手は、「戻せるバックアップ」です。</div>`];
+LEC[24]=['📚 ミニ講座','脆弱性管理とパッチ適用',`<p>弱点(脆弱性)は日々見つかります。全部を一度に直せないときは、<b>優先順位</b>をつけます。</p><ul><li><b>資産台帳</b>で、どの機器・ソフトを使っているか把握する</li><li>深刻度(<b>CVSS</b>など)に加え、<b>実際に悪用されているか</b>・外部に公開されているかを見る</li><li><b>サポート終了</b>のOSや機器は、早めに入れ替える</li></ul><div class="pt">📝 ポイント:持っているものを知らなければ、守れません。</div>`];
+LEC[25]=['📚 ミニ講座','アカウント管理の基本',`<p>アカウントは、攻撃者にとって「入口」です。</p><ul><li>退職・異動したら、アカウントを<b>速やかに無効化・権限変更</b></li><li>1つのIDを複数人で使う<b>共有ID</b>は避ける(誰の操作か追えない)</li><li><b>管理者(特権)アカウント</b>は、必要なときだけ使う</li><li>定期的に<b>棚卸し</b>をして、不要なアカウントを削除する</li></ul><div class="pt">📝 ポイント:誰が・何に・どこまでアクセスできるかを、いつも説明できる状態に。</div>`];
+LEC[26]=['📚 ミニ講座','無線LANとIoT機器の守り方',`<p>家庭のルーターやカメラも、攻撃の入口や踏み台になります。</p><ul><li>購入したら、初期の<b>管理者パスワードを変更</b>する</li><li><b>ファームウェアを更新</b>し、使わない機能は止める</li><li>Wi-Fiは<b>WPA3</b>(なければWPA2)。来客には<b>ゲスト用</b>のネットワークを</li><li>つながっている機器を把握し、不要なものは外す</li></ul><div class="pt">📝 ポイント:「買って、つないで、放置」が一番危険です。</div>`];
+LEC[27]=['📚 ミニ講座','安全なソフトウェア開発',`<p>作る側にも、守る責任があります。</p><ul><li><b>APIキーやパスワードをコードに書かない</b>(公開リポジトリから漏れる)</li><li>使っている<b>ライブラリを更新</b>する。部品の弱点も自分の弱点</li><li><b>SBOM</b>(部品表)で、含まれる部品を把握する</li><li>入力値の検証・出力のエスケープ、公開前のレビューと診断</li></ul><div class="pt">📝 ポイント:安全は、あとから足すより、最初から組み込むほうが確実です。</div>`];
+LEC[28]=['📚 ミニ講座','キャッシュレス決済の安全',`<p>キャッシュレスは便利ですが、乗っ取りや不正利用には備えが必要です。</p><ul><li>アプリは<b>公式ストア</b>から。メールのリンクからログインしない</li><li><b>画面ロック</b>、ワンタイムパスワード、利用通知を有効にする</li><li><b>限度額</b>を適切に設定する</li><li>覚えのない通知があれば、すぐ事業者に連絡して利用停止</li></ul><div class="pt">📝 ポイント:通知は「ありがたい警報」。見逃さず、すぐ確認しましょう。</div>`];
+LEC[29]=['📚 ミニ講座','家庭ネットワークとルーター',`<p>自宅のネットワークは、家族みんなの端末がつながる共通の入口です。</p><ul><li>ルーターの管理画面を<b>外部に公開しない</b></li><li><b>ファームウェア更新</b>、強い暗号化(WPA3/WPA2)</li><li>古い機器やサポートの切れた機器は買い替える</li><li>家族のスマホ・ゲーム機・家電も含めて、台数を把握する</li></ul><div class="pt">📝 ポイント:家族の安全は、いちばん身近なルーターから始まります。</div>`];
+LEC[30]=['📚 ミニ講座','通販・フリマのトラブル回避',`<p>ネット取引には、偽サイトや個人間のトラブルがあります。</p><ul><li>運営会社の<b>所在地・連絡先・口コミ</b>を確認する</li><li>極端な値引き、不自然な日本語、<b>個人口座への振込</b>は要注意</li><li>フリマは<b>アプリ内の取引</b>を使い、外部のやりとりに誘導されても応じない</li><li>支払いは、取り消しや補償のある方法を選ぶ</li></ul><div class="pt">📝 ポイント:「安い」「急いで」は、立ち止まるサインです。</div>`];
+LEC[31]=['📚 ミニ講座','個人情報と重要な番号の守り方',`<p>個人情報は、一度流出すると取り戻せません。</p><ul><li>入力は<b>必要最小限</b>。提供する前に、利用目的を確認する</li><li>マイナンバーなどの重要な番号を、電話やメールで求める連絡は詐欺を疑う</li><li>本人確認書類の画像は、提出先が正当か確認する</li><li>他人が写った写真・個人情報は、許可なく載せない</li></ul><div class="pt">📝 ポイント:情報を渡す前に、「なぜ必要か」を聞きましょう。</div>`];
+LEC[32]=['📚 ミニ講座','なりすましメールの見分け方',`<p>メールの<b>表示名</b>は簡単に偽れます。送信元の<b>アドレスのドメイン</b>まで確認します。</p><ul><li><b>SPF・DKIM・DMARC</b>は、送信元のなりすましを見抜きやすくする仕組み</li><li><b>ビジネスメール詐欺</b>:取引先を装い、振込先の変更を依頼する。電話など別の手段で確認する</li><li>添付ファイルの形式(.exe・.zip・マクロ付き文書)にも注意</li></ul><div class="pt">📝 ポイント:「お金」「変更」「至急」の3点がそろったら、必ず確認を。</div>`];
+LEC[33]=['📚 ミニ講座','インシデント報告の書き方',`<p>事故が起きたとき、<b>早く・正確な報告</b>が被害を小さくします。</p><ul><li>伝える内容:<b>いつ・誰が・どこで・何が・どうなった</b>か</li><li>時系列で、<b>事実と推測を分けて</b>書く</li><li>画面のスクリーンショットやログを<b>消さずに保管</b>する</li><li>隠さず、責めず、まず共有する</li></ul><div class="pt">📝 ポイント:報告は「責められるため」ではなく、「被害を止めるため」にあります。</div>`];
+LEC[34]=['📚 ミニ講座','セキュリティ文化をつくる',`<p>守りの最後の層は、<b>人と組織の文化</b>です。</p><ul><li><b>ヒヤリハット</b>を責めずに共有し、仕組みや手順を改善する</li><li>標的型メール訓練は、<b>訓練だけでは効果が限定的</b>との研究報告もある。技術的対策や報告しやすい環境と組み合わせる</li><li>「おかしい」と言える職場は、異変を早く見つけられる</li></ul><div class="pt">📝 ポイント:強い組織は、失敗を隠さず、学びに変えます。</div>`];
+LEC[35]=['📚 ミニ講座','SNS乗っ取り・なりすましへの対応',`<p>SNSが乗っ取られると、友達にも被害が広がります。</p><ul><li>気づいたら、<b>パスワード変更</b>・ログイン中の端末を確認して強制ログアウト</li><li><b>多要素認証</b>(パスキー)を有効にする</li><li>友達に<b>なりすまし被害</b>を知らせる</li><li>突然届く「このURL見て」は、別の手段で本人に確認するまで開かない</li></ul><div class="pt">📝 ポイント:あなたのアカウントは、友達との信頼でもあります。</div>`];
+LEC[36]=['📚 ミニ講座','子どもと学校のネットの安全',`<p>子どもがネットで安心して過ごせるよう、周りの大人と一緒に守ります。</p><ul><li>知らない人からの誘いや、<b>「秘密にしよう」</b>は危険のサイン。すぐ保護者や先生へ</li><li>名前・学校・住所・顔写真は、むやみに載せない・送らない</li><li><b>フィルタリング</b>や利用ルールを、家族で話し合って決める</li><li>困ったとき、<b>叱られずに話せる</b>関係をつくる</li></ul><div class="pt">📝 ポイント:ルールだけでなく、「何でも相談していい」という安心感が最大の守りです。</div>`];
+LEC[37]=['📚 ミニ講座','高齢の家族を詐欺から守る',`<p>電話や訪問で、焦らせて<b>お金やカードを渡させる</b>手口が続いています。</p><ul><li>「還付金があるのでATMへ」→ ATMでお金が戻ることはない</li><li>固定電話は<b>留守番電話・迷惑電話対策</b>を使い、直接話さない</li><li>家族で<b>合言葉</b>と「お金の話はまず相談」のルールを決める</li><li>キャッシュカードや暗証番号を、他人に渡さない</li></ul><div class="pt">📝 ポイント:ひと言の声かけが、いちばん確かな詐欺対策です。</div>`];
+LEC[38]=['📚 ミニ講座','ランサムウェア被害の初動',`<p>感染に気づいたら、<b>広げない・隠さない・相談する</b>の順です。</p><ul><li>ネットワークから切り離す(LANケーブル・Wi-Fi)</li><li>担当者・専門窓口・警察へ連絡する</li><li><b>身代金は支払わない</b>のが基本。復旧の保証はなく、再び狙われるおそれもある</li><li>感染前の<b>オフラインのバックアップ</b>から復旧を検討する</li></ul><div class="pt">📝 ポイント:被害の大小を分けるのは、事前の備えと初動の速さです。</div>`];
+LEC[39]=['📚 ミニ講座','個人情報の漏えいを知ったとき',`<p>漏えいの知らせが来たら、<b>二次被害</b>を防ぎます。</p><ul><li>該当サービスの<b>パスワードを変更</b>。同じものを使う他のサービスも</li><li>クレジットカードの情報なら、カード会社へ連絡して<b>利用停止・再発行</b></li><li>「お詫びと確認」を装うフィッシングメールに注意。公式サイトから確認する</li><li>不審な請求や連絡が続くときは、相談窓口へ</li></ul><div class="pt">📝 ポイント:知らされた直後の行動が、被害の広がりを決めます。</div>`];
+LEC[40]=['📚 ミニ講座','偽情報・災害時のデマ対策',`<p>台風や地震のとき、不確かな情報が一気に広がります。善意の拡散が、混乱を生むこともあります。</p><ul><li>まず<b>公式の発表</b>(気象庁・自治体・報道機関)を確認する</li><li><b>出典・日付・複数の情報源</b>で裏を取る</li><li>確かめられない情報は、<b>拡散しない</b></li><li>画像や動画は、過去のものや別の場所のものの使い回しかもしれない</li></ul><div class="pt">📝 ポイント:押さない「拡散」ボタンが、誰かの助けになることがあります。</div>`];
+LEC[51]=['🔥 特別講座(個人編)','被害にあった直後の「最初の10分」',`<p>だまされたと気づいたら、<b>すぐ動く</b>ほど被害を小さくできます。恥ずかしがらないで。</p><ul><li>お金を振り込んだ:すぐ銀行へ連絡して<b>組戻し</b>を依頼し、警察にも相談</li><li>カード情報を入力した:<b>カード会社</b>へ連絡して利用停止・再発行</li><li>IDやパスワードを入力した:本物のサイトで<b>パスワードを変更</b>。使い回しも全部変更</li><li>遠隔操作や不審アプリを入れた:ネットを切って相談する</li><li><b>証拠を残す</b>:画面・URL・メッセージ・振込明細を消さずに保存</li></ul><p>相談先:警察相談専用電話 <b>#9110</b>、消費者ホットライン <b>188</b>(緊急は110)。</p><div class="pt">🔥 順番は「お金 → 認証情報 → 証拠 → 相談」。早い連絡が被害を止めます。</div>`];
+LEC[52]=['🔥 特別講座(個人編)','URLの見方:偽サイトを見破る',`<p>偽サイトは見た目がそっくりでも、<b>URL</b>には違いが出ます。</p><ul><li><b>ドメイン</b>は右から読む。「example.co.jp.evil.com」の持ち主は evil.com</li><li>似た文字(0とO、rnとm)に注意</li><li><b>短縮URL</b>はリンク先が見えない。不明な送り主のものは開かない</li><li>メールやSMSのリンクではなく、<b>公式アプリ</b>やブックマークから開く</li><li>鍵マーク(https)は「安全な運営」の証明ではない</li></ul><div class="pt">🔥 迷ったら、リンクを開かずに公式サイトを自分で検索しましょう。</div>`];
+LEC[53]=['🔥 特別講座(個人編)','「かたり」の定番パターン',`<p>宅配・携帯会社・ETC・銀行・税務署・警察など、<b>身近な組織をかたる</b>連絡が続いています。</p><ul><li>共通する文面:「<b>未払い</b>」「利用停止」「還付」「本人確認」</li><li>SMSの偽通知は<b>スミッシング</b>、電話は<b>ビッシング</b></li><li>連絡先は、相手が示した番号ではなく、<b>自分で調べた公式の番号</b>を使う</li><li>心当たりがなければ<b>無視</b>してよい。返信や電話は不要</li></ul><div class="pt">🔥 本物の組織は、SMSのリンクで暗証番号やコードを求めません。</div>`];
+LEC[54]=['🔥 特別講座(企業編)','ランサムウェア被害:最初の1時間',`<p>企業が感染に気づいたら、<b>判断を一人で抱えず</b>、手順に沿って動きます。</p><ul><li><b>ネットワークから切り離し</b>、電源は急いで切らず状態を残す</li><li><b>責任者・経営層</b>と専門窓口へ連絡し、警察や外部の専門家にも相談</li><li>ログや画面を消さずに<b>保全</b>する</li><li>取引先への連絡と、<b>BCP</b>(事業継続計画)に沿った代替手段の確認</li><li>個人情報が漏れた恐れがあれば、<b>個人情報保護法</b>に基づく報告を検討</li></ul><div class="pt">🔥 訓練した手順がある会社は、慌てません。連絡体制を今すぐ見直しましょう。</div>`];
+LEC[55]=['🔥 特別講座(企業編)','公開機器の脆弱性とパッチ運用',`<p>VPN機器や公開サーバーの<b>脆弱性</b>は、ランサムウェアの主な入口です。</p><ul><li><b>外部に公開</b>された機器を一覧にして、優先して更新する</li><li><b>悪用</b>が確認された脆弱性は、最優先で対処する</li><li>サポートが終わった機器は交換する</li><li>更新できないときは、公開をやめる・<b>多要素認証</b>・監視で守りを重ねる</li><li>定期的に<b>脆弱性診断</b>で外から見える弱点を確認する</li></ul><div class="pt">🔥 守る対象を把握し、公開機器から順に直すのが近道です。</div>`];
+LEC[56]=['🔥 特別講座(企業編)','クラウド・SaaSの設定ミスと権限',`<p>クラウドの情報漏えいは、攻撃より<b>設定ミス</b>が原因のことも多いです。</p><ul><li><b>責任共有モデル</b>:事業者と利用者で守る範囲が分かれる。設定と権限は利用者の責任</li><li>共有リンクやストレージの<b>公開範囲</b>を定期的に確認する</li><li>管理者アカウントは<b>多要素認証</b>を必須にし、権限は最小限に</li><li>操作の<b>ログ</b>を残して監視する</li></ul><div class="pt">🔥 便利さの裏にある設定を、チームで点検する習慣を作りましょう。</div>`];
+const SPECIAL={41:2,42:3,43:4,44:5,45:6,46:8,47:10,48:12,49:14,50:16,51:7,52:9,54:11,55:13,53:15,56:15};
+let seen=new Set();try{JSON.parse(localStorage.getItem('cyberCastle_seen')||'[]').forEach(i=>seen.add(i));}catch(e){}
+function markSeen(i){if(seen.has(i))return;seen.add(i);try{localStorage.setItem('cyberCastle_seen',JSON.stringify([...seen]));}catch(e){}}
+function openLib(){let h='<div style="font-weight:bold;font-size:12px;color:#ff7597;margin-top:10px">🔥 ネット詐欺・企業攻撃 特別講座</div>';
+ Object.keys(SPECIAL).forEach(k=>{h+=castleHeightLevel>=SPECIAL[k]?'<button class="opt" data-i="'+k+'">'+LEC[k][1]+'</button>':'<button class="opt" disabled style="opacity:.5">🔒 信頼Lv.'+SPECIAL[k]+'で解放</button>';});
+ const rd=[...seen].filter(i=>!SPECIAL[i]&&LEC[i]).sort((a,b)=>a-b);
+ if(rd.length){h+='<div style="font-weight:bold;font-size:12px;color:#ff7597;margin-top:12px">📖 これまでに読んだ授業</div>';rd.forEach(i=>{h+='<button class="opt" data-i="'+i+'">'+LEC[i][1]+'</button>';});}
+ $('libBody').innerHTML=h;$('libBody').querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;showLec(i,()=>lecQuiz([i],'📝 おさらいクイズ',3));});
+ paused=true;$('lib').style.display='flex';}
+LEC[41]=['🔥 特別講座(個人編)','ネット詐欺の全体像と「3つの合図」',`<p>ネット詐欺は、手口が違っても<b>共通の型</b>があります。型を知れば、新しい手口にも対応できます。</p><ul><li><b>フィッシング</b>(偽のメール・SMS・サイト)</li><li><b>偽ショップ・フリマ詐欺</b>、<b>サポート詐欺</b>、<b>ワンクリック・架空請求</b></li><li><b>投資・ロマンス詐欺</b>、<b>SNSの副業・当選詐欺</b></li></ul><p>見抜く合図は3つです。<b>①焦らせる</b>(今だけ・至急)、<b>②お金や個人情報を求める</b>、<b>③誰にも言わせない</b>。</p><p>行動の順番は <b>立ち止まる → 公式で確かめる → 相談する</b>。相談先は警察相談専用電話 <b>#9110</b>、消費者ホットライン <b>188</b>(緊急は110)です。</p><div class="pt">🔥 だまされない人は、「疑い深い人」ではなく「確かめる習慣がある人」です。</div>`];
+LEC[42]=['🔥 特別講座(個人編)','偽ショッピングサイトのチェックリスト',`<p>検索広告やSNS広告から、<b>本物そっくりの偽サイト</b>に誘導される被害が続いています。</p><ul><li><b>極端な値引き</b>(7割引など)や、在庫わずかの表示</li><li>運営者の<b>会社名・住所・電話番号</b>が不自然、または他社の流用</li><li><b>不自然な日本語</b>、URLが公式と微妙に違う</li><li>支払いが<b>個人口座への振込</b>や、限定的な方法のみ</li><li>広告で見つけたら、公式サイトを<b>自分で検索して</b>照らし合わせる</li></ul><p>被害にあったら、<b>カード会社・銀行にすぐ連絡</b>し、消費生活センター(188)や警察へ相談します。</p><div class="pt">🔥 「安さ」は、人の判断力を奪う最強の餌です。買う前に1分、運営情報を確かめましょう。</div>`];
+LEC[43]=['🔥 特別講座(個人編)','投資・ロマンス詐欺のしくみ',`<p>これらの詐欺は、一度で終わらず<b>数週間〜数か月かけて</b>信頼を築きます。</p><ul><li>流れ:<b>接触(SNS・マッチング)→ 信頼づくり → 投資や送金へ誘導 → 追加の請求</b></li><li>「<b>元本保証</b>」「<b>必ずもうかる</b>」「<b>あなただけ</b>」は典型的な誘い文句</li><li>著名人の名前や写真を使った<b>なりすまし広告</b>も多い</li><li>投資の勧誘業者は、<b>金融庁の登録情報</b>などで確認する</li><li>暗号資産は、<b>送ってしまうと取り戻しにくい</b></li></ul><div class="pt">🔥 お金の話が出たら、一人で決めず、家族や相談窓口へ。「相談する勇気」が最大の防御です。</div>`];
+LEC[44]=['🔥 特別講座(個人編)','サポート詐欺・架空請求・ワンクリック詐欺',`<p><b>サポート詐欺</b>:突然「ウイルス感染!」と警告音と画面が出て、電話させます。電話すると、<b>遠隔操作ソフト</b>を入れさせ、金銭を要求されます。</p><ul><li>画面が閉じないときは、<b>ブラウザを強制終了</b>(タスクの終了・再起動)。電話はしない</li><li>遠隔操作を許したら、<b>ネットワークを切り</b>、パスワードを変更し、金融機関へ連絡</li><li><b>ギフトカードの番号</b>を求めるのは詐欺の典型</li><li><b>ワンクリック・架空請求</b>:「登録完了」「未払い」と表示されても、連絡せず無視。不安なら相談</li></ul><div class="pt">🔥 画面の警告は「脅し」です。慌てず閉じる。それだけで、被害はほぼ防げます。</div>`];
+LEC[45]=['🔥 特別講座(個人編)','SNS・メッセージアプリの詐欺',`<p>SNSやメッセージアプリは、<b>知り合いや有名人を装える</b>ため、詐欺に悪用されやすい場です。</p><ul><li><b>副業詐欺</b>:「スマホだけで高収入」「先に費用を払えば」は要注意</li><li><b>当選・プレゼント詐欺</b>:個人情報やクレジットカード情報を入力させる</li><li><b>アカウント乗っ取り</b>:友達を装い「ギフトカードを買って」と頼む。<b>電話など別の手段で本人確認</b>を</li><li>公式の認証バッジ、アカウントの作成時期、投稿の内容を確かめる</li><li>知らない人のDMのリンクは開かない</li></ul><div class="pt">🔥 「友達だから」を信じすぎない。確認の電話1本が、友達も自分も守ります。</div>`];
+LEC[46]=['🔥 特別講座(企業編)','企業を狙う攻撃の流れ',`<p>企業への攻撃は、1回で終わらず<b>段階を踏んで</b>進みます。流れを知れば、各段階で止められます。</p><ul><li><b>偵察</b>(公開情報の収集)→ <b>侵入</b>(メール・脆弱性・不正ログイン)</li><li><b>足がかりづくり</b>→ <b>権限の拡大</b>→ <b>横展開</b>(ほかの機器へ広がる)</li><li><b>目的の実行</b>:情報の窃取、データの暗号化、サービス停止</li></ul><p>防御の例:入口対策(更新・多要素認証)、<b>EDR</b>(端末の不審な動きの検知・対処)、<b>ネットワークの分離</b>、<b>ログの監視</b>。攻撃手法の整理には、知識ベースの<b>MITRE ATT&CK</b>が使われます。</p><div class="pt">🔥 攻撃の「どこか1か所」を止めれば、全体を止められます。1つの対策に頼らず、段階ごとに備えましょう。</div>`];
+LEC[47]=['🔥 特別講座(企業編)','標的型攻撃とサプライチェーン攻撃',`<p><b>標的型攻撃</b>は、特定の組織を狙い、業務に関係する自然なメールなどで近づきます。</p><p><b>サプライチェーン攻撃</b>は、守りが固い企業ではなく、<b>取引先・委託先・ソフトウェアの更新元</b>など、つながりの弱い所から侵入します。</p><ul><li>委託先には、<b>セキュリティ要件を契約に含め</b>、定期的に確認する</li><li>取引先と<b>連絡体制</b>を決めておく(事故時にすぐ共有)</li><li>使う部品の把握(<b>SBOM</b>)と、更新の管理</li><li>外部との接続は<b>最小権限</b>、通信の監視を行う</li></ul><div class="pt">🔥 自社だけ守っても足りません。つながる全員で守る時代です。</div>`];
+LEC[48]=['🔥 特別講座(企業編)','ビジネスメール詐欺(BEC)と経理・総務の守り',`<p><b>ビジネスメール詐欺</b>は、経営者や取引先になりすまし、<b>振込先の変更</b>や<b>緊急の送金</b>を依頼します。ウイルスを使わず、人の信頼を突くのが特徴です。</p><ul><li>振込先の変更は、<b>既知の連絡先に電話</b>するなど、別経路で確認する</li><li>送金は<b>複数人で承認</b>し、「至急」「内密に」でも手順を省かない</li><li>送信元の<b>メールアドレスのドメイン</b>を確認する</li><li>気づいたら、<b>すぐ銀行へ連絡して組戻しを依頼</b>し、警察にも相談する</li></ul><div class="pt">🔥 経理や総務は、会社のお金を守る最前線。「確認します」と言える勇気が会社を救います。</div>`];
+LEC[49]=['🔥 特別講座(企業編)','ランサムウェアと二重恐喝への備え',`<p>最近のランサムウェアは、データを暗号化するだけでなく、<b>先に盗んで「公開する」と脅す</b>(二重恐喝)ことがあります。バックアップだけでは防ぎきれません。</p><ul><li>主な入口:<b>VPN機器やリモート接続の脆弱性</b>、弱い認証、不要な公開</li><li>対策:機器の更新、<b>多要素認証</b>、不要な公開の停止、権限の最小化</li><li><b>書き換えできない・オフライン</b>のバックアップと、復旧訓練</li><li>初動:<b>切り離し→連絡→証拠保全</b>。経営層が判断できる手順を決めておく</li><li>個人情報が漏れたときは、法令に基づく報告が必要になる場合がある</li></ul><div class="pt">🔥 備えは「入口を閉じる・被害を小さくする・すぐ戻す」の3点セット。訓練した組織は、慌てません。</div>`];
+LEC[50]=['🔥 特別講座(企業編)','内部不正と情報持ち出し対策',`<p>情報漏えいの原因には、外部の攻撃だけでなく、<b>内部の人による不正やミス</b>もあります。</p><ul><li><b>不正のトライアングル</b>:<b>動機・機会・正当化</b>がそろうと、不正が起きやすい</li><li><b>機会を減らす</b>:最小権限、ログの記録と監視、持ち出しの制限、<b>DLP</b>(重要情報の持ち出し検知・防止)</li><li><b>退職・異動時</b>に権限を削除し、貸与物を回収する</li><li>教育と、<b>相談しやすい職場づくり</b>(動機をためこませない)</li></ul><div class="pt">🔥 仲間を疑うためではなく、仲間を「間違えさせない」ための仕組みです。守る文化は、信頼から生まれます。</div>`];
+function manza(ctx,w,h,t){
+ grad(ctx,w,h,[[0,'#7fd6ff'],[.55,'#d9f6ff'],[.6,'#0fb5c9'],[1,'#046a8c']]);
+ cloud(ctx,((t*.12)%(w+200))-100,h*.14,24,.8);
+ ctx.fillStyle='#8c8c7a';ctx.beginPath();ctx.moveTo(w*.35,h*.62);ctx.lineTo(w*.4,h*.5);ctx.lineTo(w*.7,h*.48);ctx.lineTo(w*.78,h*.55);ctx.lineTo(w*.74,h*.7);ctx.lineTo(w*.5,h*.7);ctx.fill();
+ ctx.fillStyle='#5cbf6a';ctx.fillRect(w*.4,h*.48,w*.3,6);
+ ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=2;
+ for(let r=0;r<5;r++){ctx.beginPath();for(let x=0;x<=w;x+=10){const y=h*(.7+r*.05)+Math.sin(x/28+t/22+r)*3;x?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();}
+}
+function akagawara(ctx,w,h,t){
+ grad(ctx,w,h,[[0,'#ffcf6b'],[.5,'#ffe9b0'],[1,'#fff6dc']]);
+ ctx.fillStyle='#7bc47f';ctx.fillRect(0,h*.78,w,h*.22);
+ for(let i=0;i<3;i++){const x=w*(.18+i*.3),y=h*.78;
+  ctx.fillStyle='#f3efe2';ctx.fillRect(x-34,y-34,68,34);
+  ctx.fillStyle='#d9542b';ctx.beginPath();ctx.moveTo(x-44,y-34);ctx.lineTo(x+44,y-34);ctx.lineTo(x+28,y-56);ctx.lineTo(x-28,y-56);ctx.fill();
+  ctx.fillStyle='#e8c870';ctx.fillRect(x-6,y-26,12,26);}
+ ctx.strokeStyle='#b0a58c';for(let x=0;x<w;x+=18){ctx.beginPath();ctx.moveTo(x,h*.78);ctx.lineTo(x,h*.84);ctx.stroke();}
+ cloud(ctx,((t*.1)%(w+200))-100,h*.16,24,.8);
+}
+function hoshi(ctx,w,h,t){
+ grad(ctx,w,h,[[0,'#050a24'],[.6,'#1b2a6b'],[.6,'#0b3a6e'],[1,'#041a3a']]);
+ for(let i=0;i<60;i++){ctx.fillStyle='rgba(255,255,255,'+(.4+.4*Math.sin(t/20+i))+')';ctx.fillRect((i*97)%w,(i*53)%(h*.58),2,2);}
+ ctx.fillStyle='#fff3b0';ctx.beginPath();ctx.arc(w*.8,h*.14,20,0,7);ctx.fill();
+ ctx.strokeStyle='rgba(180,220,255,.4)';ctx.lineWidth=2;
+ for(let r=0;r<5;r++){ctx.beginPath();for(let x=0;x<=w;x+=10){const y=h*(.66+r*.06)+Math.sin(x/30+t/25+r)*3;x?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();}
+}
+function showLec(i,after){paused=true;const L=LEC[i];markSeen(i);$('lecStage').textContent=L[0];$('lecTitle').textContent=L[1];$('lecBody').innerHTML=L[2];$('lec').style.display='flex';$('lecNext').onclick=()=>{$('lec').style.display='none';paused=modalOpen();if(after)after();};}
+function startFinal(){finalState=1;const hp=18000*(1+castleHeightLevel*.08)*(1+Math.min(gameTime/14400,.5));[.3,.7].forEach(k=>viruses.push({x:screenWidth*k,y:screenHeight+40,type:'tank',boss:true,final:true,speed:.6,hp,maxHp:hp,color:'#c9b3ff',size:40,eatTimer:0,slowTimer:0}));banner('👿 最終決戦!二体のゼロデイ大魔王があらわれた!');}
+function gameOver(){if(goFlag)return;goFlag=true;paused=true;
+ $('goText').innerHTML='信頼がゼロになり、システムを守りきれませんでした。<br>でも大丈夫。強化したものは残っています!<br><br>💡 '+['壁(ファイアウォールとOSパッチ)を先に育てよう','ウイルス対策ソフトとセキュリティ対策要員で多層防御を作ろう','社員教育で人の守りを固めよう','ひと息タイムに強化を進めよう'][Math.floor(Math.random()*4)];
+ $('go').style.display='flex';}
+$('goRetry').onclick=()=>{castleHp=castleMaxHp;viruses.length=0;pulseWaves.length=0;finalState=0;wave={n:wave.n,t:0,phase:'calm',theme:'normal',mul:1};goFlag=false;$('go').style.display='none';paused=modalOpen();banner('🔁 立て直そう!今のうちに強化!');};
+$('goReset').onclick=()=>{noSave=true;try{localStorage.removeItem(SAVE_KEY);}catch(e){}location.reload();};
+$('endReset').onclick=$('goReset').onclick;
+function showEnding(){paused=true;clears++;const R=calcRank();try{localStorage.setItem('cyberCastle_clears',clears);}catch(e){}const min=Math.max(1,Math.round(gameTime/3600));
+ $('endBody').innerHTML=`<div style="font-size:38px;text-align:center">🎉🌺🛡️</div><div style="text-align:center;font-weight:bold;font-size:18px;margin-top:4px">エンディング</div><p style="margin-top:8px;font-size:13px;line-height:1.7">ゼロデイ大魔王を倒し、沖縄のシステムの<b>安全は守られました</b>!全8ステージクリア、おめでとうございます。</p><p style="margin-top:8px;font-size:13px;line-height:1.7">学んだことを、「情報セキュリティ5か条」で振り返りましょう。</p><ol><li>OSやソフトウェアは常に最新の状態にする</li><li>ウイルス対策ソフトを導入する</li><li>パスワードを強化する</li><li>共有設定を見直す</li><li>脅威や攻撃の手口を知る</li></ol><div class="pt">困ったときは、警察相談専用電話 #9110(緊急は110)、消費者ホットライン 188、情報セキュリティ安心相談窓口へ。ひとりで抱え込まないでくださいね。<br>プレイ時間:約${min}分 ／ 知識:${mastered.size}/${QUIZ.length}<br>🏅 ランク${R.rank} スコア${R.score}(自己ベスト${R.best}${R.nb?" 🎉更新!":""})<br>🏆 実績 ${got.length}/${ACH.length} ／ クリア${clears}回目<br>🎁 次回の新規スタートは資金+${Math.min(clears,5)*50}!</div>`;
+ $('end').style.display='flex';}
+$('endGo').onclick=()=>{endless=true;$('end').style.display='none';paused=modalOpen();};
+const LV_GATE=1200;
+let kills=0,maxCombo=0,fever=0,flash=0,rings=[],pops=[],crystals=0,feverUsed=false,lastRank="",hard=false,skinI=0,S={k:0,c:0,q:0,g:0};
+let lastLvT=0,quizLeft=0,quizTitle='',quizN=0;
+function quizSet(n,t){quizN=n;quizLeft=n-1;quizTitle=t;showQuiz(t+' (1/'+n+')');}
+let upgradeUsed=false,combo=0,lastKill=-999,clears=0,got=[];
+try{clears=+(localStorage.getItem('cyberCastle_clears')||0);got=JSON.parse(localStorage.getItem('cyberCastle_ach')||'[]');}catch(e){}
+const ACH=[['c10','🔥 10コンボ達成',()=>combo>=10],['k8','📚 クイズ8問マスター',()=>mastered.size>=8],['s4','🌅 ステージ4到達',()=>stageOf(castleHeightLevel)>=3],['s8','🌌 最終ステージ到達',()=>stageOf(castleHeightLevel)>=7],['all','🎓 知識マスター(全問正解)',()=>mastered.size>=QUIZ.length],['clear','👑 全ステージクリア',()=>finalState===2],['k100','⚔️ 100体撃破',()=>kills>=100],['k1000','💥 1000体撃破',()=>kills>=1000],['fev','🌈 FEVER発動',()=>feverUsed],['crys','💎 レアお宝ゲット',()=>crystals>0],['hard','🔥 ハードモードクリア',()=>finalState===2&&hard],['rk','🏅 ランクS獲得',()=>lastRank==='S'],['up','⚙️ アップグレード使用',()=>upgradeUsed],['day','📅 デイリーミッション達成',()=>dailyDone()]];
+function achCheck(){ACH.forEach(([k,n,f])=>{if(!got.includes(k)&&f()){got.push(k);try{localStorage.setItem('cyberCastle_ach',JSON.stringify(got));}catch(e){}toast('🏆 実績解除! '+n,5000);}});}
+document.querySelectorAll('.card').forEach(c=>['touchstart','touchmove'].forEach(ev=>c.addEventListener(ev,e=>e.stopPropagation(),{passive:true})));
+$('lecX').onclick=()=>$('lecNext').click();
+$('helpBtn').onclick=()=>{if(modalOpen())return;$('startBtn').textContent='▶ ゲームに戻る';$('start').style.display='flex';paused=true;};
+$('libBtn').onclick=()=>{if(!modalOpen())openLib();};
+$('libX').onclick=()=>{$('lib').style.display='none';paused=modalOpen();};
+$('startX').onclick=()=>$('startBtn').click();
+function fireworks(){[0,1,2,3,4,5].forEach(i=>setTimeout(()=>{addParticles(screenWidth*(.15+Math.random()*.7),screenHeight*(.15+Math.random()*.3),['#ffd166','#ff7597','#74b9ff','#55efc4','#fff'][i%5],40);playBeep(520+i*130,'triangle',.15);},i*250));}
+function freezeAll(){viruses.forEach(v=>{v.frz=300;v.slowTimer=300;if(!v.boss)v.hp-=v.maxHp*.35;});rings.push({x:player.x,y:player.y,r:8,l:1});flash=1;crystals++;S.g++;playBeep(1800,'triangle',.4);banner('💎 レアお宝!敵が5秒間こおった!');}
+const SK=[['ホワイト','#ffffff',()=>true],['ミント','#7be0c3',()=>clears>=1],['ゴールド','#ffd166',()=>bestData().rank==='S'],['にじ','rainbow',()=>got.length>=ACH.length-2],['ピンク','#ff9eb5',()=>true]];
+function skinColor(){const c=SK[skinI][1];return c==='rainbow'?'hsl('+(gameTime*3%360)+',90%,75%)':c;}
+function bestData(){try{return JSON.parse(localStorage.getItem('cyberCastle_best')||'{}');}catch(e){return{};}}
+function calcRank(){let sc=kills*4+mastered.size*25+maxCombo*12+Math.max(0,Math.round((45000-gameTime)/10));if(hard)sc=Math.round(sc*1.5);
+ const rk=sc>=11000?'S':sc>=8500?'A':sc>=6000?'B':'C',b=bestData(),bs=Math.max(sc,b.score||0),br=(b.rank&&'SABC'.indexOf(b.rank)<'SABC'.indexOf(rk))?b.rank:rk;
+ try{localStorage.setItem('cyberCastle_best',JSON.stringify({score:bs,rank:br}));}catch(e){}
+ lastRank=rk;setTimeout(achCheck,100);return{rank:rk,score:sc,best:bs,nb:sc>(b.score||0)};}
+const DM=[['コンボを15回つなげる',()=>S.c>=15],['クイズに10問正解する',()=>S.q>=10],['敵を150体たおす',()=>S.k>=150],['レアお宝💎を取る',()=>S.g>=1]];
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();};
+const dmIdx=()=>Math.floor(Date.now()/86400000)%DM.length;
+function dailyDone(){try{return localStorage.getItem('cyberCastle_daily')===today();}catch(e){return false;}}
+function dailyCheck(){if(!dailyDone()&&DM[dmIdx()][1]()){try{localStorage.setItem('cyberCastle_daily',today());}catch(e){}coins+=300;banner('📅 デイリーミッション達成!+300🪙');}}
+function refreshMeta(){const b=bestData();
+ $('skinBtn').textContent='🎀 きせかえ: '+SK[skinI][0]+'(タップで変更)';
+ $('hardBtn').textContent=clears<1?'🔒 ハードモード(1回クリアで解放)':'🔥 ハードモード: '+(hard?'ON':'OFF')+'(敵が強い・スコア1.5倍)';
+ $('dailyInfo').textContent='📅 今日のミッション:'+DM[dmIdx()][0]+(dailyDone()?' ✅達成済み':'(達成で+300🪙)');
+ $('achInfo').textContent='🏆 実績 '+got.length+'/'+ACH.length+'　👑 クリア '+clears+'回'+(b.score?'　🏅 ベスト '+b.rank+'('+b.score+')':'');}
+function initMeta(){try{skinI=+(localStorage.getItem('cyberCastle_skin')||0);hard=localStorage.getItem('cyberCastle_hard')==='1';}catch(e){}
+ if(!SK[skinI]||!SK[skinI][2]())skinI=0;if(clears<1)hard=false;refreshMeta();}
+$('skinBtn').onclick=()=>{do{skinI=(skinI+1)%SK.length;}while(!SK[skinI][2]());try{localStorage.setItem('cyberCastle_skin',skinI);}catch(e){}refreshMeta();};
+$('hardBtn').onclick=()=>{if(clears<1)return;hard=!hard;try{localStorage.setItem('cyberCastle_hard',hard?'1':'0');}catch(e){}refreshMeta();};
+$('startBtn').onclick=()=>{$('start').style.display='none';paused=modalOpen();playBeep(880,'triangle',.1);};
+let rstT=0;
+$('rst').onclick=()=>{const b=$('rst');if(b.dataset.arm){clearTimeout(rstT);$('goReset').onclick();return;}b.dataset.arm='1';b.textContent='⚠️ もう一度タップで最初から';rstT=setTimeout(()=>{delete b.dataset.arm;b.textContent='🌱 最初から';},3000);};
+$('upg').onclick=()=>{if(upgradeUsed||paused)return;upgradeUsed=true;$('upg').style.display='none';
+ viruses.forEach(v=>{addParticles(v.x,v.y,v.color,14);coins+=v.maxHp>60?25:12;if(v.boss&&!v.final)onKill(v);});if(viruses.some(v=>v.final)){finalState=2;setTimeout(showEnding,1200);}
+ viruses.length=0;pulseWaves.length=0;screenShake=15;playBeep(1500,'triangle',.4);
+ banner('⚙️ システムアップグレード!画面上の敵がすべて倒れた!');saveGame();};
+['startBtn','rst','upg','libBtn','helpBtn'].forEach(id=>$(id).addEventListener('touchstart',e=>e.stopPropagation(),{passive:true}));
+function koori(ctx,w,h,t){
+ grad(ctx,w,h,[[0,'#59c8ff'],[.5,'#bff0ff'],[.58,'#00c2c7'],[1,'#006e8c']]);
+ for(let i=0;i<3;i++)cloud(ctx,((t*.12+i*w/2)%(w+200))-100,h*(.1+i*.08),24,.8);
+ ctx.fillStyle='#5cbf6a';ctx.beginPath();ctx.moveTo(w*.62,h*.58);ctx.quadraticCurveTo(w*.8,h*.4,w,h*.5);ctx.lineTo(w,h*.58);ctx.fill();
+ const by=h*.6,dy=x=>by+18-32*Math.sin(Math.min(1,x/(w*.75))*Math.PI*.9);
+ ctx.fillStyle='#f4f4f4';for(let i=0;i<=7;i++){const x=w*.75*i/7;ctx.fillRect(x-3,dy(x),6,h*.72-dy(x));}
+ ctx.strokeStyle='#fff';ctx.lineWidth=6;ctx.beginPath();for(let x=0;x<=w*.75;x+=8){x?ctx.lineTo(x,dy(x)):ctx.moveTo(x,dy(x));}ctx.stroke();
+ ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=2;
+ for(let r=0;r<5;r++){ctx.beginPath();for(let x=0;x<=w;x+=10){const y=h*(.72+r*.05)+Math.sin(x/28+t/22+r)*3;x?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();}
+}
+
+/* ---- ゆるふわキャラ描画 ---- */
+function face(x,y,s,ph){
+ const bl=((gameTime+(ph*40|0))%190)<6,ex=s*.34,ey=y-s*.1;
+ ctx.strokeStyle='#3a2a4e';ctx.lineWidth=1.6;
+ [-1,1].forEach(d=>{
+  ctx.fillStyle='#3a2a4e';
+  if(bl){ctx.beginPath();ctx.moveTo(x+d*ex-3,ey);ctx.lineTo(x+d*ex+3,ey);ctx.stroke();}
+  else{ctx.beginPath();ctx.arc(x+d*ex,ey,s*.17,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(x+d*ex-1,ey-1.5,s*.06,0,7);ctx.fill();}
+  ctx.fillStyle='rgba(255,120,150,.55)';ctx.beginPath();ctx.ellipse(x+d*s*.6,y+s*.18,s*.16,s*.1,0,0,7);ctx.fill();
+ });
+ ctx.beginPath();ctx.arc(x,y+s*.12,s*.14,.1*Math.PI,.9*Math.PI);ctx.stroke();
+}
+function blob(x,y,s,col,ph){const w=Math.sin(gameTime/10+ph)*.07;ctx.fillStyle=col;ctx.beginPath();ctx.ellipse(x,y,s*(1+w),s*(.92-w),0,0,7);ctx.fill();ctx.fillStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.ellipse(x-s*.3,y-s*.4,s*.35,s*.2,-.5,0,7);ctx.fill();}
+function ear(x,y,r,col,rot){ctx.fillStyle=col;ctx.beginPath();ctx.ellipse(x,y,r*.6,r,rot,0,7);ctx.fill();}
+function sunglasses(x,y,s){const ex=s*.34,ey=y-s*.1,rw=s*.27,rh=s*.2;
+ ctx.fillStyle='#111';ctx.strokeStyle='#111';ctx.lineWidth=Math.max(1.5,s*.07);
+ ctx.beginPath();ctx.moveTo(x-ex,ey);ctx.lineTo(x+ex,ey);ctx.stroke();
+ [-1,1].forEach(d=>{ctx.beginPath();ctx.ellipse(x+d*ex,ey,rw,rh,0,0,7);ctx.fill();ctx.fillStyle='rgba(255,255,255,.55)';ctx.beginPath();ctx.arc(x+d*ex-rw*.35,ey-rh*.35,rw*.22,0,7);ctx.fill();ctx.fillStyle='#111';});
+ ctx.beginPath();ctx.moveTo(x-ex-rw,ey);ctx.lineTo(x-s*.95,ey-s*.05);ctx.moveTo(x+ex+rw,ey);ctx.lineTo(x+s*.95,ey-s*.05);ctx.stroke();}
+function fluffBody(x,y,s,col){
+ ctx.fillStyle=col;ctx.strokeStyle='rgba(120,100,160,.3)';ctx.lineWidth=1;
+ for(let i=0;i<16;i++){const a=i/16*Math.PI*2,w=Math.sin(gameTime/12+i)*.6,rr=s*(1.02+(i%2?.06:0));ctx.beginPath();ctx.arc(x+Math.cos(a)*rr+w*Math.cos(a),y+Math.sin(a)*rr*.95+w*Math.sin(a),s*.34,0,7);ctx.fill();ctx.stroke();}
+ ctx.beginPath();ctx.ellipse(x,y,s*1.02,s*.95,0,0,7);ctx.fill();
+ }
+function tri(x,y,w,h,col){ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x-w,y);ctx.lineTo(x,y-h);ctx.lineTo(x+w,y);ctx.fill();}
+function drawEnemy(v){
+ v.ph=v.ph??Math.random()*6.28;v.vis=v.type==='stealth'?(Math.sin(gameTime/40+v.ph)>0?1:.3):1;ctx.globalAlpha=v.vis;
+ const s=v.size*1.05,y=v.y+Math.sin(gameTime/9+v.ph)*2,x=v.x,slow=v.slowTimer>0;
+ const col=slow?'#a8e6ff':ECOL[v.type];
+ if(v.type==='tank'){ear(x-s*.7,y-s*.85,s*.4,col,-.3);ear(x+s*.7,y-s*.85,s*.4,col,.3);}
+ else if(v.type==='normal'||v.type==='split'){tri(x-s*.55,y-s*.55,s*.3,s*.55,col);tri(x+s*.55,y-s*.55,s*.3,s*.55,col);}
+ else{tri(x-s*.4,y-s*.7,s*.18,s*.4,'#ff7aa8');tri(x+s*.4,y-s*.7,s*.18,s*.4,'#ff7aa8');}
+ blob(x,y,s,col,v.ph);face(x,y,s,v.ph);sunglasses(x,y,s);
+ ctx.font=Math.round(s*.9)+'px sans-serif';ctx.textAlign='center';
+ ctx.fillText((v.final?'👿':(v.bi||EICON[v.type])),x+s*.95,y-s*.8);
+ ctx.fillStyle='#2d3436';ctx.fillRect(x-12,y-s-10,24,4);ctx.fillStyle='#ff7675';ctx.fillRect(x-12,y-s-10,24*Math.max(0,v.hp/v.maxHp),4);ctx.globalAlpha=1;
+}
+function drawAlly(a){
+ a.ph=a.ph??Math.random()*6.28;
+ const y=a.y+Math.sin(gameTime/12+a.ph)*3;
+ ctx.fillStyle='#3b5bdb';ctx.beginPath();ctx.ellipse(a.x,y+11,10,9,0,0,7);ctx.fill();
+ ctx.fillStyle='#fff';ctx.fillRect(a.x-2,y+4,4,7);
+ ctx.fillStyle='#ffe0bd';ctx.beginPath();ctx.arc(a.x,y-3,10,0,7);ctx.fill();
+ ctx.fillStyle='#3a2a4e';ctx.beginPath();ctx.arc(a.x,y-6,10,Math.PI,0);ctx.fill();
+ ctx.strokeStyle='#00cec9';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(a.x,y-4,11,Math.PI*1.05,Math.PI*1.95);ctx.stroke();
+ face(a.x,y-2,9,a.ph);ctx.font='10px sans-serif';ctx.textAlign='center';ctx.fillText('🛡️',a.x+13,y+12);
+}
+function drawPlayer(){
+ const x=player.x,r=player.radius,mv=touchStartPos||keys.w||keys.a||keys.s||keys.d,y=player.y-Math.abs(Math.sin(gameTime/8))*(mv?3:.5);
+ ear(x-r*.5,y-r*1.3,r*.9,skinColor(),-.15);ear(x+r*.5,y-r*1.3,r*.9,skinColor(),.15);
+ ear(x-r*.5,y-r*1.25,r*.5,'#ffffff',-.15);ear(x+r*.5,y-r*1.25,r*.5,'#ffffff',.15);
+ fluffBody(x,y,r*1.15,skinColor());
+ ctx.strokeStyle='#00cec9';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,r*1.2,Math.PI*1.05,Math.PI*1.95);ctx.stroke();
+ face(x,y,r*1.1,1);
+}
+function drawGifts(){
+ if(goldenT>0){ctx.fillStyle='rgba(255,223,100,.08)';ctx.fillRect(0,0,screenWidth,screenHeight);}
+ gifts.forEach(g=>{const y=g.y+Math.sin(gameTime/10)*4;ctx.font='24px sans-serif';ctx.textAlign='center';ctx.globalAlpha=g.t<120&&gameTime%10<5?.4:1;ctx.fillText(g.rare?'💎':'🎁',g.x,y);ctx.globalAlpha=1;});
+}
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let dpr = 1, UIs = 1;
+let screenWidth = window.innerWidth, screenHeight = window.innerHeight, screenShake = 0, gameTime = 0;
+
+// ===== PC: マウスで主人公をつかんで動かす =====
+let grab = false, mouseP = null;
+canvas.addEventListener('pointerdown', e => {
+    if (e.pointerType !== 'mouse' || paused) return;
+    if (Math.hypot(e.clientX - player.x, e.clientY - player.y) < player.radius * 2.8) {
+        grab = true; mouseP = { x: e.clientX, y: e.clientY }; canvas.style.cursor = 'grabbing';
+    }
+});
+window.addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse') return;
+    if (grab) mouseP = { x: e.clientX, y: e.clientY };
+    else canvas.style.cursor = (!paused && Math.hypot(e.clientX - player.x, e.clientY - player.y) < player.radius * 2.8) ? 'grab' : 'default';
+});
+const dropGrab = () => { grab = false; mouseP = null; canvas.style.cursor = 'default'; };
+window.addEventListener('pointerup', e => { if (e.pointerType === 'mouse') dropGrab(); });
+window.addEventListener('blur', dropGrab);
+
+function resizeCanvas() {
+    screenWidth = window.innerWidth; screenHeight = window.innerHeight;
+    dpr = Math.min(window.devicePixelRatio || 1, 2); while (dpr > 1 && screenWidth * screenHeight * dpr * dpr > 3.5e6) dpr -= 0.25; canvas.width = Math.round(screenWidth * dpr); canvas.height = Math.round(screenHeight * dpr); UIs = Math.max(1, Math.min(1.4, Math.min(screenWidth, screenHeight * 0.75) / 430));
+    repositionWorld();
+}
+let _rz;const _rs=()=>{clearTimeout(_rz);_rz=setTimeout(()=>{resizeCanvas();player.x=Math.max(14,Math.min(screenWidth-14,player.x));player.y=Math.max(14,Math.min(screenHeight-14,player.y));},120);};window.addEventListener('resize',_rs);window.addEventListener('orientationchange',_rs);
+
+let world = {};
+function repositionWorld() {
+    const cx = screenWidth / 2, old = world.pads, oldProg = world.devTerminal && world.devTerminal.progress;
+    world = {
+        castle: { x: cx, y: screenHeight * 0.28 },
+        devTerminal: { x: screenWidth * 0.14, y: screenHeight * 0.38 + 62, w: 90, h: 54, progress: 0 },
+        pads: {
+            castleRepair: { x: cx, y: screenHeight * 0.40, r: 27, label: "🤝信頼", codeRequired: 20 },
+            firewall: { x: cx, y: screenHeight * 0.88, r: 26, level: 0, cost: 40, label: "🔥FW防壁" },
+            aiStaff: { x: cx + Math.min(135, screenWidth * 0.34), y: screenHeight * 0.54, r: 26, count: 0, cost: 60, label: "🧑‍💻セキュリティ対策要員" },
+            scpSpeed: { x: screenWidth * 0.14, y: screenHeight * 0.38, r: 25, level: 1, cost: 35, label: "💼システム販売" },
+            playerPower: { x: screenWidth * 0.86, y: screenHeight * 0.38, r: 25, level: 1, cost: 30, label: "⚡攻撃強化" },
+            antivirus: { x: cx - Math.min(120, screenWidth * 0.30), y: screenHeight * 0.68, r: 26, level: 0, cost: 50, label: "🛡️ウイルス対策ソフト", pulseTimer: 0 },
+            osUpdate: { x: cx + Math.min(120, screenWidth * 0.30), y: screenHeight * 0.68, r: 26, level: 1, cost: 70, label: "🔄OSアプデ" },
+            training: { x: cx - Math.min(135, screenWidth * 0.34), y: screenHeight * 0.54, r: 27, level: 0, cost: 45, label: "🎓社員教育" }
+        }
+    };
+    if (old) for (const k in old) for (const f of ['level', 'cost', 'count', 'pulseTimer', 'codeRequired']) if (old[k][f] !== undefined) world.pads[k][f] = old[k][f];
+    if (oldProg) world.devTerminal.progress = oldProg;
+}
+
+const player = { x: screenWidth / 2, y: screenHeight * 0.72, radius: 14, speed: 4.2, carryingCode: 0, maxCapacity: 10, attackRange: 105 };
+
+let coins = 80, castleHeightLevel = 1, osVersion = 1.0, castleHp = 100, castleMaxHp = 100, castleCodeStored = 0, castleCodeTarget = 20;
+let scpPackages = [], scpTimer = 0, viruses = [], virusSpawnTimer = 0, aiUnits = [], particles = [], castleDebris = [], pulseWaves = [];
+const keys = {};
+let touchStartPos = null, touchCurrentPos = null;
+
+window.addEventListener('keydown', e => { if (e.target && e.target.tagName === 'INPUT') return; keys[String(e.key).toLowerCase()] = true; });
+window.addEventListener('keyup', e => { keys[String(e.key).toLowerCase()] = false; });
+window.addEventListener('touchstart', e => {
+    touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    touchCurrentPos = { ...touchStartPos };
+}, { passive: true });
+window.addEventListener('touchmove', e => {
+    if (!touchStartPos) return;
+    touchCurrentPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+}, { passive: true });
+window.addEventListener('touchend', () => { touchStartPos = null; touchCurrentPos = null; });
+
+function spawnVirus(forceIdx) {
+    if (viruses.length > 90) return;
+    const timeScale = (1 + Math.min(gameTime / 14400, 0.5)) * wave.mul * stageDiff().m;
+    const heightScale = 1 + (castleHeightLevel * 0.08);
+    const dm = timeScale * heightScale;
+    const mitig = Math.max(0.5, 1.0 - (world.pads.training.level * 0.06));
+    const types = [
+        { type: 'fast', speed: 1.7 * Math.min(2.4, timeScale), hp: 16 * dm, maxHp: 16 * dm, color: '#ff6b81', size: 11, label: 'チビ' },
+        { type: 'normal', speed: 1.1 * Math.min(2.1, timeScale), hp: 38 * dm, maxHp: 38 * dm, color: '#ff4757', size: 15, label: 'ウイルス' },
+        { type: 'tank', speed: 0.65 * Math.min(1.8, timeScale), hp: 110 * dm * mitig, maxHp: 110 * dm * mitig, color: '#a55eea', size: 21, label: 'ボス' },
+        { type: 'swarm', speed: 1.5 * Math.min(2.4, timeScale), hp: 7 * dm, maxHp: 7 * dm, color: '#ffd6a5', size: 8, label: 'ぷに' },
+        { type: 'split', speed: 0.9 * Math.min(2.1, timeScale), hp: 45 * dm, maxHp: 45 * dm, color: '#b8f2c9', size: 16, label: 'もち' },
+        { type: 'stealth', speed: 1.2 * Math.min(2.1, timeScale), hp: 30 * dm, maxHp: 30 * dm, color: '#d7d7ff', size: 13, label: 'おばけ' },
+        { type: 'healer', speed: 0.8 * Math.min(2.1, timeScale), hp: 55 * dm, maxHp: 55 * dm, color: '#fff0a0', size: 15, label: 'マスター' }
+    ];
+    const rand = Math.random();
+    let chosen = types[1];
+    if (rand < 0.45) chosen = types[0];
+    else if (rand > (0.97 - stageOf(castleHeightLevel) * 0.045)) chosen = types[2];
+    const th = wave.theme;
+    if (th === 'swarm') chosen = rand < 0.8 ? types[3] : types[0];
+    else if (th === 'split') chosen = rand < 0.6 ? types[4] : types[1];
+    else if (th === 'stealth') chosen = rand < 0.6 ? types[5] : types[0];
+    else if (th === 'healer') chosen = rand < 0.25 ? types[6] : (rand < 0.7 ? types[1] : types[0]);
+    else if (th === 'heavy') chosen = rand < 0.5 ? types[2] : types[1];
+    if (forceIdx !== undefined) chosen = types[forceIdx];
+    viruses.push({ x: screenWidth * 0.1 + Math.random() * (screenWidth * 0.8), y: screenHeight + 20, ...chosen, eatTimer: 0, slowTimer: 0 });
+}
+
+function addParticles(x, y, color, count = 6) {
+    if (particles.length > 250) return;
+    for (let i = 0; i < count; i++) particles.push({ x, y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, life: 1.0, color, size: Math.random() * 4 + 2 });
+}
+function addDebris(x, y) {
+    if (castleDebris.length > 120) return;
+    for (let i = 0; i < 5; i++) castleDebris.push({
+        x, y, vx: (Math.random() - 0.5) * 7, vy: (Math.random() - 0.7) * 5, life: 1.0,
+        color: ['#ffb7c5', '#ffeaa7', '#74b9ff', '#ffd166', '#a29bfe'][Math.floor(Math.random() * 5)],
+        size: Math.random() * 6 + 3
+    });
+}
+
+function update() {if(wallBreak>0)wallBreak--;
+    gameTime++;
+    eventTick();
+    const P = world.pads;
+
+    if (gameTime % 60 === 0 && castleHp < castleMaxHp) castleHp = Math.min(castleMaxHp, castleHp + P.osUpdate.level * 0.7);
+
+    let moveX = 0, moveY = 0;
+    if (keys['w'] || keys['arrowup']) moveY -= 1;
+    if (keys['s'] || keys['arrowdown']) moveY += 1;
+    if (keys['a'] || keys['arrowleft']) moveX -= 1;
+    if (keys['d'] || keys['arrowright']) moveX += 1;
+    if (touchStartPos && touchCurrentPos) {
+        const dx = touchCurrentPos.x - touchStartPos.x, dy = touchCurrentPos.y - touchStartPos.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist > 6) { moveX = dx / dist; moveY = dy / dist; }
+    }
+    if (moveX !== 0 && moveY !== 0 && !touchStartPos) { moveX *= 0.7071; moveY *= 0.7071; }
+    if (grab && mouseP) {
+        const gx = mouseP.x - player.x, gy = mouseP.y - player.y, gd = Math.hypot(gx, gy);
+        if (gd > 1) { const st = Math.min(gd, player.speed * 3.5); moveX = gx / gd * st / player.speed; moveY = gy / gd * st / player.speed; }
+    }
+    player.x = Math.max(player.radius, Math.min(screenWidth - player.radius, player.x + moveX * player.speed));
+    player.y = Math.max(player.radius, Math.min(screenHeight - player.radius, player.y + moveY * player.speed));
+
+    const term = world.devTerminal;
+    term.progress += 0.95 * (1 + P.osUpdate.level * 0.05 + P.training.level * 0.08);
+    if (term.progress >= 100) {
+        term.progress = 0;
+        if (player.carryingCode < player.maxCapacity && Math.hypot(player.x - term.x, player.y - term.y) < 90) {
+            player.carryingCode++;
+            coins += P.training.level * 2;
+            playBeep(650, 'triangle', 0.04);
+            addParticles(term.x, term.y, '#70a1ff', 3);
+        }
+    }
+
+    const scpBoost = 1 + P.osUpdate.level * 0.08;
+    scpTimer += P.scpSpeed.level * 0.95 * scpBoost;
+    if (scpTimer >= 65) { scpTimer = 0; scpPackages.push({ progress: 0 }); }
+    for (let i = scpPackages.length - 1; i >= 0; i--) {
+        const p = scpPackages[i];
+        p.progress += 0.022 * P.scpSpeed.level * scpBoost;
+        if (p.progress >= 1.0) {
+            scpPackages.splice(i, 1);
+            castleCodeStored++;
+            coins += Math.floor((5 + P.scpSpeed.level * 4 + P.training.level * 2) * (1 + P.osUpdate.level * 0.1));
+            addParticles(world.castle.x, world.castle.y, '#ffbe76', 5);
+            playBeep(880, 'sine', 0.05);
+        }
+    }
+
+    if (Math.hypot(player.x - world.castle.x, player.y - world.castle.y) < 75 && player.carryingCode > 0) {
+        castleCodeStored += player.carryingCode;
+        coins += Math.floor(player.carryingCode * (9 + P.training.level * 2) * (1 + P.osUpdate.level * 0.1));
+        addParticles(world.castle.x, world.castle.y, '#ffeaa7', player.carryingCode * 3);
+        player.carryingCode = 0;
+        playBeep(1020, 'sine', 0.08);
+    }
+
+    if (P.antivirus.level > 0) {
+        P.antivirus.pulseTimer++;
+        if (P.antivirus.pulseTimer >= Math.max(80, 230 - P.antivirus.level * 25)) {
+            P.antivirus.pulseTimer = 0;
+            pulseWaves.push({ x: P.antivirus.x, y: P.antivirus.y, r: 10, maxR: Math.max(screenWidth, screenHeight) * 0.85, damage: 25 + P.antivirus.level * 16 });
+            playBeep(420, 'square', 0.18);
+        }
+    }
+    for (let i = pulseWaves.length - 1; i >= 0; i--) {
+        const pw = pulseWaves[i];
+        pw.r += 13;
+        viruses.forEach(v => {
+            if (Math.abs(Math.hypot(v.x - pw.x, v.y - pw.y) - pw.r) < 22) {
+                v.hp -= pw.damage * 0.1; v.slowTimer = 65;
+                addParticles(v.x, v.y, '#00cec9', 2);
+            }
+        });
+        if (pw.r >= pw.maxR) pulseWaves.splice(i, 1);
+    }
+
+    virusSpawnTimer++;
+    if (wave.phase === 'fight' && virusSpawnTimer > Math.max(8, (105 - castleHeightLevel * 3 - Math.min(gameTime / 400, 30)) / (wave.mul * stageDiff().rate))) {
+        virusSpawnTimer = 0;
+        spawnVirus();
+        if (wave.theme === 'swarm') { spawnVirus(); spawnVirus(); }
+        if (stageOf(castleHeightLevel) >= 2 && Math.random() < 0.2 * stageOf(castleHeightLevel)) spawnVirus();
+        if (castleHeightLevel > 10 && Math.random() < 0.45) spawnVirus();
+    }
+
+    for (let i = viruses.length - 1; i >= 0; i--) {
+        const v = viruses[i];
+        if (!isFinite(v.x + v.y + v.hp)) { viruses.splice(i, 1); continue; }
+        const hp0 = v.hp;
+        if (v.type === 'healer') viruses.forEach(o => { if (o !== v && Math.hypot(o.x - v.x, o.y - v.y) < 90) o.hp = Math.min(o.maxHp, o.hp + 0.25); });
+        let targetY = world.castle.y;
+        if (v.slowTimer > 0) v.slowTimer--; if (v.frz > 0) v.frz--;
+        const spd = v.frz > 0 ? 0 : (v.slowTimer > 0 ? v.speed * 0.45 : v.speed);
+        const wm = (v.lp > 0 || wallBreak > 0) ? 1 : wallEffect(v);
+        const ang = Math.atan2(targetY - v.y, world.castle.x - v.x);
+        bossMove(v, ang, spd, wm); v.x = Math.max(6, Math.min(screenWidth - 6, v.x)); v.y = Math.min(v.y, screenHeight + 25);
+
+        if (Math.hypot(v.x - world.castle.x, v.y - world.castle.y) < 50) {
+            v.eatTimer++;
+            if (v.eatTimer % 15 === 0) {
+                screenShake = 8; addDebris(v.x, v.y); playBeep(140, 'sawtooth', 0.1);
+                if (castleCodeStored > 0) castleCodeStored--;
+                castleHp -= (v.weak ? 2.5 : 5) * stageDiff().dmg;
+                if (castleHp <= 0) {
+                    if (castleHeightLevel > stageFloor()) {
+                        castleHeightLevel--; castleHp = castleMaxHp; screenShake = 15;
+                        addDebris(world.castle.x, world.castle.y); playBeep(100, 'sawtooth', 0.3);
+                    } else gameOver();
+                }
+            }
+        }
+        if (Math.hypot(v.x - player.x, v.y - player.y) < player.attackRange) {
+            v.hp -= P.playerPower.level * (1 + P.osUpdate.level * 0.05) * (fever > 0 ? 2 : 1);
+            addParticles(v.x, v.y, '#ff4757', 2);
+        }
+        if (P.firewall.level > 0 && Math.hypot(v.x - P.firewall.x, v.y - P.firewall.y) < 135) {
+            v.hp -= P.firewall.level * 0.7;
+            addParticles(v.x, v.y, '#ff7f50', 1);
+        }
+        if (v.type === 'stealth' && v.vis < 1 && v.hp < hp0) v.hp = hp0 - (hp0 - v.hp) * 0.3;
+        if (v.hp <= 0) {
+            addParticles(v.x, v.y, v.color, 12); onKill(v);
+            if (v.type === 'split') for (let k = 0; k < 2; k++) viruses.push({ x: v.x + (k ? 10 : -10), y: v.y, type: 'fast', speed: 1.8, hp: 12, maxHp: 12, color: '#ffb3d1', size: 8, eatTimer: 0, slowTimer: 0 });
+            coins += v.maxHp > 60 ? 25 : 12;
+            viruses.splice(i, 1);
+            playBeep(780, 'sine', 0.05);
+        }
+    }
+
+    aiUnits.forEach(ai => {
+        let nearest = null, minDist = 999;
+        viruses.forEach(v => { const d = Math.hypot(v.x - ai.x, v.y - ai.y); if (d < minDist) { minDist = d; nearest = v; } });
+        if (nearest) {
+            const a = Math.atan2(nearest.y - ai.y, nearest.x - ai.x);
+            ai.x += Math.cos(a) * 2.4; ai.y += Math.sin(a) * 2.4;
+            if (minDist < 100) { nearest.hp -= 0.75 * (1 + P.osUpdate.level * 0.05); addParticles(nearest.x, nearest.y, '#a55eea', 1); }
+        } else {
+            ai.angle = (ai.angle || 0) + 0.035;
+            ai.x = world.castle.x + Math.cos(ai.angle) * 110;
+            ai.y = world.castle.y + Math.sin(ai.angle) * 55;
+        }
+    });
+
+    checkPad(P.castleRepair, () => {
+        if (castleCodeStored >= castleCodeTarget && gameTime - lastLvT >= LV_GATE && castleHeightLevel < (endless ? 999 : FINAL_LV)) {
+            castleCodeStored -= castleCodeTarget;
+            castleHeightLevel++; lastLvT = gameTime; castleMaxHp += 20; castleHp = castleMaxHp; onLevelUp();
+            castleCodeTarget = Math.floor(castleCodeTarget * 1.11);
+            P.castleRepair.codeRequired = castleCodeTarget;
+            addParticles(world.castle.x, world.castle.y, '#ffb7c5', 30);
+            playBeep(1200, 'triangle', 0.25);
+        } else if (castleHp < castleMaxHp && coins >= 10) {
+            coins -= 10; castleHp = Math.min(castleMaxHp, castleHp + 25);
+            playBeep(620, 'sine', 0.08);
+        }
+    });
+    checkPad(P.firewall, () => { if (coins >= P.firewall.cost) { coins -= P.firewall.cost; P.firewall.level++; P.firewall.cost = Math.floor(P.firewall.cost * 1.7); playBeep(820, 'square', 0.12); } });
+    checkPad(P.aiStaff, () => {
+        if (coins >= P.aiStaff.cost) {
+            coins -= P.aiStaff.cost; P.aiStaff.count++;
+            aiUnits.push({ x: world.castle.x, y: world.castle.y, angle: Math.random() * Math.PI * 2 });
+            P.aiStaff.cost = Math.floor(P.aiStaff.cost * 1.8); playBeep(920, 'sine', 0.15);
+        }
+    });
+    checkPad(P.scpSpeed, () => { if (coins >= P.scpSpeed.cost) { coins -= P.scpSpeed.cost; P.scpSpeed.level++; P.scpSpeed.cost = Math.floor(P.scpSpeed.cost * 1.6); playBeep(860, 'triangle', 0.12); } });
+    checkPad(P.playerPower, () => { if (coins >= P.playerPower.cost) { coins -= P.playerPower.cost; P.playerPower.level++; P.playerPower.cost = Math.floor(P.playerPower.cost * 1.6); playBeep(1100, 'sine', 0.12); } });
+    checkPad(P.antivirus, () => { if (coins >= P.antivirus.cost) { coins -= P.antivirus.cost; P.antivirus.level++; P.antivirus.cost = Math.floor(P.antivirus.cost * 1.7); playBeep(1000, 'square', 0.15); } });
+    checkPad(P.osUpdate, () => {
+        if (coins >= P.osUpdate.cost) {
+            coins -= P.osUpdate.cost; P.osUpdate.level++;
+            osVersion = (1.0 + (P.osUpdate.level - 1) * 0.5).toFixed(1);
+            castleMaxHp += 20; castleHp += 20;
+            P.osUpdate.cost = Math.floor(P.osUpdate.cost * 1.8);
+            playBeep(1300, 'triangle', 0.25);
+            addParticles(P.osUpdate.x, P.osUpdate.y, '#e84393', 20);
+        }
+    });
+    checkPad(P.training, () => {
+        if (coins >= P.training.cost) {
+            coins -= P.training.cost; P.training.level++;
+            P.training.cost = Math.floor(P.training.cost * 1.65);
+            playBeep(1150, 'sine', 0.18);
+            addParticles(P.training.x, P.training.y, '#fdcb6e', 20);
+        }
+    });
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i]; p.x += p.vx; p.y += p.vy; p.life -= 0.04;
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+    for (let i = castleDebris.length - 1; i >= 0; i--) {
+        const d = castleDebris[i]; d.x += d.vx; d.y += d.vy; d.vy += 0.3; d.life -= 0.03;
+        if (d.life <= 0) castleDebris.splice(i, 1);
+    }
+    if (screenShake > 0) screenShake *= 0.85;
+    applyIncome();rings.forEach(o=>{o.r+=6;o.l-=.04;});rings=rings.filter(o=>o.l>0);pops.forEach(o=>{o.t--;o.y-=1;});pops=pops.filter(o=>o.t>0);if(fever>0)fever--;
+
+    if(gameTime%4===0)document.getElementById('coinText').innerText = Math.floor(coins);
+    document.getElementById('castleHeightText').innerText = `S${stageOf(castleHeightLevel) + 1}/8 ${STAGE_NAMES[stageOf(castleHeightLevel)]} Lv.${castleHeightLevel}`;
+    document.getElementById('trainLvText').innerText = P.training.level;
+    document.getElementById('osLvText').innerText = osVersion;
+    $('upg').style.display=(stageOf(castleHeightLevel)===7&&!upgradeUsed&&!endless)?'block':'none';
+    document.getElementById('codeText').innerText = `${player.carryingCode}/${player.maxCapacity}`;
+}
+
+function checkPad(pad, callback) {
+    if (Math.hypot(player.x - pad.x, player.y - pad.y) < pad.r) {
+        pad.stepTimer = (pad.stepTimer || 0) + 1;
+        if (pad.stepTimer > 14) { pad.stepTimer = 0; const c = coins, h = castleHeightLevel; callback(); if (coins < c || castleHeightLevel > h) padTip(pad); }
+    } else pad.stepTimer = 0;
+}
+
+function draw() {
+    ctx.save();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (screenShake > 0.5) ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
+    ctx.clearRect(0, 0, screenWidth, screenHeight);
+
+    // 🌺 沖縄ステージ背景(レベルで切り替え)
+    drawBackground(ctx, screenWidth, screenHeight, castleHeightLevel, gameTime);
+
+    pulseWaves.forEach(pw => {
+        ctx.strokeStyle = 'rgba(0,206,201,0.6)'; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.arc(pw.x, pw.y, pw.r, 0, Math.PI * 2); ctx.stroke();
+    });
+
+    const term = world.devTerminal, castle = world.castle;
+    ctx.strokeStyle = '#74b9ff'; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(term.x, term.y); ctx.lineTo(term.x, castle.y + 20); ctx.lineTo(castle.x, castle.y + 20); ctx.stroke();
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.stroke();
+
+    scpPackages.forEach(p => {
+        let px, py;
+        if (p.progress < 0.65) { px = term.x; py = term.y - (p.progress / 0.65) * (term.y - (castle.y + 20)); }
+        else { px = term.x + ((p.progress - 0.65) / 0.35) * (castle.x - term.x); py = castle.y + 20; }
+        ctx.fillStyle = '#ffeaa7'; ctx.beginPath(); ctx.arc(px, py, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#fdcb6e'; ctx.stroke();
+    });
+
+    ctx.fillStyle = '#0984e3'; ctx.fillRect(term.x - term.w / 2, term.y - term.h / 2, term.w, term.h);
+    ctx.strokeStyle = '#74b9ff'; ctx.lineWidth = 2; ctx.strokeRect(term.x - term.w / 2, term.y - term.h / 2, term.w, term.h);
+    ctx.fillStyle = '#ffffff'; ctx.font = 'bold ' + Math.round(13 * UIs) + 'px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('💻 開発端末', term.x, term.y - 8);
+    ctx.fillStyle = '#2d3436'; ctx.fillRect(term.x - 28, term.y + 8, 56, 7);
+    ctx.fillStyle = '#00cec9'; ctx.fillRect(term.x - 28, term.y + 8, 56 * (term.progress / 100), 7);
+
+    const P = world.pads;
+    drawPad(P.castleRepair, '#ffb7c5', `🤝信頼 ${castleCodeStored}/${P.castleRepair.codeRequired}`+((castleCodeStored>=castleCodeTarget&&gameTime-lastLvT<LV_GATE)?'\n⏳あと'+Math.ceil((LV_GATE-(gameTime-lastLvT))/60)+'秒':''));
+    drawPad(P.firewall, '#ff7f50', `FW Lv.${P.firewall.level} (${P.firewall.cost}₡)`);
+    drawPad(P.aiStaff, '#a55eea', `セキュリティ対策要員\n${P.aiStaff.count}名 (${P.aiStaff.cost}₡)`);
+    drawPad(P.scpSpeed, '#74b9ff', `販売 Lv.${P.scpSpeed.level} (${P.scpSpeed.cost}₡)`);
+    drawPad(P.playerPower, '#ffeaa7', `攻撃 Lv.${P.playerPower.level} (${P.playerPower.cost}₡)`);
+    drawPad(P.antivirus, '#00cec9', `ウイルス対策ソフト\nLv.${P.antivirus.level} (${P.antivirus.cost}₡)`);
+    drawPad(P.osUpdate, '#e84393', `OS壁 Lv.${P.osUpdate.level} (${P.osUpdate.cost}₡)`);
+    drawPad(P.training, '#fdcb6e', `🎓教育 Lv.${P.training.level} (${P.training.cost}₡)`);
+
+    if (P.training.level > 0) {
+        for (let i = 0; i < Math.min(6, P.training.level); i++) {
+            const a = (i / 6) * Math.PI * 2 + gameTime * 0.02;
+            ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('✏️', P.training.x + Math.cos(a) * 36, P.training.y + Math.sin(a) * 20);
+        }
+    }
+
+    drawWalls();
+
+    drawInfiniteCastle(castle.x, castle.y, castleHeightLevel);
+
+    drawGifts();
+    aiUnits.forEach(drawAlly);
+    viruses.forEach(drawEnemy);viruses.forEach(drawBossFx);
+    drawPlayer();
+    ctx.strokeStyle = 'rgba(255,234,167,0.35)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(player.x, player.y, player.attackRange, 0, Math.PI * 2); ctx.stroke();
+
+    for (let i = 0; i < player.carryingCode; i++) {
+        ctx.fillStyle = '#70a1ff'; ctx.fillRect(player.x - 8, player.y - 22 - i * 8, 16, 6);
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1; ctx.strokeRect(player.x - 8, player.y - 22 - i * 8, 16, 6);
+    }
+
+    rings.forEach(o=>{ctx.strokeStyle='rgba(255,255,255,'+o.l+')';ctx.lineWidth=6*o.l;ctx.beginPath();ctx.arc(o.x,o.y,o.r,0,7);ctx.stroke();});
+    pops.forEach(o=>{ctx.globalAlpha=Math.min(1,o.t/20);ctx.fillStyle='#fff3b0';ctx.strokeStyle='#ff4757';ctx.lineWidth=3;ctx.font='bold '+Math.round(24*UIs)+'px sans-serif';ctx.textAlign='center';ctx.strokeText(o.s,o.x,o.y-20);ctx.fillText(o.s,o.x,o.y-20);ctx.globalAlpha=1;});
+    if(fever>0){ctx.strokeStyle='hsl('+(gameTime*6%360)+',100%,70%)';ctx.lineWidth=5;ctx.beginPath();ctx.arc(player.x,player.y,player.radius*2+Math.sin(gameTime/5)*3,0,7);ctx.stroke();ctx.fillStyle='#fff';ctx.font='bold '+Math.round(15*UIs)+'px sans-serif';ctx.textAlign='center';ctx.fillText('FEVER '+Math.ceil(fever/60)+'s',player.x,player.y-player.radius*2.6);}
+    if(flash>0){ctx.fillStyle='rgba(255,255,255,'+flash*.45+')';ctx.fillRect(0,0,screenWidth,screenHeight);flash=Math.max(0,flash-.07);}
+    if(combo>=3&&gameTime-lastKill<100){ctx.globalAlpha=1;ctx.fillStyle='#ffd166';ctx.font='bold '+Math.round(Math.min(34,16+combo)*UIs)+'px sans-serif';ctx.textAlign='right';ctx.fillText(combo+' COMBO!',screenWidth-10,screenHeight*.2);}
+    particles.forEach(p => { ctx.fillStyle = p.color; ctx.globalAlpha = p.life; ctx.fillRect(p.x, p.y, p.size, p.size); });
+    castleDebris.forEach(d => { ctx.fillStyle = d.color; ctx.globalAlpha = d.life; ctx.fillRect(d.x, d.y, d.size, d.size); });
+    ctx.globalAlpha = 1.0;
+
+    if (touchStartPos && touchCurrentPos) {
+        ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(touchStartPos.x, touchStartPos.y, 35, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = 'rgba(255,158,187,0.65)';
+        ctx.beginPath(); ctx.arc(touchCurrentPos.x, touchCurrentPos.y, 16, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+}
+
+function drawInfiniteCastle(x, y, heightLv) {
+    ctx.save(); ctx.translate(x, y);
+    ctx.fillStyle = '#ffb7c5'; ctx.fillRect(-45, -10, 90, 30);
+    const numTiers = Math.min(12, heightLv);
+    const tierColors = ['#ffeaa7', '#74b9ff', '#ff9ff3', '#feca57', '#55efc4', '#a29bfe'];
+    for (let i = 0; i < numTiers; i++) {
+        const hOffset = -10 - i * 18, width = Math.max(30, 80 - i * 4);
+        ctx.fillStyle = tierColors[i % tierColors.length]; ctx.fillRect(-width / 2, hOffset - 18, width, 18);
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1; ctx.strokeRect(-width / 2, hOffset - 18, width, 18);
+    }
+    const topH = -10 - numTiers * 18;
+    ctx.fillStyle = '#ff6b6b'; ctx.beginPath(); ctx.moveTo(-25, topH); ctx.lineTo(0, topH - 25); ctx.lineTo(25, topH); ctx.closePath(); ctx.fill();
+    if (heightLv >= 5) { ctx.font = '16px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('👑', 0, topH - 30); }
+    ctx.fillStyle = '#6c5ce7'; ctx.fillRect(-10, 5, 20, 15);
+    ctx.fillStyle = '#2d3436'; ctx.fillRect(-40, 25, 80, 7);
+    ctx.fillStyle = '#55efc4'; ctx.fillRect(-40, 25, 80 * (castleHp / castleMaxHp), 7);
+    ctx.restore();
+}
+
+function drawPad(pad, color, label) {
+    ctx.save();
+    ctx.fillStyle = color; ctx.globalAlpha = 0.22;
+    ctx.beginPath(); ctx.arc(pad.x, pad.y, pad.r, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 0.85; ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+    if (pad.stepTimer > 0) {
+        ctx.beginPath(); ctx.arc(pad.x, pad.y, pad.r, 0, Math.PI * 2 * (pad.stepTimer / 14));
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 4; ctx.stroke();
+    }
+    ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center';
+    const fz=Math.round(12*UIs);ctx.font='bold '+fz+'px sans-serif';ctx.lineJoin='round';ctx.lineWidth=Math.max(3,fz*.3);ctx.strokeStyle='rgba(20,10,40,.9)';const ls=label.split('\n');ls.forEach((t,i)=>{const yy=pad.y+4+(i-(ls.length-1)/2)*(fz+2);ctx.strokeText(t,pad.x,yy);ctx.fillText(t,pad.x,yy);});
+    ctx.restore();
+}
+
+
+/* ===== v5 追加: ボス / 授業クイズ / 賞状 / 安定ループ ===== */
+const BKS=['wiggle','jump','flee','beam','jump','wiggle','flee','beam'];
+const BKD={wiggle:['🐍','🐍 クネクネボス登場!動きを読んで攻撃しよう'],jump:['🦘','🦘 ジャンプボス!壁を飛び越えてくるよ'],flee:['💨','💨 にげ足ボス!追いつめよう(たまに突進するよ)'],beam:['⚡','⚡ ビームボス!壁がこわされる、すぐ守りを立て直そう']};
+function bossMove(v,ang,spd,wm){
+ const cx=Math.cos(ang),sy=Math.sin(ang),k=v.bk;v.t=(v.t||0)+1;
+ if(k==='wiggle'){const s=Math.sin(v.t/16)*2.8;v.x+=cx*spd*wm-sy*s;v.y+=sy*spd*wm+cx*s;}
+ else if(k==='flee'){const dx=v.x-player.x,dy=v.y-player.y,d=Math.hypot(dx,dy)||1;
+  if(v.rush>0){v.rush--;v.x+=cx*spd*2*wm;v.y+=sy*spd*2*wm;}
+  else if(d<170){v.fl=(v.fl||0)+1;v.x+=dx/d*spd*1.7;v.y+=dy/d*spd*1.7;if(v.fl>300){v.fl=0;v.rush=140;banner('💨 にげ足ボスが突進してきた!');}}
+  else{v.x+=cx*spd*wm;v.y+=sy*spd*wm;}}
+ else if(k==='jump'){
+  if(v.lp>0){v.lp--;const r=1-v.lp/32;v.y=v.y0+(v.y1-v.y0)*r-Math.sin(r*Math.PI)*60;if(v.lp===0){screenShake=12;rings.push({x:v.x,y:v.y,r:8,l:1});}}
+  else{[.88,.75].forEach((f,i)=>{const wy=screenHeight*f,lv=i?world.pads.osUpdate.level-1:world.pads.firewall.level;
+    if(!v.lp&&lv>0&&!(((v.jd||0)>>i)&1)&&v.y>wy&&v.y-wy<30){v.jd=(v.jd||0)|(1<<i);v.lp=32;v.y0=v.y;v.y1=wy-55;}});
+   if(!v.lp){v.x+=cx*spd*wm;v.y+=sy*spd*wm;}}}
+ else if(k==='beam'){const m=v.bw>0?.25:1;v.x+=cx*spd*wm*m;v.y+=sy*spd*wm*m;v.bt=(v.bt||0)+1;if(v.bt%420===0)v.bw=70;
+  if(v.bw>0&&--v.bw===0){wallBreak=240;v.fire=24;screenShake=16;flash=.8;playBeep(160,'sawtooth',.4);banner('💥 ビームで壁がこわされた!4秒間ふせげない!');}
+  if(v.fire>0)v.fire--;}
+ else{v.x+=cx*spd*wm;v.y+=sy*spd*wm;}
+}
+function drawBossFx(v){if(v.bk!=='beam')return;
+ if(v.bw>0){ctx.strokeStyle='rgba(255,70,70,'+(.3+.4*Math.sin(gameTime/3))+')';ctx.lineWidth=3;ctx.setLineDash([8,8]);ctx.beginPath();ctx.moveTo(v.x,v.y);ctx.lineTo(v.x,0);ctx.stroke();ctx.setLineDash([]);}
+ if(v.fire>0){ctx.fillStyle='rgba(255,230,120,.85)';ctx.fillRect(v.x-14,0,28,v.y);ctx.fillStyle='#fff';ctx.fillRect(v.x-5,0,10,v.y);}}
+
+function lecTerms(i){const L=LEC[i];return L?(L[2].match(/<b>[^<]{2,14}<\/b>/g)||[]).map(x=>x.slice(3,-4).replace(/[:：]$/,'')).filter(x=>!/ふかぼり|ポイント/.test(x)):[];}
+function lecQuiz(ls,t,n){const T=[...new Set(ls.flatMap(lecTerms))];
+ qPool=QUIZ.map((q,i)=>{const z=q.q+q.o[0]+q.e,m=T.filter(x=>z.includes(x)).length;return[m?m+Math.random()-(mastered.has(i)?.7:0):0,i];}).filter(x=>x[0]>0).sort((a,b)=>b[0]-a[0]).slice(0,n).map(x=>x[1]);
+ quizSet(n,t);}
+
+function refreshCert(){const b=$('certBtn');if(!b)return;b.textContent=certOK?'🎓 賞状(セキュリティ伝道師)をもらう':'🔒 賞状:クイズ95%クリアでPDFプレゼント(いま'+Math.floor(mastered.size/QUIZ.length*100)+'%)';b.style.opacity=certOK?1:.6;}
+function openCert(){paused=true;try{$('certName').value=localStorage.getItem('cyberCastle_name')||'';}catch(e){}$('cert').style.display='flex';}
+function mkPdf(jpg,w,h){const enc=x=>new TextEncoder().encode(x),parts=[],offs=[];let len=0;
+ const add=d=>{if(typeof d==='string')d=enc(d);parts.push(d);len+=d.length;},obj=(n,b)=>{offs[n]=len;add(n+' 0 obj\n'+b+'\nendobj\n');};
+ add('%PDF-1.4\n');obj(1,'<</Type/Catalog/Pages 2 0 R>>');obj(2,'<</Type/Pages/Kids[3 0 R]/Count 1>>');
+ obj(3,'<</Type/Page/Parent 2 0 R/MediaBox[0 0 842 595]/Resources<</XObject<</Im0 4 0 R>>>>/Contents 5 0 R>>');
+ offs[4]=len;add('4 0 obj\n<</Type/XObject/Subtype/Image/Width '+w+'/Height '+h+'/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length '+jpg.length+'>>\nstream\n');add(jpg);add('\nendstream\nendobj\n');
+ const c='q 842 0 0 595 0 0 cm /Im0 Do Q';obj(5,'<</Length '+c.length+'>>\nstream\n'+c+'\nendstream');
+ const x=len;add('xref\n0 6\n0000000000 65535 f \n');for(let i=1;i<=5;i++)add(String(offs[i]).padStart(10,'0')+' 00000 n \n');
+ add('trailer\n<</Size 6/Root 1 0 R>>\nstartxref\n'+x+'\n%%EOF');return new Blob(parts,{type:'application/pdf'});}
+function mkCert(name){const W=1684,H=1191,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+ const F='"Hiragino Mincho ProN","Yu Mincho","MS PMincho","Noto Serif JP",serif';
+ g.fillStyle='#fffaf0';g.fillRect(0,0,W,H);g.strokeStyle='#c9972b';g.lineWidth=14;g.strokeRect(40,40,W-80,H-80);g.lineWidth=3;g.strokeRect(70,70,W-140,H-140);
+ g.textAlign='center';g.fillStyle='#3a2a4e';g.font='bold 120px '+F;g.fillText('賞　状',W/2,250);
+ g.fillStyle='#d63a6a';g.font='bold 70px '+F;g.fillText('🌺 セキュリティ伝道師 🌺',W/2,380);
+ let fs=100;g.fillStyle='#3a2a4e';do{g.font='bold '+fs+'px '+F;fs-=4;}while(g.measureText(name).width>1100&&fs>36);
+ g.fillText(name+' 殿',W/2,580);g.fillRect(W/2-600,610,1200,4);
+ g.font='44px '+F;['あなたは「サイバーキャッスル防衛」のクイズで95%以上をクリアし、','ネット詐欺や攻撃から、人と地域を守る知識を身につけました。','その努力をたたえ、「セキュリティ伝道師」の称号を贈ります。'].forEach((t,i)=>g.fillText(t,W/2,730+i*70));
+ g.font='38px '+F;g.fillText('「確かめる・伝える・助ける」で、まわりの人も守ってください。',W/2,990);
+ g.fillText(new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'})+'　サイバーキャッスル防衛',W/2,1070);
+ const b=atob(c.toDataURL('image/jpeg',.92).split(',')[1]),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);
+ return mkPdf(u,W,H);}
+$('certBtn').onclick=()=>{if(certOK)openCert();};
+$('certX').onclick=()=>{$('cert').style.display='none';paused=modalOpen();};
+$('certMk').onclick=()=>{const n=$('certName').value.trim();if(!n){$('certName').focus();$('certName').placeholder='お名前を入力してね';return;}
+ try{localStorage.setItem('cyberCastle_name',n);}catch(e){}
+ try{const u=URL.createObjectURL(mkCert(n)),a=document.createElement('a');a.href=u;a.download='セキュリティ伝道師_賞状.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000);}
+ catch(e){alert('賞状を作れませんでした。別のブラウザでもう一度お試しください。');}};
+window.addEventListener('touchcancel',()=>{touchStartPos=null;touchCurrentPos=null;});
+window.addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)saveGame();lastT=0;});
+
+let lastT=0,acc=0,errN=0;
+function loop(ts){requestAnimationFrame(loop);
+ try{if(!lastT)lastT=ts;acc+=Math.min(100,ts-lastT);lastT=ts;let n=0;
+  while(acc>=16.6&&n<3){acc-=16.6;n++;if(!paused)update();}
+  if(n>=3)acc=0;draw();}
+ catch(e){errN++;try{viruses=viruses.filter(v=>isFinite(v.x+v.y+v.hp));particles.length=0;castleDebris.length=0;pops.length=0;ctx.setTransform(1,0,0,1,0,0);}catch(_){}}}
+
+window.onload = function() {
+    resizeCanvas(); loadGame(); if(gameTime===0&&clears)coins+=Math.min(clears,5)*50; $('achInfo').textContent='🏆 実績 '+got.length+'/'+ACH.length+'　👑 クリア '+clears+'回'; initMeta(); refreshCert();
+    requestAnimationFrame(loop);
+};
+</script>
+</body>
+</html>

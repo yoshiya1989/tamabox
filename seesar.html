@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>シーサー戦士の詐欺退治クエスト // CYBER</title>
+<style>
+:root{--c:#00f0ff;--m:#ff2bd6;--y:#ffe600;--g:#39ff88;--r:#ff3860;--bg:#050b1e;--tx:#dff8ff;
+ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;color:var(--tx);background:var(--bg);display:flex;justify-content:center;overflow-x:hidden;
+ font-family:"Hiragino Sans","Meiryo",system-ui,sans-serif}
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+body::before{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
+ background:linear-gradient(rgba(0,240,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(0,240,255,.06) 1px,transparent 1px);background-size:40px 40px}
+body::after{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
+ background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1px,transparent 1px 3px)}
+.wrap{position:relative;z-index:2;width:100%;max-width:560px;padding:16px}
+.card{position:relative;overflow:hidden;margin-bottom:14px;padding:16px;background:rgba(5,14,40,.72);backdrop-filter:blur(6px);
+ border:1px solid var(--c);box-shadow:0 0 18px rgba(0,240,255,.35),inset 0 0 22px rgba(0,240,255,.08);
+ clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px)}
+.card::before{content:"";position:absolute;left:0;top:0;width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--c),var(--m),transparent);animation:sweep 3s linear infinite}
+@keyframes sweep{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+h1{font-size:20px;text-align:center;margin:6px 0 4px;letter-spacing:.06em;color:var(--c);text-shadow:0 0 10px var(--c),2px 0 var(--m)}
+.sub{text-align:center;color:#8fb8d6;font-size:12px;margin-bottom:12px}
+.hero{display:block;width:150px;height:150px;margin:0 auto 8px;filter:drop-shadow(0 0 10px var(--c))}
+.btn{display:block;width:100%;margin-top:9px;padding:13px 14px;text-align:left;font-size:14px;font-weight:bold;color:var(--c);cursor:pointer;border:0;
+ background:rgba(0,240,255,.08);box-shadow:inset 0 0 0 1px var(--c),inset 0 0 14px rgba(0,240,255,.2);text-shadow:0 0 6px var(--c);
+ clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);transition:.12s;font-family:inherit}
+.btn:hover{background:rgba(0,240,255,.2);box-shadow:inset 0 0 0 1px var(--c),inset 0 0 22px rgba(0,240,255,.5);transform:translateX(3px)}
+.btn:active{transform:scale(.98)}
+.btn.correct{color:var(--g);background:rgba(57,255,136,.15);box-shadow:inset 0 0 0 2px var(--g);text-shadow:0 0 8px var(--g)}
+.btn.wrong{color:var(--r);background:rgba(255,56,96,.15);box-shadow:inset 0 0 0 2px var(--r);text-shadow:0 0 8px var(--r)}
+.btn:disabled{opacity:.6;cursor:default;transform:none}
+.btn.main{text-align:center;color:#04121c;background:linear-gradient(90deg,var(--c),var(--m));text-shadow:none;box-shadow:none}
+.btn.x{color:#fff;background:linear-gradient(90deg,#1da1f2,#7a5cff);text-shadow:none;box-shadow:none;text-align:center}
+.hidden{display:none}.center{text-align:center}
+.arena{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.fighter{width:46%;text-align:center}
+.avatar{width:84px;height:84px;display:inline-block;filter:drop-shadow(0 0 8px var(--c));animation:idleP 1.3s ease-in-out infinite}
+.icon{font-size:54px;line-height:84px;display:inline-block;filter:drop-shadow(0 0 10px var(--m));animation:idleE 1.5s ease-in-out infinite;transition:transform .5s cubic-bezier(.3,1.6,.5,1),opacity .6s,filter .6s}
+@keyframes idleP{50%{transform:translateY(-7px) rotate(2deg)}}
+@keyframes idleE{50%{transform:translateY(-9px) rotate(-3deg)}}
+.icon.atk{animation:lunge .5s ease-in-out infinite}
+@keyframes lunge{0%,100%{transform:translateX(0) scale(1)}50%{transform:translateX(-14px) scale(1.25) rotate(-8deg)}}
+.icon.down{animation:none;transform:translateY(26px) rotate(96deg) scale(.85);opacity:.3;filter:grayscale(1) drop-shadow(0 0 4px #000)}
+.name{font-size:12px;font-weight:bold;margin-top:2px;letter-spacing:.08em}
+.hpouter{height:10px;margin-top:4px;background:rgba(255,255,255,.08);border:1px solid rgba(0,240,255,.5);overflow:hidden;transform:skewX(-20deg)}
+.hpbar{height:100%;background:linear-gradient(90deg,var(--g),var(--c));box-shadow:0 0 10px var(--g);transition:width .4s}
+.hpbar.enemy{background:linear-gradient(90deg,var(--r),var(--m));box-shadow:0 0 10px var(--r)}
+.hptext{font-size:10px;color:#8fb8d6;font-family:monospace}
+.vs{font-weight:bold;color:var(--y);text-shadow:0 0 8px var(--y);font-size:13px}
+.shake{animation:shake .35s}
+@keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+.flashHit{animation:flashHit .3s}
+@keyframes flashHit{0%{filter:brightness(3) saturate(0)}}
+.screenshake{animation:ss .3s}
+@keyframes ss{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.popText{position:absolute;font-weight:bold;font-size:20px;pointer-events:none;animation:pop 1s forwards;z-index:5;font-family:monospace}
+@keyframes pop{0%{opacity:0;transform:scale(.6)}15%{opacity:1;transform:translateY(-10px) scale(1.15)}100%{opacity:0;transform:translateY(-55px)}}
+.dmg{color:var(--r);text-shadow:0 0 8px var(--r)}.heal{color:var(--g);text-shadow:0 0 8px var(--g)}
+.timerOuter{height:6px;margin:8px 0;background:rgba(255,255,255,.08);overflow:hidden}
+.timerBar{height:100%;width:100%;background:linear-gradient(90deg,var(--c),var(--y));box-shadow:0 0 8px var(--c)}
+.combo{position:absolute;top:10px;right:14px;font-weight:bold;color:var(--y);text-shadow:0 0 8px var(--y);font-size:14px;opacity:0;transition:.2s;font-family:monospace}
+.combo.show{opacity:1}
+.progress{display:flex;justify-content:space-between;font-size:12px;color:#8fb8d6;margin-bottom:4px;font-family:monospace}
+.bar{height:4px;background:rgba(255,255,255,.1);margin-bottom:10px}
+.bar>div{height:100%;background:linear-gradient(90deg,var(--c),var(--m));box-shadow:0 0 8px var(--m);transition:width .3s}
+.villain{position:relative;margin-bottom:12px;padding:12px 14px;background:rgba(255,43,214,.1);border-left:3px solid var(--m);box-shadow:inset 0 0 16px rgba(255,43,214,.15)}
+.villain p{margin:0;line-height:1.7;font-size:14px}
+.feedback{margin-top:8px;padding:13px 15px;line-height:1.8;font-size:13.5px;border-left:3px solid var(--c);background:rgba(0,240,255,.07)}
+.feedback.ok{border-color:var(--g)}.feedback.ng{border-color:var(--r)}
+.feedback h3{margin:0 0 8px;font-size:15px}
+h3.ok{color:var(--g);text-shadow:0 0 8px var(--g)}h3.ng{color:var(--r);text-shadow:0 0 8px var(--r)}
+b{color:var(--y)}
+.score{font-size:30px;font-weight:bold;color:var(--c);text-shadow:0 0 12px var(--c);margin:8px 0;font-family:monospace}
+.rank{font-size:52px;font-weight:bold;margin:6px 0;text-shadow:0 0 16px currentColor}
+.review{margin-top:10px;padding:12px;font-size:13px;line-height:1.7;text-align:left;border:1px dashed var(--c);background:rgba(0,240,255,.05)}
+.tag{display:inline-block;padding:5px 16px;font-weight:bold;margin-bottom:6px;font-family:monospace;letter-spacing:.1em}
+.clearTag{background:var(--g);color:#032}.failTag{background:var(--r);color:#fff}.goTag{background:#555;color:#fff}
+#mute{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:10px;z-index:9;padding:6px 12px;font-size:12px;font-family:monospace;color:var(--c);
+ background:rgba(5,14,40,.8);border:1px solid var(--c);cursor:pointer}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);z-index:20;padding:10px 18px;color:var(--y);background:rgba(5,14,40,.92);border:1px solid var(--y);box-shadow:0 0 14px rgba(255,230,0,.4);font-size:13px;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.dex{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:10px 0}
+.dex div{text-align:center;padding:6px 2px;font-size:10px;border:1px solid rgba(0,240,255,.4);background:rgba(0,240,255,.05)}
+.dex div span{display:block;font-size:26px}.dex .off{opacity:.35;filter:grayscale(1)}
+.bd{padding:8px 10px;margin:6px 0;font-size:12px;border-left:3px solid #456;color:#8fb8d6}
+.bd.on{border-color:var(--y);background:rgba(255,230,0,.08);color:var(--tx)}
+/* ---- よけフェーズ ---- */
+.dtitle{text-align:center;font-weight:bold;color:var(--r);text-shadow:0 0 10px var(--r);letter-spacing:.1em;font-size:15px;margin:4px 0}
+.dfield{position:relative;height:210px;display:flex;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;
+ border:1px solid rgba(255,43,214,.6);background:rgba(255,43,214,.05);box-shadow:inset 0 0 20px rgba(255,43,214,.15)}
+.lane{flex:1;position:relative;border-right:1px dashed rgba(0,240,255,.25);transition:background .1s}
+.lane:last-child{border-right:0}
+.lane.warn{background:rgba(255,56,96,.22);box-shadow:inset 0 0 18px rgba(255,56,96,.55)}
+.lane.warn::after{content:"!";position:absolute;top:6px;left:0;right:0;text-align:center;font-weight:bold;font-size:22px;color:var(--r);text-shadow:0 0 8px var(--r);animation:blink .2s infinite}
+@keyframes blink{50%{opacity:.2}}
+.shot{position:absolute;top:-40px;left:50%;width:34px;height:34px;margin-left:-17px;border-radius:50%;
+ background:radial-gradient(circle,#fff 0,var(--r) 45%,var(--m) 100%);box-shadow:0 0 14px var(--r),0 0 26px var(--m)}
+.dp{position:absolute;bottom:6px;width:33.333%;left:0;height:64px;display:flex;justify-content:center;pointer-events:none;transition:transform .12s ease-out}
+.dp>div{width:60px;height:60px;filter:drop-shadow(0 0 8px var(--c))}
+.dp.hit>div{animation:flashHit .3s,shake .3s}
+.dp.jump>div{animation:hop .25s}
+@keyframes hop{50%{transform:translateY(-10px)}}
+.shot.heal{background:radial-gradient(circle,#fff 0,var(--g) 45%,var(--c) 100%);box-shadow:0 0 14px var(--g),0 0 26px var(--c)}
+.dinfo{display:flex;justify-content:space-between;font-family:monospace;font-size:12px;color:#8fb8d6;margin:6px 0 0}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<button id="mute">BGM: ON</button>
+<div class="toast" id="toast"></div>
+<div class="wrap">
+
+ <div class="card" id="titleScreen">
+  <div class="hero"></div>
+  <h1>シーサー戦士の詐欺退治クエスト</h1>
+  <div class="sub">// CYBER BATTLE : 悪党を15体倒して街を守れ //</div>
+  <p style="text-align:center;font-size:14px;line-height:1.8;margin:10px 0">
+   電脳の街に、ネット詐欺の悪党たちが潜んでいる。<br>あなたは<b>シーサー戦士</b>。<br>出撃前に、沖縄を守る知識を授けよう。</p>
+  <button class="btn main" id="toIntroBtn">NEXT ▶</button>
+ </div>
+
+ <div class="card hidden" id="introScreen">
+  <h1>出撃前の心得</h1>
+  <div class="sub">敵は6種類。まずは概要をインストール</div>
+  <div class="review">
+   <b>フィッシング詐欺</b>：偽サイト・偽メールでID/パスワードを盗む<br><br>
+   <b>偽ショッピングサイト</b>：激安を装い、払っても商品が届かない<br><br>
+   <b>SNS型投資詐欺</b>：「必ず儲かる」と勧誘し、出金時に追加入金を要求<br><br>
+   <b>SNS型ロマンス詐欺</b>：恋愛感情につけ込み投資や送金を要求<br><br>
+   <b>架空請求・未払い詐欺</b>：「訴訟する」などと脅して支払わせる<br><br>
+   <b>サポート詐欺</b>：偽のウイルス警告で電話させ、金銭や情報を狙う</div>
+  <div class="sub" style="margin-top:10px">合言葉は「<b>怪しい支払い要求は、まず疑う</b>」</div>
+  <div class="sub">各バトルは「敵の攻撃をよける → クイズで反撃」の2段階<br>攻撃は10種類のパターン。進むほど激しくなり、緑の弾は取るとHP回復<br>よけ操作：左右キー / A・D / 画面タップ・スワイプ<br>出題順・選択肢は毎回ランダム / 3コンボごとにHPが10回復</div>
+  <div class="review" id="statLine" style="text-align:center;font-size:12px"></div>
+  <button class="btn" id="colBtn" style="text-align:center">詐欺図鑑・実績を見る</button>
+  <button class="btn main" id="startBtn">BATTLE START ▶</button>
+ </div>
+
+ <div class="card hidden" id="battleScreen">
+  <div class="combo" id="comboLabel"></div>
+  <div class="progress"><span id="qNumLabel"></span><span id="scoreLabel"></span></div>
+  <div class="bar"><div id="progressBar" style="width:0%"></div></div>
+  <div class="arena" id="arena">
+   <div class="fighter" id="playerFighter"><div class="avatar hero-s"></div><div class="name">シーサー戦士</div>
+    <div class="hpouter"><div class="hpbar" id="playerHpBar" style="width:100%"></div></div><div class="hptext" id="playerHpText">HP 100/100</div></div>
+   <div class="vs">VS</div>
+   <div class="fighter" id="enemyFighter"><div class="icon" id="enemyIcon">👹</div><div class="name" id="enemyName">悪党</div>
+    <div class="hpouter"><div class="hpbar enemy" id="enemyHpBar" style="width:100%"></div></div><div class="hptext" id="enemyHpText">HP 100/100</div></div>
+  </div>
+
+  <div id="dodgeBox" class="hidden">
+   <div class="dtitle" id="dTitle">敵の攻撃をよけろ！</div>
+   <div class="dfield" id="dfield">
+    <div class="lane"></div><div class="lane"></div><div class="lane"></div>
+    <div class="dp" id="dp"><div id="dpIn"></div></div>
+   </div>
+   <div class="dinfo"><span id="dLeft"></span><span id="dStat"></span></div>
+   <div class="sub" style="margin:6px 0 0">左右キー / A・D / タップ・スワイプで移動</div>
+  </div>
+
+  <div class="timerOuter" id="timerOuter"><div class="timerBar" id="timerBar"></div></div>
+  <div class="villain" id="villainBox"><p id="questionText"></p></div>
+  <div id="choicesArea"></div>
+  <div class="feedback hidden" id="feedbackArea"><h3 id="feedbackTitle"></h3><div id="feedbackBody"></div>
+   <button class="btn main" id="nextBtn">次の悪党へ ▶</button></div>
+ </div>
+
+ <div class="card hidden" id="colScreen">
+  <h1>詐欺図鑑・実績</h1>
+  <div class="sub" id="dexSub"></div><div class="dex" id="dexGrid"></div>
+  <div class="sub" id="bdSub"></div><div id="bdList"></div>
+  <button class="btn main" id="colBack">戻る ▶</button>
+ </div>
+
+ <div class="card hidden center" id="overScreen">
+  <div class="tag goTag">GAME OVER</div>
+  <h1>シーサー戦士は力尽きた…</h1>
+  <p>HPが尽きてしまいました。もう一度、心を鍛えなおして挑戦しよう。</p>
+  <div class="score" id="overScoreText"></div>
+  <button class="btn main" id="overRetryBtn">RETRY ▶</button>
+ </div>
+
+ <div class="card hidden center" id="resultScreen">
+  <div class="hero"></div>
+  <div id="clearBadge"></div>
+  <h1>クエスト結果</h1>
+  <div class="rank" id="rankText"></div>
+  <div class="score" id="scoreText" style="font-size:16px"></div>
+  <div class="sub" id="recordLine"></div><div id="newBadges" style="font-size:13px;line-height:1.8"></div>
+  <p id="resultComment"></p>
+  <div class="review" id="reviewArea"></div>
+  <button class="btn x" id="shareBtn">X（Twitter）で結果をシェア</button>
+  <button class="btn main" id="retryBtn">もう一度挑戦する ▶</button>
+ </div>
+</div>
+
+<script>
+const SEESAA=`<svg viewBox="0 0 100 100" width="100%" height="100%">
+${Array.from({length:10},(_,i)=>{const a=i*Math.PI/5+.3;return `<circle cx="${(50+35*Math.cos(a)).toFixed(1)}" cy="${(58+31*Math.sin(a)).toFixed(1)}" r="10" fill="#d9603b" stroke="#a4452a" stroke-width="1.2"/>`}).join('')}
+<circle cx="23" cy="33" r="11" fill="#f0a04b" stroke="#a4452a" stroke-width="1.5"/><circle cx="77" cy="33" r="11" fill="#f0a04b" stroke="#a4452a" stroke-width="1.5"/>
+<circle cx="23" cy="34" r="5.5" fill="#d9603b"/><circle cx="77" cy="34" r="5.5" fill="#d9603b"/>
+<ellipse cx="50" cy="58" rx="31" ry="27" fill="#f0a04b" stroke="#a4452a" stroke-width="1.5"/>
+<path d="M50 32 q-6 0 -5 5 q2 4 6 2" fill="none" stroke="#d9603b" stroke-width="2.4" stroke-linecap="round"/>
+<ellipse cx="38" cy="68" rx="14" ry="11" fill="#fff3dc"/><ellipse cx="62" cy="68" rx="14" ry="11" fill="#fff3dc"/><ellipse cx="50" cy="66" rx="10" ry="9" fill="#fff3dc"/>
+<circle cx="36" cy="53" r="4.3" fill="#3b2020"/><circle cx="64" cy="53" r="4.3" fill="#3b2020"/>
+<circle cx="37.4" cy="51.6" r="1.5" fill="#fff"/><circle cx="65.4" cy="51.6" r="1.5" fill="#fff"/>
+<ellipse cx="50" cy="61" rx="4.5" ry="3.2" fill="#3b2020"/>
+<path d="M50 63 v3" fill="none" stroke="#3b2020" stroke-width="1.8" stroke-linecap="round"/>
+<path d="M37 66 Q50 71 63 66 Q61 83 50 83 Q39 83 37 66Z" fill="#8a2a3a" stroke="#3b2020" stroke-width="1.6" stroke-linejoin="round"/>
+<ellipse cx="50" cy="79" rx="6.5" ry="3.6" fill="#ff8fa8"/>
+<path d="M38.5 66.5 l2.6 6.5 l2.6 -5.5 M61.5 66.5 l-2.6 6.5 l-2.6 -5.5 M46 69 l1.6 3 l1.6 -2.6 M54 69 l-1.6 3 l-1.6 -2.6" fill="#fff" stroke="#3b2020" stroke-width="1" stroke-linejoin="round"/>
+</svg>`;
+document.querySelectorAll('.hero,.hero-s').forEach(e=>e.innerHTML=SEESAA);
+document.getElementById('dpIn').innerHTML=SEESAA;
+
+/* ---- 背景：魚が泳ぐサイバー水中 ---- */
+const cv=document.getElementById('bg'),cx=cv.getContext('2d');let W,H,t=0,fishes=[];
+const FC=['#00f0ff','#ff2bd6','#ffe600','#39ff88','#8a6bff'];
+function mk(){const d=Math.random();return{x:Math.random()*W,y:H*(.1+.8*Math.random()),sp:.4+1.1*Math.random(),ph:Math.random()*6.28,s:(10+16*Math.random())*(.6+.6*d),c:FC[Math.random()*5|0],dir:Math.random()<.5?-1:1,d}}
+function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight;fishes=Array.from({length:20},mk)}
+addEventListener('resize',rs);rs();
+function fish(f){const s=f.s;cx.save();cx.translate(f.x,f.y);cx.scale(f.dir,1);cx.globalAlpha=.35+.45*f.d;cx.shadowColor=f.c;cx.shadowBlur=14;
+ cx.strokeStyle=f.c;cx.fillStyle=f.c+'33';cx.lineWidth=1.6;
+ cx.beginPath();cx.ellipse(0,0,s*1.5,s*.8,0,0,6.28);cx.fill();cx.stroke();
+ const w=Math.sin(t*6+f.ph)*s*.3;cx.beginPath();cx.moveTo(-s*1.3,0);cx.lineTo(-s*2.3,-s*.7+w);cx.lineTo(-s*2.3,s*.7+w);cx.closePath();cx.fill();cx.stroke();
+ cx.beginPath();cx.moveTo(-s*.4,-s*.8);cx.lineTo(0,-s*1.2);cx.lineTo(s*.4,-s*.8);cx.stroke();
+ cx.fillStyle='#fff';cx.beginPath();cx.arc(s*.8,-s*.15,s*.14,0,6.28);cx.fill();cx.restore()}
+function wave(y0,a,sp,col,off){cx.strokeStyle=col;cx.lineWidth=1.6;cx.shadowColor=col;cx.shadowBlur=10;cx.beginPath();
+ for(let i=0;i<=60;i++){const x=W/60*i,y=y0+Math.sin(i*.28+t*sp+off)*a+Math.cos(t*.7+i*.15)*a*.3;i?cx.lineTo(x,y):cx.moveTo(x,y)}
+ cx.stroke();cx.lineTo(W,H);cx.lineTo(0,H);cx.fillStyle=col.replace('1)','.06)');cx.fill()}
+function loop(){t+=.01;const g=cx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#050b1e');g.addColorStop(.6,'#08214a');g.addColorStop(1,'#0a0630');cx.fillStyle=g;cx.fillRect(0,0,W,H);
+ for(const f of fishes){f.x+=f.sp*f.dir;f.y+=Math.sin(t*8+f.ph)*.3;if(f.x>W+120||f.x<-120){Object.assign(f,mk());f.x=f.dir>0?-100:W+100}fish(f)}
+ cx.shadowBlur=0;wave(H*.78,22,2.2,'rgba(255,43,214,1)',0);wave(H*.9,18,1.6,'rgba(0,240,255,1)',1.5);cx.shadowBlur=0;requestAnimationFrame(loop)}
+loop();
+
+/* ---- BGM：チップチューン風シーケンサー（Am-F-C-G, 132BPM） ---- */
+let actx,master,noiseBuf,bgmOn=true,bgmTimer=null,step=0,nextT=0;
+const mf=n=>440*2**((n-69)/12);
+const ROOT=[45,41,48,43],CH=[[0,3,7],[0,4,7],[0,4,7],[0,4,7]];
+const MEL=[[81,0,76,0,79,0,76,72],[77,0,81,0,77,0,72,0],[79,0,84,0,83,0,79,0],[74,0,79,0,83,0,86,83]];
+function audio(){if(actx)return;actx=new(window.AudioContext||window.webkitAudioContext)();master=actx.createGain();master.gain.value=.5;master.connect(actx.destination);
+ noiseBuf=actx.createBuffer(1,actx.sampleRate*.5,actx.sampleRate);const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}
+function tone(f,t0,dur,type,vol,fe){const o=actx.createOscillator(),g=actx.createGain();o.type=type;o.frequency.setValueAtTime(f,t0);if(fe)o.frequency.exponentialRampToValueAtTime(fe,t0+dur);
+ g.gain.setValueAtTime(vol,t0);g.gain.exponentialRampToValueAtTime(.001,t0+dur);o.connect(g).connect(master);o.start(t0);o.stop(t0+dur+.02)}
+function nz(t0,dur,vol,hp){const s=actx.createBufferSource(),g=actx.createGain(),f=actx.createBiquadFilter();s.buffer=noiseBuf;f.type='highpass';f.frequency.value=hp;
+ g.gain.setValueAtTime(vol,t0);g.gain.exponentialRampToValueAtTime(.001,t0+dur);s.connect(f).connect(g).connect(master);s.start(t0);s.stop(t0+dur)}
+function play16(s,t0){const bar=(s>>4)%4,k=s&15,r=ROOT[bar],sd=60/132/4;
+ if(k%4===0)tone(150,t0,.18,'sine',.5,40);
+ if(k===4||k===12)nz(t0,.14,.25,1200);
+ if(k%2===0)nz(t0,.04,.09,7000);
+ if(k%2===0||k===15)tone(mf(r),t0,sd*1.8,'square',.11);
+ tone(mf(r+24+CH[bar][[0,1,2,1][k&3]]),t0,sd*.9,'square',.05);
+ if(k%2===0){const m=MEL[bar][k>>1];if(m)tone(mf(m),t0,sd*3.5,'triangle',.13)}}
+function sched(){const sd=60/132/4;while(nextT<actx.currentTime+.25){if(bgmOn)play16(step,nextT);step++;nextT+=sd}}
+function startBgm(){audio();if(actx.state==='suspended')actx.resume();if(bgmTimer)return;nextT=actx.currentTime+.1;bgmTimer=setInterval(sched,60)}
+document.getElementById('mute').onclick=e=>{audio();bgmOn=!bgmOn;e.target.textContent='BGM: '+(bgmOn?'ON':'OFF');if(bgmOn)startBgm()};
+function sfx(a){if(!actx)return;const t0=actx.currentTime;a.forEach((n,i)=>tone(n[0],t0+i*(n[3]||.08),n[1],n[2],.22))}
+const sfxHit=()=>sfx([[880,.1,'square'],[1320,.14,'square']]),sfxWrong=()=>sfx([[200,.3,'sawtooth']]),
+ sfxWin=()=>sfx([[523,.18,'triangle',.1],[659,.18,'triangle',.1],[784,.18,'triangle',.1],[1046,.3,'triangle',.1]]),
+ sfxLose=()=>sfx([[400,.25,'sawtooth',.14],[300,.25,'sawtooth',.14],[200,.25,'sawtooth',.14],[120,.4,'sawtooth',.14]]),
+ sfxDodge=()=>sfx([[1200,.06,'triangle'],[1600,.08,'triangle']]),sfxShoot=()=>sfx([[700,.12,'sawtooth',.05],[300,.14,'sawtooth',.05]]),
+ sfxKO=()=>sfx([[600,.1,'square',.07],[400,.1,'square',.07],[250,.1,'square',.07],[120,.3,'square',.07]]);
+
+/* ---- クイズデータ ---- */
+const QUIZ=[
+{icon:"🎣",name:"フィッシャー",q:"Amazonや宅配業者を装った不審なSMSが届き、リンクを開くとID・パスワードの入力画面が出てきた。これは何の詐欺？",choices:["フィッシング詐欺","偽ショッピングサイト","サポート詐欺","架空請求詐欺"],answer:0,explain:"正体は<b>フィッシング詐欺</b>。本物そっくりの偽サイトに誘導し、ID・パスワード・カード情報を盗みます。<br><b>対応：</b>不審なURLは絶対に開かず、公式サイトやアプリから直接アクセスして確認しましょう。"},
+{icon:"🛒",name:"にせ商人",q:"SNSの広告で見つけた激安通販サイトで先払いしたのに、商品がいつまでも届かず、運営会社の情報も曖昧だった。これは？",choices:["ロマンス詐欺","偽ショッピングサイト","投資詐欺","サポート詐欺"],answer:1,explain:"<b>偽ショッピングサイト</b>です。極端な激安価格で誘い、支払い後に商品が届かないのが典型パターン。<br><b>対応：</b>運営者情報・実店舗の有無・レビューの不自然さを確認し、少しでも怪しければ購入しないことが一番の防御です。"},
+{icon:"💰",name:"投資の悪魔",q:"LINEグループに招待され「必ず儲かるFX投資」と勧誘された。入金後、出金しようとすると『税金』『保証金』の追加入金を求められた。これは？",choices:["SNS型投資詐欺","架空請求詐欺","偽ショッピングサイト","フィッシング詐欺"],answer:0,explain:"典型的な<b>SNS型投資詐欺</b>です。出金時に名目をつけて追加入金を要求するのが決まった手口。<br><b>対応：</b>この時点で<b>追加送金は絶対にしない</b>のが鉄則です。"},
+{icon:"💌",name:"偽りの恋人",q:"マッチングアプリで知り合った相手と数週間やり取りし、恋愛感情が芽生えた頃に『一緒に暗号資産に投資しよう』と送金を頼まれた。これは？",choices:["サポート詐欺","架空請求詐欺","SNS型ロマンス詐欺","偽ショッピングサイト"],answer:2,explain:"<b>SNS型ロマンス詐欺</b>です。恋愛感情につけ込んで投資や送金を持ちかけるのが特徴。<br><b>対応：</b>会ったことのない相手からのお金・投資の話は、感情が動いているときこそ一度立ち止まって疑いましょう。"},
+{icon:"📄",name:"取り立て屋",q:"『未払い料金があります。本日中に連絡がない場合は法的手続きに移行します』というSMSが突然届いた。これは？",choices:["架空請求・未払い料金詐欺","SNS型投資詐欺","フィッシング詐欺","ロマンス詐欺"],answer:0,explain:"<b>架空請求・未払い料金詐欺</b>です。恐怖や焦りを煽って支払わせるのが手口。<br><b>対応：</b>身に覚えのない請求は無視・連絡しないのが基本。不安な場合は消費生活センター（188）に相談しましょう。"},
+{icon:"🖥️",name:"ニセ警告兵",q:"パソコン画面に突然『ウイルスに感染しました。今すぐこの番号に電話してください』という警告が表示された。これは？",choices:["偽ショッピングサイト","サポート詐欺","SNS型投資詐欺","ロマンス詐欺"],answer:1,explain:"<b>サポート詐欺（偽ウイルス警告）</b>です。電話すると金銭要求や遠隔操作でパソコンを乗っ取られることがあります。<br><b>対応：</b>電話せず、ブラウザを閉じる・再起動するだけでOK。心配なら公式サポートに確認しましょう。"},
+{icon:"👑",name:"投資ボス",q:"投資詐欺で、出金前に『保証金』を追加で振り込むよう言われた。シーサー戦士が取るべき行動は？",choices:["言われた通り追加で振り込む","追加送金を止める","もっと大きな金額で取り返そうとする","相手にお願いして待ってもらう"],answer:1,explain:"正解は<b>追加送金を止める</b>こと。『税金』『保証金』『手数料』などを理由にした追加要求は、ほぼ100％詐欺のサインです。"},
+{icon:"🕵️",name:"証拠消し魔",q:"詐欺かもしれないと気づいた直後、LINEやメールのやり取り・振込明細はどうすべき？",choices:["恥ずかしいのですぐ消す","そのまま保存しておく","相手に返信して問い詰める","SNSで先に拡散する"],answer:1,explain:"正解は<b>証拠として保存しておく</b>こと。メッセージ・偽サイトのURLやスクショ・振込明細やカード利用履歴は、後の相談や返金手続きで重要な証拠になります。"},
+{icon:"🏦",name:"逃亡の悪党",q:"銀行振込で詐欺被害に遭ってしまった場合、まず連絡すべき先として正しいのは？",choices:["振込先の金融機関","友人・知人","何もしなくてよい","詐欺の相手本人"],answer:0,explain:"正解は<b>振込先の金融機関</b>への連絡です。『詐欺被害の可能性がある』と伝えることで、条件次第では振り込め詐欺救済法により返金される可能性があります。"},
+{icon:"🏧",name:"還付金ゴブリン",q:"市役所職員を名乗る電話で『医療費の還付金があります。ATMまで行ってください』と言われた。これは？",choices:["フィッシング詐欺","偽ショッピングサイト","還付金詐欺","サポート詐欺"],answer:2,explain:"<b>還付金詐欺</b>です。ATMで還付金を受け取る手続きは<b>できません</b>。ATMを操作させ、相手の口座へ送金させるのが手口です。<br><b>対応：</b>電話を切り、市役所の代表番号へ自分で確認しましょう。迷ったら警察相談（#9110）へ。"},
+{icon:"🔑",name:"コード泥棒",q:"SNSで知り合った人に『SMSで届いた認証コードを教えて』と頼まれた。どうする？",choices:["すぐに教える","絶対に教えない","コードの一部だけ教える","相手が急かすなら教える"],answer:1,explain:"正解は<b>絶対に教えない</b>こと。認証コードは本人確認の鍵で、教えるとアカウントの乗っ取りや不正な送金・購入につながります。急かされるほど要注意です。"},
+{icon:"🌟",name:"なりすまし広告屋",q:"SNSで有名投資家や芸能人の写真付き広告『私の投資法を無料で教えます』を見て、LINEグループに誘導された。まず疑うべきことは？",choices:["有名人の名前を使ったなりすまし広告","本人が直接教えてくれている","公的機関の公式案内","ただの友達の紹介"],answer:0,explain:"<b>有名人なりすまし広告</b>は、SNS型投資詐欺の入り口としてよく使われます。<br><b>対応：</b>広告からLINEなどへ誘導されたら警戒し、本人の公式アカウントかどうか別の方法で確認しましょう。"},
+{icon:"🎁",name:"ギフトカード怪人",q:"『未払い金は、コンビニで電子マネーのギフトカードを買って、番号を送ってください』と言われた。正しい判断は？",choices:["急いで番号を送る","額を減らしてもらうよう交渉する","詐欺と判断して無視・相談する","家族に代わりに買ってもらう"],answer:2,explain:"<b>詐欺と判断して無視・相談する</b>のが正解。電子マネーの番号（コード）は現金と同じで、送ると取り戻すのが困難です。正規の企業や公的機関が、ギフトカードでの支払いを求めることはありません。<br>不安なときは消費生活センター（188）へ。"},
+{icon:"🛡️",name:"乗っ取り魔",q:"アカウントの乗っ取り被害を防ぐために、特に有効な対策は？",choices:["全サービスで同じパスワードにする","パスワードをメモして机に貼る","何もしない","二段階認証を設定し、パスワードを使い回さない"],answer:3,explain:"正解は<b>二段階認証の設定とパスワードの使い回し防止</b>です。1つ漏れても、他のサービスへの不正ログインを防げます。長く推測されにくいパスワードにし、パスワード管理アプリの利用もおすすめです。"},
+{icon:"🚨",name:"ラスボス・詐欺王",q:"緊急ではないが、ネット詐欺について警察に相談したいときの電話番号は？",choices:["110","188","#9110","0570-078374"],answer:2,explain:"正解は<b>#9110</b>（警察相談専用電話）です。緊急時は110、188は消費生活センター、0570-078374は法テラスの番号です。"}];
+
+/* ---- ゲーム ---- */
+const MAXHP=100,DMG=18,TL=25,$=id=>document.getElementById(id);
+let idx,score,combo,maxCombo,hp,wrong,tm,tl,answered;
+const scr=['titleScreen','introScreen','battleScreen','overScreen','resultScreen','colScreen'];
+const show=id=>{scr.forEach(s=>$(s).classList.toggle('hidden',s!==id));if(id==='introScreen')refresh();if(id!=='battleScreen')stopDodge()};
+$('toIntroBtn').onclick=()=>{startBgm();show('introScreen')};
+/* ---- リプレイ要素：セーブ・図鑑・実績・シャッフル・コンボ回復 ---- */
+const SK='seesaaCyberSave',ENEMIES=QUIZ.map(x=>[x.icon,x.name]);
+const BD={clear:['はじめてのクリア','クエストをクリアする'],perfect:['パーフェクト','全問正解する'],combo10:['10コンボ','10問連続で正解する'],
+ speed:['電光石火','1回のプレイで素早く8問正解する'],survivor:['ぎりぎり生還','3回ダメージを受けてもクリアする'],vet:['ベテラン戦士','5回プレイする']};
+let sv={best:0,rank:'-',plays:0,dex:{},badges:{}},Q=QUIZ,fastN=0,tt;
+try{Object.assign(sv,JSON.parse(localStorage.getItem(SK)||'{}'))}catch(e){}
+const persist=()=>{try{localStorage.setItem(SK,JSON.stringify(sv))}catch(e){}};
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('show'),2300)}
+const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+function prep(){const body=shuf(QUIZ.slice(0,-1)).map(it=>{const o=shuf(it.choices.map((_,i)=>i));return{...it,choices:o.map(i=>it.choices[i]),answer:o.indexOf(it.answer)}});
+ const b=QUIZ[QUIZ.length-1],o=shuf(b.choices.map((_,i)=>i));return body.concat({...b,choices:o.map(i=>b.choices[i]),answer:o.indexOf(b.answer)})}
+function refresh(){const dn=ENEMIES.filter(e=>sv.dex[e[1]]).length,bn=Object.keys(sv.badges).length;
+ $('statLine').innerHTML=`BEST SCORE <b>${sv.best}</b> / BEST RANK <b>${sv.rank}</b><br>図鑑 <b>${dn}/${ENEMIES.length}</b> / 実績 <b>${bn}/${Object.keys(BD).length}</b> / PLAY <b>${sv.plays}</b>`}
+function renderCol(){const dn=ENEMIES.filter(e=>sv.dex[e[1]]).length;
+ $('dexSub').textContent=`倒した悪党 ${dn}/${ENEMIES.length}`;
+ $('dexGrid').innerHTML=ENEMIES.map(e=>sv.dex[e[1]]?`<div><span>${e[0]}</span>${e[1]}</div>`:`<div class="off"><span>？</span>???</div>`).join('');
+ $('bdSub').textContent='実績';
+ $('bdList').innerHTML=Object.entries(BD).map(([k,v])=>`<div class="bd ${sv.badges[k]?'on':''}"><b>${sv.badges[k]?v[0]:'???'}</b>　${v[1]}</div>`).join('')}
+$('colBtn').onclick=()=>{renderCol();show('colScreen')};$('colBack').onclick=()=>show('introScreen');
+function finish(cleared,rk){sv.plays++;const news=[];
+ const nb=(id,ok)=>{if(ok&&!sv.badges[id]){sv.badges[id]=1;news.push(id)}};
+ if(cleared){nb('clear',1);nb('perfect',wrong.length===0);nb('combo10',maxCombo>=10);nb('speed',fastN>=8);nb('survivor',wrong.length===3)}
+ nb('vet',sv.plays>=5);let rec=false;if(score>sv.best){sv.best=score;rec=true}
+ if(rk&&'DCBAS'.indexOf(rk)>'DCBAS'.indexOf(sv.rank))sv.rank=rk;
+ persist();return{news,rec}}
+$('startBtn').onclick=()=>{startBgm();show('battleScreen');idx=0;score=0;combo=0;maxCombo=0;hp=MAXHP;wrong=[];Q=prep();fastN=0;hpUI();showQ()};
+function hpUI(){$('playerHpBar').style.width=Math.max(0,hp)+'%';$('playerHpText').textContent=`HP ${Math.max(0,hp)}/${MAXHP}`}
+function eHp(p){$('enemyHpBar').style.width=p+'%';$('enemyHpText').textContent=p<=0?'HP 0/100 (撃破)':`HP ${p}/100`}
+function pop(el,txt,cls){const r=el.getBoundingClientRect(),w=document.querySelector('.wrap').getBoundingClientRect(),p=document.createElement('div');
+ p.className='popText '+cls;p.textContent=txt;p.style.left=(r.left-w.left+r.width/2-20)+'px';p.style.top=(r.top-w.top)+'px';document.querySelector('.wrap').appendChild(p);setTimeout(()=>p.remove(),1000)}
+function comboUI(){const e=$('comboLabel');if(combo>=2){e.textContent=`${combo} COMBO!`;e.classList.add('show')}else e.classList.remove('show')}
+
+/* ---- よけフェーズ：敵の攻撃を左右移動でかわす（キー・タップ・スワイプ対応） ---- */
+let dLane=1,dTok=0,dTimers=[],dShots=[],dOk=0,dHitN=0,dStreak=0;
+const DEMG=5,DBONUS=15;
+function setLane(l){dLane=Math.max(0,Math.min(2,l));$('dp').style.transform=`translateX(${dLane*100}%)`;$('dp').classList.remove('jump');void $('dp').offsetWidth;$('dp').classList.add('jump')}
+function laneFromX(x){const r=$('dfield').getBoundingClientRect();return Math.floor((x-r.left)/r.width*3)}
+let dDown=false;
+$('dfield').addEventListener('pointerdown',e=>{if(!dTok)return;dDown=true;setLane(laneFromX(e.clientX));e.preventDefault()});
+$('dfield').addEventListener('pointermove',e=>{if(!dTok||!dDown)return;const l=laneFromX(e.clientX);if(l!==dLane)setLane(l)});
+addEventListener('pointerup',()=>dDown=false);addEventListener('pointercancel',()=>dDown=false);
+addEventListener('keydown',e=>{if(!dTok)return;const k=e.key;
+ if(k==='ArrowLeft'||k==='a'||k==='A'){setLane(dLane-1);e.preventDefault()}
+ else if(k==='ArrowRight'||k==='d'||k==='D'){setLane(dLane+1);e.preventDefault()}
+ else if(k==='ArrowDown'||k==='s'||k==='S'||k==='ArrowUp'||k==='w'||k==='W'){setLane(1);e.preventDefault()}});
+function stopDodge(){dTok=0;dTimers.forEach(clearTimeout);dTimers=[];dShots.forEach(s=>s.remove());dShots=[];
+ document.querySelectorAll('.lane').forEach(l=>l.classList.remove('warn'));$('enemyIcon').classList.remove('atk');$('dodgeBox').classList.add('hidden')}
+function later(f,ms,tok){dTimers.push(setTimeout(()=>{if(tok===dTok)f()},ms))}
+const rl=()=>Math.random()*3|0,others=x=>[0,1,2].filter(v=>v!==x);
+const PATS={
+ single:{n:'シングルショット',f:()=>[{ls:[rl()]},{ls:[rl()],g:650}]},
+ double:{n:'ダブルアタック',f:()=>[{ls:others(rl())}]},
+ sweepL:{n:'スイープ →',f:()=>[{ls:[0]},{ls:[1],g:320},{ls:[2],g:320}]},
+ sweepR:{n:'← スイープ',f:()=>[{ls:[2]},{ls:[1],g:320},{ls:[0],g:320}]},
+ zigzag:{n:'ジグザグ',f:()=>[{ls:[0]},{ls:[2],g:400},{ls:[0],g:400},{ls:[2],g:400}]},
+ rain:{n:'ショットレイン',f:()=>{let p=-1;return Array.from({length:5},(_,i)=>{let l;do l=rl();while(l===p);p=l;return{ls:[l],g:i?270:0,w:250}})}},
+ pincer:{n:'はさみうち',f:()=>[{ls:[0,2]},{ls:[1],g:800}]},
+ fake:{n:'フェイント',f:()=>{const a=rl(),b=(a+1+(Math.random()*2|0))%3;return[{ls:[b],fk:a}]}},
+ wall:{n:'ウォール',f:()=>{const s=rl();let s2;do s2=rl();while(s2===s);return[{ls:others(s)},{ls:others(s2),g:850}]}},
+ heal:{n:'回復チャンス',f:()=>{const h=rl(),o=(h+1+(Math.random()*2|0))%3;return[{ls:[o],h:h}]}}
+};
+const POOL=[['single','double','sweepL','sweepR'],['single','double','sweepL','sweepR','zigzag','pincer','rain','fake'],['double','sweepL','sweepR','zigzag','pincer','rain','fake','wall','single']];
+function shoot(l,fall,kind,tok){const lanes=document.querySelectorAll('.lane'),s=document.createElement('div');
+ s.className='shot'+(kind==='heal'?' heal':'');lanes[l].appendChild(s);dShots.push(s);
+ s.animate([{transform:'translateY(0)'},{transform:`translateY(${$('dfield').clientHeight+50}px)`}],{duration:fall,easing:'linear'}).onfinish=()=>s.remove();
+ later(()=>{const hitL=dLane===l;
+  if(kind==='heal'){if(hitL){s.remove();hp=Math.min(MAXHP,hp+5);hpUI();sfxHit();pop($('dfield'),'+5','heal')}return}
+  if(hitL){dStreak=0;dHitN++;dmgDodge(s)}
+  else{dOk++;dStreak++;score+=DBONUS+Math.min(dStreak,5)*3;sfxDodge();$('scoreLabel').textContent=`SCORE ${score}`}
+  $('dStat').textContent=`DODGE ${dOk} / STREAK ${dStreak}`},fall*.82,tok)}
+function dodgePhase(done){
+ stopDodge();const tok=dTok=Date.now();dOk=0;dHitN=0;dStreak=0;dLane=1;setLane(1);
+ ['villainBox','timerOuter','choicesArea','feedbackArea'].forEach(i=>$(i).classList.add('hidden'));
+ $('dodgeBox').classList.remove('hidden');$('enemyIcon').classList.add('atk');
+ const lanes=[...document.querySelectorAll('.lane')],boss=idx===Q.length-1,tier=idx<4?0:idx<9?1:2;
+ const cnt=boss?6:3+(idx>=5?1:0)+(idx>=10?1:0);
+ let seq=shuf(POOL[tier]).slice(0,cnt);if(boss)seq=shuf(POOL[2]).slice(0,6);
+ if(hp<MAXHP-5)seq.splice(1+(Math.random()*2|0),0,'heal');
+ const baseFall=Math.max(600,1100-idx*35),warnMs=Math.max(300,480-idx*12),total=seq.length;
+ $('dTitle').textContent=boss?'ボスの猛攻をよけろ！':'敵の攻撃をよけろ！';
+ $('dLeft').textContent=`ATTACK 0/${total}`;$('dStat').textContent='DODGE 0 / STREAK 0';
+ let at=800;
+ seq.forEach((k,pi)=>{const P=PATS[k],fall=k==='rain'?baseFall*.85:baseFall;
+  later(()=>{$('dTitle').textContent=P.n+'！';$('dLeft').textContent=`ATTACK ${pi+1}/${total}`},at,tok);
+  at+=350;let last=at;
+  P.f().forEach(st=>{at+=st.g||0;const w=st.fk!=null?Math.max(warnMs,700):(st.w||warnMs),t0=at;
+   later(()=>{(st.fk!=null?[st.fk]:st.ls).forEach(l=>lanes[l].classList.add('warn'))},t0,tok);
+   if(st.fk!=null)later(()=>{lanes[st.fk].classList.remove('warn');st.ls.forEach(l=>lanes[l].classList.add('warn'))},t0+w*.6,tok);
+   later(()=>{lanes.forEach(l=>l.classList.remove('warn'));sfxShoot();st.ls.forEach(l=>shoot(l,fall,'shot',tok));if(st.h!=null)shoot(st.h,fall,'heal',tok)},t0+w,tok);
+   last=t0+w});
+  at=last+fall*.9+300});
+ later(()=>{stopDodge();
+  if(dHitN===0){score+=50;$('scoreLabel').textContent=`SCORE ${score}`;toast('パーフェクトよけ！ +50　反撃開始')}
+  else toast(`被弾 ${dHitN}回　反撃開始`);done()},at,tok)}
+function dmgDodge(s){s.remove();hp=Math.max(1,hp-DEMG);hpUI();sfxWrong();
+ const dp=$('dp');dp.classList.remove('hit');void dp.offsetWidth;dp.classList.add('hit');pop($('dfield'),'-'+DEMG,'dmg')}
+
+function showQ(){const it=Q[idx];
+ $('qNumLabel').textContent=`ENEMY ${idx+1}/${Q.length}`;$('scoreLabel').textContent=`SCORE ${score}`;$('progressBar').style.width=idx/Q.length*100+'%';
+ $('enemyIcon').classList.remove('down');$('enemyIcon').textContent=it.icon;$('enemyName').textContent=it.name;eHp(100);comboUI();
+ clearInterval(tm);
+ dodgePhase(()=>startQuiz())}
+
+function startQuiz(){answered=false;const it=Q[idx];
+ ['villainBox','timerOuter','choicesArea'].forEach(i=>$(i).classList.remove('hidden'));
+ $('enemyIcon').classList.remove('atk');
+ $('questionText').textContent=it.q;
+ const a=$('choicesArea');a.innerHTML='';it.choices.forEach((c,i)=>{const b=document.createElement('button');b.className='btn';b.textContent='> '+c;b.onclick=()=>ans(i);a.appendChild(b)});
+ $('feedbackArea').classList.add('hidden');
+ clearInterval(tm);tl=TL;const bar=$('timerBar');bar.style.transition='none';bar.style.width='100%';requestAnimationFrame(()=>bar.style.transition='width 1s linear');
+ tm=setInterval(()=>{tl--;bar.style.width=Math.max(0,tl/TL*100)+'%';if(tl<=0){clearInterval(tm);if(!answered)ans(-1)}},1000)}
+function ans(ci){if(answered)return;answered=true;clearInterval(tm);const it=Q[idx],ok=ci===it.answer,fast=tl>=TL*.6;
+ document.querySelectorAll('#choicesArea .btn').forEach((b,i)=>{b.disabled=true;if(i===it.answer)b.classList.add('correct');else if(i===ci)b.classList.add('wrong')});
+ const ar=$('arena');
+ if(ok){combo++;maxCombo=Math.max(maxCombo,combo);const g=100+combo*10+(fast?30:0);score+=g;sfxHit();sv.dex[it.name]=1;persist();if(fast)fastN++;if(combo%3===0&&hp<MAXHP){hp=Math.min(MAXHP,hp+10);hpUI();toast(combo+'コンボ！ HP+10 回復')}
+  const e=$('enemyFighter'),ic=$('enemyIcon');e.classList.add('shake','flashHit');ar.classList.add('screenshake');eHp(0);pop(e,'-HP','dmg');pop($('scoreLabel'),'+'+g,'heal');
+  setTimeout(()=>{e.classList.remove('shake','flashHit');ar.classList.remove('screenshake');ic.classList.add('down');sfxKO();pop(e,'K.O.','heal')},400)}
+ else{combo=0;wrong.push(it);hp-=DMG;sfxWrong();const p=$('playerFighter');p.classList.add('shake','flashHit');ar.classList.add('screenshake');pop(p,'-'+DMG,'dmg');hpUI();
+  setTimeout(()=>{p.classList.remove('shake','flashHit');ar.classList.remove('screenshake')},400)}
+ comboUI();$('scoreLabel').textContent=`SCORE ${score}`;
+ $('feedbackArea').classList.remove('hidden');$('feedbackArea').className='feedback '+(ok?'ok':'ng');
+ $('feedbackTitle').className=ok?'ok':'ng';
+ $('feedbackTitle').textContent=ok?(fast?'会心の一撃！悪党を秒殺した！':'シーサーの一撃！悪党を撃破！'):(ci===-1?'タイムアップ！反撃を受けた…':'見破れなかった！反撃を受けた…');
+ $('feedbackBody').innerHTML=it.explain;
+ if(hp<=0)setTimeout(over,500)}
+$('nextBtn').onclick=()=>{idx++;if(hp<=0)return;idx<Q.length?showQ():result()};
+function over(){sfxLose();const f=finish(false);if(f.news.length)toast('実績解除：'+BD[f.news[0]][0]);show('overScreen');$('overScoreText').textContent=`SCORE ${score} (第${idx+1}体で力尽きた)`}
+$('overRetryBtn').onclick=()=>show('introScreen');
+function result(){show('resultScreen');const n=Q.length,c=n-wrong.length,rate=Math.round(c/n*100);
+ let rk=rate>=100&&maxCombo>=n?'S':rate>=90?'A':rate>=80?'B':rate>=60?'C':'D';
+ const col={S:'#ffe600',A:'#39ff88',B:'#00f0ff',C:'#8fb8d6',D:'#ff3860'}[rk];
+ const f=finish(rate>=80,rk);$('recordLine').innerHTML=(f.rec?'<b>NEW RECORD!</b>　':'')+`BEST SCORE ${sv.best}`;
+ $('newBadges').innerHTML=f.news.map(id=>`<div><b>実績解除</b>　${BD[id][0]}</div>`).join('');if(f.news.length)setTimeout(()=>toast('実績解除：'+BD[f.news[0]][0]),700);
+ $('rankText').innerHTML=`<span style="color:${col}">${rk}</span> RANK`;
+ $('scoreText').textContent=`SCORE ${score} / ${c}/${n}問正解 ${rate}% / 最大${maxCombo}コンボ`;
+ if(rate>=80){sfxWin();$('clearBadge').innerHTML='<span class="tag clearTag">QUEST CLEAR</span>';$('resultComment').textContent='シーサー戦士として街をしっかり守り抜きました。日頃から怪しい話には気をつけましょう。'}
+ else{$('clearBadge').innerHTML='<span class="tag failTag">MISSION INCOMPLETE</span>';$('resultComment').textContent='クリアには正答率8割以上が必要です。復習を確認して再挑戦しましょう。'}
+ $('reviewArea').innerHTML=wrong.length?'<b>復習リスト</b><br>'+wrong.map(w=>`<br><b>Q. ${w.q}</b><br>${w.explain}`).join('<br>'):'間違いはありませんでした。パーフェクトです！';
+ $('shareBtn').onclick=()=>{const tx=`【シーサー戦士の詐欺退治クエスト】\n${rate>=80?'クエストクリア':'修行中…'}／${rk}ランク\n${c}/${n}問正解（${rate}%）・スコア${score}・最大${maxCombo}コンボ\n#シーサー戦士 #詐欺対策クイズ`;
+  window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(tx),'_blank')}}
+$('retryBtn').onclick=()=>show('introScreen');
+</script>
+</body>
+</html>
