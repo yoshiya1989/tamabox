@@ -71,6 +71,15 @@ ul{list-style:disc}ol{list-style:decimal}
 input{user-select:text;-webkit-user-select:text;touch-action:auto}
 #cert{position:absolute;inset:0;z-index:35;display:none;align-items:center;justify-content:center;background:rgba(10,6,24,.72);padding:16px}
 #cert .card{background:#fff8fb;color:#3a2a4e;border:3px solid #ffb7c5;border-radius:22px;max-width:420px;width:100%;padding:16px;box-shadow:0 10px 40px rgba(0,0,0,.6);max-height:84dvh}
+#msg{position:absolute;inset:0;z-index:40;display:none;align-items:center;justify-content:center;background:rgba(10,6,24,.82);padding:calc(12px + env(safe-area-inset-top,0px)) calc(12px + env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) calc(12px + env(safe-area-inset-left,0px))}
+#msg .card{background:#fff8fb;color:#3a2a4e;border:3px solid #ffb7c5;border-radius:22px;max-width:680px;width:100%;padding:16px;box-shadow:0 10px 40px rgba(0,0,0,.6);max-height:90dvh;overflow-y:auto}
+#msgBody p{margin-top:10px;font-size:15px;line-height:1.8}
+#msgBody ul{margin:6px 0 0 20px;font-size:15px;line-height:1.8}
+#msgBody h3{margin-top:14px;font-size:16px;color:#d63a6a;border-left:5px solid #ffb7c5;padding-left:8px}
+#msgBody .sign{text-align:right;font-weight:bold;color:#d63a6a}
+#msgClose{position:sticky;bottom:0;z-index:3;box-shadow:0 -12px 0 4px #fff8fb;margin-top:14px}
+@media(min-width:900px){#endMsg{font-size:28px!important;padding:26px 14px!important;min-height:92px!important}}
+@media(min-width:900px){#msgBody p,#msgBody ul{font-size:18px}#msgBody h3{font-size:20px}}
 #certName{width:100%;margin-top:10px;padding:10px;border-radius:14px;border:2px solid #d6a8ff;font-size:18px;text-align:center;color:#3a2a4e;background:#fff}
 </style>
 <noscript><p style="color:#fff;padding:16px">このゲームはJavaScriptを有効にして遊んでください。</p></noscript>
@@ -83,9 +92,26 @@ input{user-select:text;-webkit-user-select:text;touch-action:auto}
 <div id="lib"><div class="card"><button id="libX" class="xbtn">✕ 閉じる</button><div style="font-weight:bold;font-size:17px">📚 セキュリティ教室</div><div style="font-size:12px;margin-top:4px">読みたい授業を選んでください。何度でも読めます。</div><div id="libBody"></div></div></div>
 <div id="lec"><div class="card"><button id="lecX" class="xbtn">✕ 閉じる</button><div id="lecStage" style="font-weight:bold;color:#ff7597;font-size:12px"></div><div id="lecTitle" style="font-weight:bold;font-size:17px;margin-top:2px"></div><div id="lecBody"></div><button id="lecNext" style="width:100%;margin-top:12px;padding:10px;border-radius:14px;background:#ff7597;color:#fff;font-weight:bold">つぎへ ▶</button></div></div>
 <div id="go"><div class="card" style="text-align:center"><div style="font-size:40px">😢</div><div style="font-weight:bold;font-size:18px;margin-top:4px">ゲームオーバー</div><div id="goText" style="font-size:13px;line-height:1.7;margin-top:8px"></div><button class="opt" id="goRetry" style="text-align:center;background:#ffe3ec">🔁 このステージからやり直す</button><button class="opt" id="goReset" style="text-align:center">🌱 さいしょから</button></div></div>
-<div id="end"><div class="card"><div id="endBody"></div><button class="opt" id="endGo" style="text-align:center;background:#ffe3ec">♾️ エンドレスで続ける</button><button class="opt" id="endReset" style="text-align:center">🌱 最初から遊ぶ</button></div></div>
+<div id="end"><div class="card"><div id="endBody"></div><button class="opt" id="endCert" style="display:none;text-align:center;background:#ff7597;color:#fff;font-size:20px;padding:16px 12px;margin-top:12px">賞状(PDF)をもらう ▶</button><button class="opt" id="endMsg" style="text-align:center;background:#ffd166;border:3px solid #ff7597;font-size:22px;padding:20px 12px;margin-top:16px;min-height:72px;box-shadow:0 4px 12px rgba(0,0,0,.25)">作者からのメッセージを読む ▶</button><button class="opt" id="endGo" style="text-align:center;background:#ffe3ec">♾️ エンドレスで続ける</button><button class="opt" id="endReset" style="text-align:center">🌱 最初から遊ぶ</button></div></div>
+<div id="msg"><div class="card"><div style="text-align:center;font-weight:bold;font-size:18px;color:#d63a6a">最後に、作者よりプレイしてくれた方へのメッセージ</div><div id="msgBody">
+<p>このゲームは、お子様から社会人まで、ネット詐欺予防やセキュリティの基礎(OSアップデート、ウイルス対策、ファイアウォール、社員教育など)である「多層防御」の概念を、楽しみながら身につけてもらうために作りました。</p>
+<p>昨今、日本国内の企業や組織を狙ったサイバー攻撃による被害が相次いでいることに対し、作者としても深く心を痛めています。</p>
+<p>これまで日本のITシステムは、独自の文法・文字体系や商習慣、システム環境そのものが一種の障壁となり、大規模な被害を免れてきた側面がありました。しかし現在では、攻撃者が生成AIを悪用することで、自然な日本語による詐欺メールの作成や、巧妙なシステム攻撃を仕掛けてくるケースが急増しています。</p>
+<h3>企業に必要な対策</h3>
+<p>こうした状況下において、企業には引き続き以下の多層防御や、個人情報を極力取得しない対応が不可欠です。</p>
+<ul><li>OSおよびアプリのアップデート</li><li>ウイルス対策ソフトの導入と更新</li><li>ファイアウォールの強固な設定と管理</li><li>社員教育の徹底</li><li>データの定期的なバックアップ</li></ul>
+<p>さらに、攻撃の巧妙化・自動化が進む今、理論上の対策と実際の脆弱性のギャップを埋める「ペネトレーションテスト(侵入テスト)」の実施も範囲を広げた実施が重要になっています。攻撃側がAIを活用する以上、防御側もより実践的なテストの定期的な実施を視野に入れる必要があります。</p>
+<p>AIを悪用されて脆弱性をつかれて攻撃されている以上、攻撃される前にAIを活用したテストで脆弱性を早期発見などの対応も必要になります。</p>
+<p>また、欧米型のDevSecOpsの導入で設計・開発・運用全フェーズでセキュリティを意識しチェック・修正を繰り返していく取り組みも必要な時期と考えます。</p>
+<h3>個人ができる対策</h3>
+<p>一方、個人ができる対策も基本は変わりません。</p>
+<ul><li>OSやアプリを常に最新の状態にする</li><li>ウイルス対策ソフトの導入と更新</li><li>パスワードを使い回さない</li><li>怪しいメールのリンクや添付ファイルを開かない</li><li>知らない番号からの電話はとらない</li><li>個人情報を各アプリでできるだけ入力しない</li></ul>
+<p>ITやシステムは、本来私たちに便利さや豊かさ、楽しみを提供するものです。それを悪用して人々を危険にさらすようなことは、決してあってはならないことです。</p>
+<p>日本・沖縄の警察の方々や、IT技術者、そして利用者の方々が手を取り合い、ITの安心と安全、そして本来の便利さ楽しさを取り戻していこうと強く思います。</p>
+<p class="sign">作者より</p>
+</div><button class="opt" id="msgClose" style="text-align:center;background:#ff7597;color:#fff">閉じる(エンディングに戻る)</button></div></div>
 <div id="quiz"><div class="card"><div id="qTitle" style="font-weight:bold;color:#ff7597;font-size:13px"></div><div id="qText" style="margin-top:6px;font-weight:bold;font-size:15px;line-height:1.5"></div><div id="qOpts"></div><div id="qExp"></div><button id="qNext">つぎへ ▶</button></div></div>
-<div id="start"><div class="card" style="text-align:center"><button id="startX" class="xbtn">✕ 閉じる</button><div style="font-size:34px">🏰🌺</div><div style="font-weight:bold;font-size:18px;margin-top:2px">サイバーキャッスル防衛</div><div style="text-align:left;font-size:13px;line-height:1.75;margin-top:8px"><b style="color:#d63a6a">🎯 目的</b><br>攻撃(ウイルスたち)から<b>🤝信頼</b>を守り、全8ステージを突破してシステムの安全を守ろう!<br><b style="color:#d63a6a">🕹️ あそびかた</b><br>・移動:スマホは画面をなぞる/PCはWASD・矢印キー、またはマウスで主人公をつかんでドラッグ<br>・💻開発端末のそばでコードを集め、お城に運ぶと資金UP<br>・床の丸い場所に立つと強化(ファイアウォール・ウイルス対策ソフト・セキュリティ対策要員など)<br>・近づいた敵は自動で攻撃。🎁を拾い、🧠クイズに答えると資金とコードがもらえる<br>・コードがたまったら🤝信頼の丸に立ってレベルアップ。ステージが進むと授業が始まるよ<br>・最終ステージでは、1回だけ使える⚙️システムアップグレードが登場!<br><b style="color:#d63a6a">📝 授業とクイズ</b><br>授業のあとは、その授業の内容からクイズが出るよ。ボスは面ごとに動きが違う(クネクネ・ジャンプ・にげ足・壁こわしビーム)!<br><b style="color:#d63a6a">🎓 賞状プレゼント</b><br>クイズの<b>正答率が90%を超えた</b>(30問以上回答)人には、<b>「セキュリティ伝道師」のPDF賞状</b>をプレゼント!お名前を入力して発行できます。</div><div id="achInfo" style="font-size:12px;margin-top:8px;color:#d63a6a;font-weight:bold"></div><div id="dailyInfo" style="font-size:12px;margin-top:6px;color:#3a2a4e;font-weight:bold"></div><button class="opt" id="certBtn" style="text-align:center;font-size:12px"></button><button class="opt" id="skinBtn" style="text-align:center;font-size:12px"></button><button class="opt" id="hardBtn" style="text-align:center;font-size:12px"></button><button class="opt" id="startBtn" style="text-align:center;background:#ff7597;color:#fff;font-size:16px">▶ ゲームスタート</button></div></div>
+<div id="start"><div class="card" style="text-align:center"><button id="startX" class="xbtn">✕ 閉じる</button><div style="font-size:34px">🏰🌺</div><div style="font-weight:bold;font-size:18px;margin-top:2px">サイバーキャッスル防衛</div><div style="text-align:left;font-size:13px;line-height:1.75;margin-top:8px"><b style="color:#d63a6a">🎯 目的</b><br>攻撃(ウイルスたち)から<b>🤝信頼</b>を守り、全8ステージを突破してシステムの安全を守ろう!<br><b style="color:#d63a6a">🕹️ あそびかた</b><br>・移動:スマホは画面をなぞる/PCはWASD・矢印キー、またはマウスで主人公をつかんでドラッグ<br>・💻開発端末のそばでコードを集め、お城に運ぶと資金UP<br>・床の丸い場所に立つと強化(ファイアウォール・ウイルス対策ソフト・セキュリティ対策要員など)<br>・近づいた敵は自動で攻撃。🎁を拾い、🧠クイズに答えると資金とコードがもらえる<br>・コードがたまったら🤝信頼の丸に立ってレベルアップ。ステージが進むと授業が始まるよ<br>・最終ステージでは、1回だけ使える⚙️システムアップグレードが登場!<br><b style="color:#d63a6a">📝 授業とクイズ</b><br>授業のあとは、その授業の内容からクイズが出るよ。ボスは面ごとに動きが違う(クネクネ・ジャンプ・にげ足・壁こわしビーム)!<br><b style="color:#d63a6a">🎓 賞状プレゼント</b><br><b>全ステージをクリア</b>して、クイズの<b>正答率が90%を超えた</b>(30問以上回答)人には、<b>「セキュリティ伝道師」のPDF賞状</b>をプレゼント!エンディングのあと、エンドレスで続けて条件を満たした場合ももらえます。お名前を入力して発行できます。</div><div id="achInfo" style="font-size:12px;margin-top:8px;color:#d63a6a;font-weight:bold"></div><div id="dailyInfo" style="font-size:12px;margin-top:6px;color:#3a2a4e;font-weight:bold"></div><button class="opt" id="certBtn" style="text-align:center;font-size:12px"></button><button class="opt" id="skinBtn" style="text-align:center;font-size:12px"></button><button class="opt" id="hardBtn" style="text-align:center;font-size:12px"></button><button class="opt" id="startBtn" style="text-align:center;background:#ff7597;color:#fff;font-size:16px">▶ ゲームスタート</button></div></div>
 <div id="cert"><div class="card" style="text-align:center"><button id="certX" class="xbtn">✕ 閉じる</button><div style="font-size:34px">🎓📜</div><div style="font-weight:bold;font-size:18px">セキュリティ伝道師の賞状</div><p style="font-size:13px;line-height:1.7;margin-top:6px">クイズの正答率90%超え、おめでとう!賞状に載せるお名前を入力してね。</p><input id="certName" maxlength="20" placeholder="お名前" autocomplete="off"><button class="opt" id="certMk" style="text-align:center;background:#ff7597;color:#fff">📄 PDFの賞状をダウンロード</button></div></div>
 <button id="upg" class="edge">⚙️ アップグレード(1回)</button><button id="helpBtn" class="edge">❓ 遊び方</button><button id="libBtn" class="edge">📚 授業</button><button id="rst" class="edge">🌱 最初から</button>
 <div class="hud">
@@ -396,7 +422,7 @@ mk('3-2-1ルールの「1」は?','1つは別の場所に保管する','1日1回
 mk('復旧目標のRTOとは?','障害からどのくらいの時間で復旧するか','データを何世代残すか','どれだけ新しい時点に戻すか','RTO=復旧時間の目標、RPO=戻す時点の目標。'),
 mk('パッチ適用の優先順位を決める基準は?','悪用の有無・影響の大きさ・公開範囲などのリスク','ファイル名の順','担当者の好み','CVSSなどの深刻度に加え、実際に悪用されているかも重視する。'),
 mk('資産台帳を作る理由は?','どの機器に何が入っているかを把握し、更新漏れを防ぐ','見た目を整えるため','容量を節約するため','持っているものを知らなければ、守れない。'),
-mk('サポートが終了したOSを使い続けると?','修正パッチが出ず、弱点が放置される','動作が速くなる','安全性が上がる','サポート終了前に、更新・入れ替えを計画する。'),
+mk('サポートが終了したOSを使い続けると?','修正パッチが出ず、脆弱性が放置される','動作が速くなる','安全性が上がる','サポート終了前に、更新・入れ替えを計画する。'),
 mk('退職者や異動者のアカウントは?','速やかに無効化・権限変更する','そのまま残す','後任に使わせる','放置アカウントは乗っ取りや不正利用の入口になる。'),
 mk('共有IDを使うリスクは?','誰が操作したか追跡できない','パスワードが長くなる','通信が遅くなる','個人ごとのIDにして、操作の責任を追えるようにする。'),
 mk('管理者(特権)アカウントの使い方は?','必要なときだけ使い、普段は一般権限で作業する','常に管理者で作業する','全員で共有する','特権は強力なぶん、使う場面と人を限定する。'),
@@ -497,9 +523,11 @@ mk('クラウドで最も危険な共有設定は?','「リンクを知ってい
 mk('クラウドの責任共有モデルとは?','事業者と利用者で、守る範囲を分担する考え方','すべて事業者が守る','すべて利用者が守る','設定・権限・データの管理は、利用者側の責任。')
 );
 
-let qPool=[],certOK=false,certPend=0,wallBreak=0;try{certOK=localStorage.getItem('cyberCastle_cert')==='1';}catch(e){}
+let qPool=[],certOK=false,certPend=0,wallBreak=0;
 const CERT_RATE=0.9,CERT_MIN=30;let qa=0,qc=0;
 try{const _s=JSON.parse(localStorage.getItem('cyberCastle_qstat')||'{}');qa=+_s.a||0;qc=Math.min(qa,+_s.c||0);}catch(e){}
+function isCleared(){try{return clears>=1;}catch(e){return false;}}
+function certElig(){return isCleared()&&qa>=CERT_MIN&&qc/qa>CERT_RATE;}
 function saveQStat(){try{localStorage.setItem('cyberCastle_qstat',JSON.stringify({a:qa,c:qc}));}catch(e){}}
 let paused=true,incomeMul=1,goldenT=0,evT=900,lastEv='',gifts=[],toastAt=0,killTipAt=-999,mastered=new Set(),queue=[],c0=0;
 const $=id=>document.getElementById(id);
@@ -508,7 +536,7 @@ function buildTicker(){const t=$('tickText'),s=shuffle(TIPS).join('　🌺　');
 function toast(m,ms=4200){const t=$('toast');t.textContent=m;t.style.opacity=1;clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.opacity=0,ms);}
 function banner(m){const b=$('banner');b.textContent=m;b.style.opacity=1;b.style.transform='translateY(0)';clearTimeout(banner.h);banner.h=setTimeout(()=>{b.style.opacity=0;b.style.transform='translateY(-10px)';},3800);}
 function updK(){$('kText').textContent=qa?(Math.floor(qc/qa*100)+'% ('+qc+'/'+qa+')'):'0/0';
- if(!certOK&&qa>=CERT_MIN&&qc/qa>CERT_RATE){certOK=true;certPend=1;try{localStorage.setItem('cyberCastle_cert','1');}catch(e){}banner('🎓 正答率90%超え!賞状がもらえるよ!');}
+ {const e=certElig();if(e&&!certOK){certOK=true;certPend=1;banner('🎓 全ステージクリア+正答率90%超え!賞状がもらえるよ!');}else if(!e)certOK=false;}
  refreshCert();}
 function nextQuiz(){if(qPool.length)return qPool.shift();
  if(!queue.length)queue=shuffle(QUIZ.map((_,i)=>i).filter(i=>!mastered.has(i)));
@@ -591,7 +619,7 @@ function wallEffect(v){
 }
 function drawWalls(){
  const P=world.pads;
- [[P.firewall.level,.88,'255,127,80','🔥ファイアウォール'],[P.osUpdate.level-1,.75,'232,67,147','🔄OSパッチ壁']].forEach(([lv,fy,c,name])=>{
+ [[P.firewall.level,.88,'255,127,80','🔥ファイアウォール'],[P.osUpdate.level-1,.75,'232,67,147','🔄OSアップデート壁']].forEach(([lv,fy,c,name])=>{
   if(lv<=0)return;
   const y=screenHeight*fy,g=wallBreak>0?(gameTime%8<4?.55:.03):.25+.1*Math.sin(gameTime/15);
   ctx.fillStyle='rgba('+c+','+g+')';ctx.fillRect(0,y-8,screenWidth,16);
@@ -615,7 +643,7 @@ const FINAL_LV=16,SD=[{m:1.2,rate:.9,dmg:.9},{m:1.6,rate:1.1,dmg:1.15},{m:2,rate
 let finalState=0,endless=false,noSave=false,goFlag=false;
 const stageDiff=()=>{const d=SD[stageOf(castleHeightLevel)],h=hard?1.35:1;return{m:d.m*h,rate:d.rate*h,dmg:d.dmg*h};};
 const stageFloor=()=>stageOf(castleHeightLevel)*LEVELS_PER_STAGE+1;
-const modalOpen=()=>['go','end','lec','quiz','start','lib','cert'].some(id=>$(id).style.display==='flex');
+const modalOpen=()=>['go','end','lec','quiz','start','lib','cert','msg'].some(id=>$(id).style.display==='flex');
 const LEC=[null,
 ['ステージ1 クリア!(そびえる城編)','守るべきものを知ろう',`<p>最初の授業は<b>情報セキュリティの基本</b>です。守る対象(<b>情報資産</b>)について、次の3つの性質を保つことが基本とされています。</p><ul><li><b>機密性</b>:許可された人だけが情報を見られること</li><li><b>完全性</b>:情報が改ざんされず、正確であること</li><li><b>可用性</b>:必要なときに使えること</li></ul><p>攻撃者やウイルスなどの<b>脅威</b>が、システムの弱点(<b>脆弱性</b>)を突くと、被害が起きる可能性、つまり<b>リスク</b>が生まれます。</p><p><b>📘 ふかぼり:</b>情報資産には、顧客情報や設計書のような「情報そのもの」だけでなく、それを扱うパソコン・サーバー・ネットワーク・人も含まれます。対策では<b>リスク</b>(起きやすさ×被害の大きさ)を見積もり、優先順位をつけて進めます。リスクへの向き合い方には、<b>低減</b>(対策する)・<b>回避</b>(やめる)・<b>移転</b>(保険や委託)・<b>受容</b>(許容して様子を見る)の4つがあります。</p><ul><li>セキュリティは「技術・人・ルール」の3本柱</li><li>対策の基本サイクルは<b>計画→実行→確認→改善</b>(PDCA)</li></ul><div class="pt">📝 ポイント:脅威を完全になくすことは難しいので、弱点(脆弱性)を減らすことが対策の入口になります。</div>`],
 ['ステージ2 クリア!(国際通り編)','人の心理を突く攻撃',`<p>第2回は<b>ソーシャルエンジニアリング</b>です。技術ではなく、人の心理や行動の隙を突いて情報をだまし取る手口の総称です。</p><p>代表例が<b>フィッシング</b>です。メールやSMSで本物そっくりの偽サイトに誘導し、ID・パスワードやカード情報を入力させます。「至急」「アカウント停止」など、焦らせる言葉がよく使われます。</p><ul><li>リンクは開かず、公式アプリやブックマークから確認する</li><li>差出人やURLを落ち着いて確認する</li><li><b>多要素認証</b>やパスキーを使い、パスワードだけに頼らない</li><li>パスワードは長く、サービスごとに別のものにする</li></ul><p><b>📘 ふかぼり:</b>手口は媒体ごとに名前があります。<b>フィッシング</b>(メール)・<b>スミッシング</b>(SMS)・<b>ビッシング</b>(電話)・<b>クイッシング</b>(QRコード)です。ほかに、肩越しにのぞき見る<b>ショルダーハッキング</b>、ごみ箱から情報を探す<b>スキャビンジング</b>、関係者になりすまして聞き出す手口もあります。</p><ul><li>「社長から至急」「銀行から停止」など、権威と緊急性で焦らせる</li><li>正規の窓口が、電話やメールで暗証番号やパスワードを聞くことはない</li><li>書類は<b>シュレッダー</b>で処分し、席を離れるときは画面をロックする</li></ul><div class="pt">📝 ポイント:攻撃者は「人」も狙います。立ち止まって確認する習慣が大きな防御になります。</div>`],
@@ -719,7 +747,9 @@ $('goReset').onclick=()=>{noSave=true;try{localStorage.removeItem(SAVE_KEY);}cat
 $('endReset').onclick=$('goReset').onclick;
 function showEnding(){paused=true;clears++;const R=calcRank();try{localStorage.setItem('cyberCastle_clears',clears);}catch(e){}const min=Math.max(1,Math.round(gameTime/3600));
  $('endBody').innerHTML=`<div style="font-size:38px;text-align:center">🎉🌺🛡️</div><div style="text-align:center;font-weight:bold;font-size:18px;margin-top:4px">エンディング</div><p style="margin-top:8px;font-size:13px;line-height:1.7">ゼロデイ大魔王を倒し、沖縄のシステムの<b>安全は守られました</b>!全8ステージクリア、おめでとうございます。</p><p style="margin-top:8px;font-size:13px;line-height:1.7">学んだことを、「情報セキュリティ5か条」で振り返りましょう。</p><ol><li>OSやソフトウェアは常に最新の状態にする</li><li>ウイルス対策ソフトを導入する</li><li>パスワードを強化する</li><li>共有設定を見直す</li><li>脅威や攻撃の手口を知る</li></ol><div class="pt">困ったときは、警察相談専用電話 #9110(緊急は110)、消費者ホットライン 188、情報セキュリティ安心相談窓口へ。ひとりで抱え込まないでくださいね。<br>プレイ時間:約${min}分 ／ 知識:${mastered.size}/${QUIZ.length}<br>🏅 ランク${R.rank} スコア${R.score}(自己ベスト${R.best}${R.nb?" 🎉更新!":""})<br>🏆 実績 ${got.length}/${ACH.length} ／ クリア${clears}回目<br>🎁 次回の新規スタートは資金+${Math.min(clears,5)*50}!</div>`;
- $('end').style.display='flex';}
+ certOK=certElig();$('endBody').insertAdjacentHTML('beforeend',certOK?'<div class="pt">クリア済みで正答率90%超えです。下のボタンから賞状(PDF)をもらえます!</div>':'<div class="pt">賞状(PDF)は、全ステージクリア後に、クイズの正答率90%超(30問以上回答)でもらえます。エンドレスで続けてクイズに答えると、条件を満たした時点で賞状がもらえます。(いま '+(qa?(qc/qa*100).toFixed(1):0)+'%・'+qa+'問回答)</div>');refreshCert();$('end').style.display='flex';}
+$('endMsg').onclick=()=>{$('msg').style.display='flex';$('msgBody').parentNode.scrollTop=0;};
+$('msgClose').onclick=()=>{$('msg').style.display='none';};
 $('endGo').onclick=()=>{endless=true;$('end').style.display='none';paused=modalOpen();};
 const LV_GATE=1200;
 let kills=0,maxCombo=0,fever=0,flash=0,rings=[],pops=[],crystals=0,feverUsed=false,lastRank="",hard=false,skinI=0,S={k:0,c:0,q:0,g:0};
@@ -1205,7 +1235,7 @@ function draw() {
     drawPad(P.scpSpeed, '#74b9ff', `販売 Lv.${P.scpSpeed.level} (${P.scpSpeed.cost}₡)`);
     drawPad(P.playerPower, '#ffeaa7', `攻撃 Lv.${P.playerPower.level} (${P.playerPower.cost}₡)`);
     drawPad(P.antivirus, '#00cec9', `ウイルス対策ソフト\nLv.${P.antivirus.level} (${P.antivirus.cost}₡)`);
-    drawPad(P.osUpdate, '#e84393', `OS壁 Lv.${P.osUpdate.level} (${P.osUpdate.cost}₡)`);
+    drawPad(P.osUpdate, '#e84393', `OSアップデート壁 Lv.${P.osUpdate.level} (${P.osUpdate.cost}₡)`);
     drawPad(P.training, '#fdcb6e', `🎓教育 Lv.${P.training.level} (${P.training.cost}₡)`);
 
     if (P.training.level > 0) {
@@ -1313,7 +1343,7 @@ function lecQuiz(ls,t,n){const T=[...new Set(ls.flatMap(lecTerms))];
  qPool=QUIZ.map((q,i)=>{const z=q.q+q.o[0]+q.e,m=T.filter(x=>z.includes(x)).length;return[m?m+Math.random()-(mastered.has(i)?.7:0):0,i];}).filter(x=>x[0]>0).sort((a,b)=>b[0]-a[0]).slice(0,n).map(x=>x[1]);
  quizSet(n,t);}
 
-function refreshCert(){const b=$('certBtn');if(!b)return;b.textContent=certOK?'🎓 賞状(セキュリティ伝道師)をもらう':'🔒 賞状:正答率90%超('+CERT_MIN+'問以上回答)でPDFプレゼント(いま'+(qa?(qc/qa*100).toFixed(1):0)+'%・'+qa+'問回答)';b.style.opacity=certOK?1:.6;}
+function refreshCert(){const b=$('certBtn');if(!b)return;b.textContent=certOK?'🎓 賞状(セキュリティ伝道師)をもらう':'🔒 賞状:全ステージクリア+正答率90%超('+CERT_MIN+'問以上回答)でPDFプレゼント(いま'+(qa?(qc/qa*100).toFixed(1):0)+'%・'+qa+'問回答・'+(isCleared()?'クリア済み':'未クリア')+')';b.style.opacity=certOK?1:.6;const ec=$('endCert');if(ec)ec.style.display=certOK?'block':'none';}
 function openCert(){paused=true;try{$('certName').value=localStorage.getItem('cyberCastle_name')||'';}catch(e){}$('cert').style.display='flex';}
 function mkPdf(jpg,w,h){const enc=x=>new TextEncoder().encode(x),parts=[],offs=[];let len=0;
  const add=d=>{if(typeof d==='string')d=enc(d);parts.push(d);len+=d.length;},obj=(n,b)=>{offs[n]=len;add(n+' 0 obj\n'+b+'\nendobj\n');};
@@ -1336,6 +1366,7 @@ function mkCert(name){const W=1684,H=1191,c=document.createElement('canvas');c.w
  const b=atob(c.toDataURL('image/jpeg',.92).split(',')[1]),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);
  return mkPdf(u,W,H);}
 $('certBtn').onclick=()=>{if(certOK)openCert();};
+$('endCert').onclick=()=>{if(certOK)openCert();};
 $('certX').onclick=()=>{$('cert').style.display='none';paused=modalOpen();};
 $('certMk').onclick=()=>{const n=$('certName').value.trim();if(!n){$('certName').focus();$('certName').placeholder='お名前を入力してね';return;}
  try{localStorage.setItem('cyberCastle_name',n);}catch(e){}
@@ -1353,7 +1384,7 @@ function loop(ts){requestAnimationFrame(loop);
  catch(e){errN++;try{viruses=viruses.filter(v=>isFinite(v.x+v.y+v.hp));particles.length=0;castleDebris.length=0;pops.length=0;ctx.setTransform(1,0,0,1,0,0);}catch(_){}}}
 
 window.onload = function() {
-    resizeCanvas(); loadGame(); if(gameTime===0&&clears)coins+=Math.min(clears,5)*50; $('achInfo').textContent='🏆 実績 '+got.length+'/'+ACH.length+'　👑 クリア '+clears+'回'; initMeta(); refreshCert();
+    resizeCanvas(); certOK=certElig(); loadGame(); if(gameTime===0&&clears)coins+=Math.min(clears,5)*50; $('achInfo').textContent='🏆 実績 '+got.length+'/'+ACH.length+'　👑 クリア '+clears+'回'; initMeta(); refreshCert();
     requestAnimationFrame(loop);
 };
 </script>
